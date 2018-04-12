@@ -1,9 +1,14 @@
 ---
 title: MySQL索引原理及慢查询优化
+date: 2017-04-25
+update: 2018-04-12
 categories: 数据库
-description: "MySQL索引"
 tags: [慢查询, 索引, MySQL, 数据库, B-Tree]
 ---
+
+索引是MySQL中最重要的概念之一，本文对索引的原理、数据结构实现和使用方法等进行详细的总结。
+
+<!--more-->
 
 ## 1. MySQL索引原理
 

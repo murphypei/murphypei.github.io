@@ -1,10 +1,14 @@
 ---
 title: python操作字节流以及Struct模块简易教程（MNIST为例）
+date: 2017-02-25
+update: 2018-04-12
 categories: Python
-description: "python操作字节流，以解析MNIST数据集为例"
 tags: [python, 字节, mnist, struct]
 ---
 
+在编程中，对于数据操作最常见的就是字符流和字节流操作，本文以解析MNIST数据集为例，对python中如何操作字节流进行总结
+
+<!--more-->
 
 利用caffe训练MNIST数据集，发现数据集是IDX文件格式，需要进行二进制的读取操作。网上查了一些利用python进行字节流操作的教程，整理了struct模块的简易教程。
 

@@ -1,10 +1,15 @@
 ---
 layout: post
 title: 快速求素数序列方法
+date: 2017-07-30
+update: 2018-04-12
 categories: 算法
-description: "快速求素数序列方法"
 tags: [算法, 素数序列, primer]
 ---
+
+快速求素数序列方法
+
+<!--more-->
 
 **定理：如果n不是素数，则n有一个素数因子d，并且满足： 1 < d <= sqrt(n)**
 

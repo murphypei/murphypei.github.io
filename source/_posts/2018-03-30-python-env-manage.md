@@ -1,14 +1,15 @@
 ---
 layout: post
 title: python虚拟环境和包管理总结
+date: 2018-03-30
+update: 2018-04-12
 categories: Python
-description: ""
 tags: [python, 虚拟环境, 包管理, pip, virtual, conda]
 ---
 
-## 前言
-
 python由于2.x和3.x版本不兼容的问题，出现了虚拟环境管理的方式，这也算是日常比较常见的python环境配置的一种方式。此外，由于python丰富的库依赖，对于库的管理又出现了不同。本文将总结日常使用virtualenv、pip、anaconda等python配置的经验。
+
+<!--more-->
 
 ## 库管理
 

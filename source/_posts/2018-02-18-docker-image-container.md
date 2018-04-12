@@ -1,14 +1,15 @@
 ---
 layout: post
 title: Docker容器和镜像、命令操作详解
+date: 2018-02-18
+update: 2018-04-12
 categories: Docker
-description: "Docker深入学习"
 tags: [Docker, Batch Normalization]
 ---
 
-## 前言
-
 docker中的容器和镜像是docker这门工具核心概念，我在初学docker的时候也是一知半解，看到了[这篇文章](http://dockone.io/article/783)，觉得从命令入手，引入统一文件系统（the union file system）的知识，讲解的比较透彻，整理转载，感谢原文作者。
+
+<!--more-->
 
 ## 镜像
 

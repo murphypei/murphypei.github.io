@@ -1,10 +1,15 @@
 ---
 layout: post
 title: 分布式爬虫：Scrapy-Redis使用
+date: 2017-06-21
+update: 2018-04-12
 categories: Python
-description: "记录srapy-redis的使用教程"
 tags: [python, scrapy, redis, 分布式, 爬虫]
 ---
+
+个人整理的关于srapy-redis的使用教程。
+
+<!--more-->
 
 ## 前言
 

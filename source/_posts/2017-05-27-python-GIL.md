@@ -1,10 +1,15 @@
 ---
 layout: post
 title: CPython中的全局解释锁(GIL)
+date: 2017-05-27
+update: 2018-04-12
 categories: Python
-description: "关于GIL的讲解记录"
 tags: [python, GIL, CPython, 全局解释锁]
 ---
+
+全局解释锁（GIL）是python解释器中实现的一个全局锁，控制python程序的执行。
+
+<!--more-->
 
 首先看一下全局解释锁的定义：
 

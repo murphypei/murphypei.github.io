@@ -1,10 +1,14 @@
 ---
 title: 网易游戏暑期实习招聘编程实例
+date: 2017-03-12
+update: 2018-04-12
 categories: 求职
-description: "记录网易游戏暑期实习招聘笔试"
 tags: [C++, 网易, 实习生, 笔试]
 ---
 
+记录网易游戏暑期实习招聘笔试
+
+<!--more-->
 
 ### 题目描述如下：
 
@@ -30,6 +34,7 @@ tags: [C++, 网易, 实习生, 笔试]
    
 
 **可以通过验证的代码** 
+
 ```c++
 #include <iostream>
 #include <vector>
@@ -45,7 +50,6 @@ tags: [C++, 网易, 实习生, 笔试]
 #include<sstream> 
 
 using namespace std;
-
 
 /**
  * @brief: 两个数不确定情况下，有无进位分别对应的可能结果

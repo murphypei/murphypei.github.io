@@ -1,13 +1,15 @@
 ---
 layout: post
 title: STL迭代器失效问题
+date: 2017-05-03
+update: 2018-04-12
 categories: C++
-description: "关于STL中容器的迭代器失效问题的总结"
 tags: [STL, C++, 迭代器]
 ---
 
+STL中的容器按存储方式分为两类，一类是按以数组形式存储的容器（如：vector 、deque)；另一类是以不连续的节点形式存储的容器（如：list、set、map）。在使用erase方法来删除元素时，会涉及迭代器失效的问题，需要注意。
 
-STL中的容器按存储方式分为两类，一类是按以数组形式存储的容器（如：vector 、deque)；另一类是以不连续的节点形式存储的容器（如：list、set、map）。在使用erase方法来删除元素时，需要注意一些问题。
+<!--more-->
 
 ## 数组形式存储容器
 

@@ -1,12 +1,15 @@
 ---
 layout: post
 title: Storm中消息确认机制
+date: 2017-08-23
+update: 2018-04-12
 categories: Java
-description: "storm实战"
 tags: [java, storm, kafka, acker]
 ---
 
-记录我解决一个问题中查阅的关于 storm 的消息确认机制
+storm为了维持对于数据处理的完整性，使用消息确认机制，本文记录我解决一个问题中查阅的关于 storm 的消息确认机制的相关知识。
+
+<!--more-->
 
 ## 问题来源
 

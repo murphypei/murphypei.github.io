@@ -1,16 +1,19 @@
 ---
 layout: post
 title: Batch Normalization
+date: 2018-01-06
+update: 2018-04-12
 categories: 深度学习
-description: "解读Batch Normalization"
-tags: [深度学习, Batch Normalization]
+tags: [深度学习, Batch Normalization, BN]
 ---
 
-Batch Normalization，简称BN，来源于《Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift》
+Batch Normalization，简称BN，来源于《Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift》这篇论文，本文将对BN的出现原因、作用和原理进行说明。
+
+<!--more-->
 
 ## Motivation
 
- 作者认为：网络训练过程中参数不断改变导致后续每一层输入的分布也发生变化，而学习的过程又要使每一层适应输入的分布，因此我们不得不降低学习率、小心地初始化。作者将分布发生变化称之为 internal covariate shift。
+作者认为：网络训练过程中参数不断改变导致后续每一层输入的分布也发生变化，而学习的过程又要使每一层适应输入的分布，因此我们不得不降低学习率、小心地初始化。作者将分布发生变化称之为 internal covariate shift。
 
 大家应该都知道，我们一般在训练网络的时会将输入减去均值，还有些人甚至会对输入做白化等操作，目的是为了加快训练。为什么减均值、白化可以加快训练呢，这里做一个简单地说明：
 

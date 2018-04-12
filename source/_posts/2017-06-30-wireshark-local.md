@@ -1,10 +1,14 @@
 ---
 title: 使用wireshark抓取本地包
+date: 2017-06-30
+update: 2018-04-12
 categories: 网络编程
-description: "wireshark使用"
 tags: [wireshark, localhost, 抓包]
 ---
 
+记录使用wireshark抓取本地包的过程。
+
+<!--more-->
 
 使用本机进行服务器/客户端开发测试的时候，通常把服务器和客户端都设置为本机，也就是127.0.0.1。在对TCP和HTTP抓包的过程中发现，无法抓取这种本机回环的数据包，原因是wireshark监听的是网卡的数据，而回环数据包不经过网卡。
 

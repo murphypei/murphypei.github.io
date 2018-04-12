@@ -1,13 +1,15 @@
 ---
 layout: post
 title: windows7搭建Qt和opencv环境（借助VS2015编译器）
+date: 2017-05-16
+update: 2018-04-12
 categories: C++
-description: "记录Qt配置opencv环境遇到的问题"
 tags: [qt5, opencv, VS2015, MSVC2015]
 ---
 
+记录Qt配置opencv环境遇到的问题，折腾了好几天弄这个环境，不得不说QT自带的creator真是让人醉了，只提示程序crashed，没有任何原因。所以记录一下，防止以后再被坑。
 
-折腾了好几天弄这个环境，不得不说QT自带的creator真是让人醉了，只提示程序crashed，没有任何原因。所以记录一下，防止以后再被坑。
+<!--more-->
 
 ### 基本环境
 

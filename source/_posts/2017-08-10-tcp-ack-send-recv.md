@@ -1,12 +1,15 @@
 ---
 layout: post
 title: TCP发送、接收和确认机制
+date: 2017-08-10
+update: 2018-04-12
 categories: 网络编程
-description: "TCP部分知识"
 tags: [TCP, send, recv, ack]
 ---
 
-今天看到一篇关于TCP数据传输的文章，忍不住整理记录
+本文整理了关于TCP数据传输过程中的消息确认、滑动窗口、发送和接收数据的缓冲区等知识。
+
+<!--more-->
 
 ## TCP的ACK
 

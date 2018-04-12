@@ -1,11 +1,16 @@
 ---
 title: C++11多线程编程介绍
 categories: C++
-description: "C++11中的多线程编程"
+date: 2017-05-02
+update: 2018-04-12
 tags: [并发编程, 多线程, C++11, thread, tmux]
 ---
 
-### 1. 与 C++11 多线程相关的头文件
+多线程编程是任何编程语言的一个重要方面，本文对C++11中的多线程编程库以及一些使用方法进行详细介绍。
+
+<!--more-->
+
+## 1. 与 C++11 多线程相关的头文件
 
 C++11 新标准中引入了四个头文件来支持多线程编程，他们分别是
 
@@ -24,11 +29,11 @@ C++11 新标准中引入了四个头文件来支持多线程编程，他们分�
 * ```<future>```：该头文件主要声明了 **std::promise, std::package_task** 两个 Provider 类，以及 **std::future** 和 **std::shared_future** 两个 Future 类，另外还有一些与之相关的类型和函数，**std::async()** 函数就声明在此头文件中。
 
 
-### 2. std::thread "Hello world"
+## 2. std::thread "Hello world"
 
 下面是一个最简单的使用 std::thread 类的例子：
 
-```
+```C++
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -75,7 +80,7 @@ clean:
 
 
 
-### 3. std::thread详解
+## 3. std::thread详解
 
 std::thread在头文件```<thread>```中声明，因此使用 std::thread 时需要包含 ```<thread> ```头文件。
 
@@ -103,7 +108,7 @@ std::thread在头文件```<thread>```中声明，因此使用 std::thread 时需
 
 
 
-####  **move操作**
+###  **move操作**
 
 ```move: thread& operator= (thread&& rhs) noexcept;```
 
@@ -118,7 +123,7 @@ std::thread在头文件```<thread>```中声明，因此使用 std::thread 时需
 
 例子如下：
 
-```
+```C++
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -163,16 +168,14 @@ int main(int argc, const char *argv[])
 [std::thread](http://www.cplusplus.com/reference/thread/thread/?kw=thread)
 
 
-
-
-### 4. std::mutex 详解
+## 4. std::mutex 详解
 
 Mutex 又称互斥量，C++ 11中与 Mutex 相关的类（包括锁类型）和函数都声明在 ```<mutex>``` 头文件中，所以如果你需要使用 std::mutex，就必须包含 ```<mutex>```头文件。
 
 > pthread下有pthread_mutex
 
 
-#### **```<mutex>``` 头文件介绍**
+### **```<mutex>``` 头文件介绍**
 
 **Mutex 系列类(四种)**
 
@@ -199,9 +202,7 @@ Mutex 又称互斥量，C++ 11中与 Mutex 相关的类（包括锁类型）和�
 * std::lock，可以同时对多个互斥量上锁。
 * std::call_once，如果多个线程需要同时调用某个函数，call_once 可以保证多个线程对该函数只调用一次。
 
-
-
-#### **std::mutex 介绍**
+### **std::mutex 介绍**
 
 下面以 std::mutex 为例介绍 C++11 中的互斥量用法。
 
@@ -225,7 +226,7 @@ std::mutex 是C++11 中最基本的互斥量，std::mutex 对象提供了独占�
 
 **mutex例子如下：**
 
-```
+```C++
 #include <iostream>       // std::cout
 #include <thread>         // std::thread
 #include <mutex>          // std::mutex
@@ -271,7 +272,7 @@ int main (int argc, const char* argv[]) {
 
 **time_mutext举例如下：**
 
-```
+```C++
 #include <iostream>       // std::cout
 #include <chrono>         // std::chrono::milliseconds
 #include <thread>         // std::thread
@@ -307,11 +308,11 @@ int main ()
 
 * 和 std:recursive_mutex 与 std::mutex 的关系一样，std::recursive_timed_mutex 的特性也可以从 std::timed_mutex 推导出来
 
-#### **std::lock_guard 介绍**
+### **std::lock_guard 介绍**
 
 与 Mutex RAII 相关，方便线程对互斥量上锁。
 
-```
+```C++
 #include <iostream>       // std::cout
 #include <thread>         // std::thread
 #include <mutex>          // std::mutex, std::lock_guard
@@ -348,13 +349,11 @@ int main ()
 }
 ```
 
-<br/>
-
-#### **std::unique_lock 介绍**
+### **std::unique_lock 介绍**
 
 与 Mutex RAII 相关，方便线程对互斥量上锁，但提供了更好的上锁和解锁控制。
 
-```
+```C++
 #include <iostream>       // std::cout
 #include <thread>         // std::thread
 #include <mutex>          // std::mutex, std::unique_lock

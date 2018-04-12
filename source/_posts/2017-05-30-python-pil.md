@@ -1,12 +1,15 @@
 ---
 layout: post
-title: Python 之 PIL基础
+title: Python之PIL基础
+date: 2017-05-30
+update: 2018-04-12
 categories: Python
-description: "Python 图像处理库 Pillow 入门"
 tags: [python, pillow,  PIL, 图像处理]
 ---
 
 Pillow是Python里的图像处理库（PIL：Python Image Library），提供了了广泛的文件格式支持，强大的图像处理能力，主要包括图像储存、图像显示、格式转换以及基本的图像处理操作等。
+
+<!--more-->
 
 ## 使用Image类
 

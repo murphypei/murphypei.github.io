@@ -1,10 +1,12 @@
 ---
 title: GET和POST的区别记录
+date: 2017-03-19
+update: 2018-04-12
 categories: 网络编程
-description: "对GET和POST的资料总结"
 tags: [GET, POST, web开发]
 ---
 
+http中最常见的两种请求方式GET和POST区别很大，但是本质上的区别并不是用法上的那么简单。
 
 根据搜集到的资料来看，区别可以分为两种，实际应用的区别和本质上的区别。
 

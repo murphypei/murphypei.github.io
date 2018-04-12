@@ -1,12 +1,15 @@
 ---
 layout: post
 title: 如何判断TCP连接是否可用？
+date: 2017-09-03
+update: 2018-04-12
 categories: 网络编程
-description: "TCP连接问题引发的知识扩展"
 tags: [TCP, 心跳检测, KeepAlive, select]
 ---
 
-最近身边朋友面试遇到一个问题，如何判断一个TCP连接是断开了的，这个断开的意思就是意外中断了，而不是Client或者Server主动断开了。我们知道，TCP维持一个可靠的连接，当没有发起close请求时，默认都是连接的，而Client或者Server如何得知连接的状态就需要考虑了。
+面试遇到一个问题，如何判断一个TCP连接是断开了的，这个断开的意思就是意外中断了，而不是Client或者Server主动断开了。我们知道，TCP维持一个可靠的连接，当没有发起close请求时，默认都是连接的，而Client或者Server如何得知连接的状态就需要利用其他更多方法。
+
+<!--more-->
 
 ## 心跳机制
 

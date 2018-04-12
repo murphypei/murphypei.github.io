@@ -1,10 +1,14 @@
 ---
 title: HTTP常见返回码表示意义
+date: 2017-04-23
+update: 2018-04-12
 categories: 网络编程
-description: "记录HTTP常见返回码的表示意义"
 tags: [HTTP协议, web开发]
 ---
 
+记录HTTP常见返回码的表示意义
+
+<!--more-->
 
 ## 1xx（临时响应）
  

@@ -1,10 +1,15 @@
 ---
 layout: post
 title: windows7 x64环境使用GLOG日志库
+date: 2017-06-01
+update: 2018-04-12
 categories: C++
-description: "glog的使用"
 tags: [windows7, qt5, VS2013, glog]
 ---
+
+C++中使用GLOG库来进行日志的记录是非常方便的，但是对于其在windows上的配置和使用，还有一些坑。
+
+<!--more-->
 
 想在工程中使用glog来进行日志的记录，无奈google的东西对windows真是不友好，想想还是记录一下吧。
 

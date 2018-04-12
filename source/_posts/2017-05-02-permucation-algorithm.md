@@ -1,11 +1,15 @@
 ---
 layout: post
 title: 排列组合算法(C++)
+date: 2017-05-02
+update: 2018-04-12
 categories: 算法
-description: "C++实现的排列组合算法"
 tags: [C++, 排列组合, permucation, 算法]
 ---
 
+C++的STL中实现的排列组合算法
+
+<!--more-->
 
 排列和组合是两种不同的算法，排列所求的k个数，数的排序不同则为一种不同情况，总共有k!中可能情况
 

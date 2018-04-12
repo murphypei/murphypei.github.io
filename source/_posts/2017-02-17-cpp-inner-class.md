@@ -1,10 +1,14 @@
 ---
 title: C++内部类（嵌套类）与外部类和友元
+date: 2017-02-17
+update: 2018-04-12
 categories: C++
-description: "C++ 内部类（嵌套类）与外部类极其与友元的关系，写作原因在于阅读SimpleHttpServe源码时，ServeBase类中大量内部类的定义"
 tags: [C++, 内部类, 外部类, 友元]
 ---
 
+在阅读SimpleHttpServe源码时，ServeBase类中大量内部类的定义，本文对C++的内部类（嵌套类）与外部类极其与友元的关系进行了总结。
+
+<!--more-->
 
 ### 1. 内部类的概念
 

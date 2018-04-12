@@ -1,10 +1,15 @@
 ---
 layout: post
 title: numpy中axis的理解
+date: 2017-11-24
+update: 2018-04-12
 categories: Python
-description: "python中的numpy库的axis理解"
 tags: [python, numpy, axis]
 ---
+
+axis在python的numpy库中是一个基本概念，出现的非常多，特别是在函数调用、合并数据等操作的时候，本文对axis的作用和规律做一下梳理，加深对python中的numpy库的axis理解。
+
+<!--more-->
 
 ## axis的作用
 

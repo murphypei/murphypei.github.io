@@ -1,14 +1,15 @@
 ---
 layout: post
 title: python中的并发之多进程
+date: 2017-12-03
+update: 2018-04-12
 categories: Python
-description: "Python多进程总结"
 tags: [python, 多进程, multiprocessing]
 ---
 
-## 前言
+在python的并发变成中，由于GIL的限制（参考我的文章：CPython中的全局解释锁），多线程无法很好的应对计算密集型的并发情况，这时候就需要使用多进程的方法进行解决。
 
-在python的并发变成中，由于GIL的限制（参考 [CPython中的全局解释锁](http://peichao.tech/2017/05/27/python-GIL/)），多线程无法很好的应对计算密集型的并发情况，这时候就需要使用多进程的方法进行解决。
+<!--more-->
 
 python在 `os` 模块中，对Linux的fork函数进行了封装，可以很简单的就创建了一个子进程：
 

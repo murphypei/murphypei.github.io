@@ -1,10 +1,15 @@
 ---
 layout: post
 title: Python算法实践：栈
+date: 2017-05-30
+update: 2018-04-12
 categories: Python
-description: "python"
 tags: [python, stack, 栈, 算法]
 ---
+
+python没有内置栈的数据结构，但是可以通过list来实现一个栈
+
+<!--more-->
 
 ## python中的栈
 

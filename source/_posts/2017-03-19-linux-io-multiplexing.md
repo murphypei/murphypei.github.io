@@ -1,10 +1,14 @@
 ---
 title: Linux IO模式及 select、poll、epoll详解
+date: 2017-03-19
+update: 2018-04-12
 categories: Linux
-description: "Linux IO模式及 select、poll、epoll详解"
 tags: [Linux, IO复用, select, epoll]
 ---
 
+Linux IO模式及 select、poll、epoll详解
+
+<!--more-->
 
 ## 1. 概念说明
 
