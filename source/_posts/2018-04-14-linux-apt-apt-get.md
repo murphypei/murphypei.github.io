@@ -1,5 +1,5 @@
 ---
-title: linux-apt-apt-get
+title: linux包管理：apt和apt-get
 date: 2018-04-14 07:43:05
 update: 2018-04-14 07:43:05
 categories: Linux
