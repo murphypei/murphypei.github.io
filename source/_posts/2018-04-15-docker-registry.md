@@ -82,7 +82,14 @@ v2 ping attempt failed with error: Get https://172.18.3.22:5000/v2/: http: serve
 
 在局域网的电脑上，可以查看本地仓库的镜像信息
 
-`curl http://<ip>:5000/v2/_catalog`
+* 查看有哪些镜像
+
+    `curl http://<ip>:5000/v2/_catalog`
+
+* 查看具体镜像的标签
+
+    `curl -X GET http://<ip>:5000/v2/<image_name>/tags/list`
+
 
 ### 拉取镜像
 
@@ -97,4 +104,8 @@ docker run -it <ip>:5000/ubuntu16.04:latest /bin/bash
 ```
 
 如果对容器进行了修改，直接提交容器为一个新的镜像，然后打上标签，push就行了
+
+### 删除镜像
+
+值得注意的是，docker是不允许删除镜像标签的，所以无法直接操作，但是网上有一些方法可以实现伪删除。我个人建议不要这样做，所以此处有需要的请自行google。
 
