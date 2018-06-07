@@ -1,8 +1,8 @@
 ---
 title: 阻塞和非阻塞、同步和异步的概念详解
 date: 2018-05-10 21:14:58
-update: 2018-05-10 21:14:58
-categories: [Linux, 网络编程]
+update: 2018-06-07 09:19:44
+categories: Linux
 tags: [Linux, C++, 网络编程]
 ---
 
