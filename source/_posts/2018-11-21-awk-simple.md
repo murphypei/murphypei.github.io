@@ -88,8 +88,9 @@ awk '/(root|net|ucp)/'{print $0} /etc/passwd
 ### 内置函数
 
 awk中有一些非常实用的内置函数，我们可以直接实用
+
 | | |
-| :--: | :--: |
+| :---: | :---: |
 | gsub(r,s) | 在整个$0中s替换r |
 | gsub(r,s,t) | 在整个t中s替换r |
 | index(s,t) | 返回s中字符串t的第一位置 |
@@ -176,7 +177,7 @@ awk脚本文件开头一般都是这样的：#!/bin/awk -f，使用的时候直�
 
 示例：
 ```
- #!/bin/awk -f
+#!/bin/awk -f
 BEGIN{
     FS=":"
     print "User\t\tUID"
