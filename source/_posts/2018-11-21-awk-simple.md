@@ -203,3 +203,13 @@ awk BEGIN{ comands } pattern { commands } END { commands } file
     * 每读取一行时，它就会检查该行和提供的样式是否匹配。样式本身可以是正则表达式、条件以及行匹配范围等。如果当前行匹配该样式，则执行{ }中的语句
 3) 当读至输入流末尾时，执行`END { commands }`语句块
 
+## 实用例子（持续更新）
+
+在这里会记录一下我日常实用的觉得比较实用的例子，持续更新。
+
+* awk 配合拷贝：标注信息最后一列是文件位置，将其取出，拷贝到新的位置，需要利用管道将组合的拷贝命令发送给bash
+    * `awk 'BEGIN{FS="\t"} {print "cp "$NF" ./tmp"}' val.lst | sh`
+
+* awk 配合批量resize图片
+    * `for im in $(ls -l source/*.jpg | awk '{print $9}'); do convert -resize 128X256 $im dest/$(basename $im); done`
+    * 利用awk和ls配合获得原始图片，然后利用convert命令（需要安装imagemagick）resize并存入目标文件夹

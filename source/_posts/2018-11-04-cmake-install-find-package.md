@@ -213,7 +213,7 @@ install(EXPORT ...)
 
 `find_package()`的版本控制是通过一个类似名为`my_library-config-version.cmake`文件完成的，和`my_library-config.cmake`类似，你需要在库中提供并安装它。
 
-这个版本控制文件接受`${PACKAGE_FIND_VERSION_MAJOR/MINOR}`格式的版本号，并设置相应的合适版本号变量`${PACKAGE_FIND_VERSION_EXACT/COMPATIBLE/UNSUITABLE}`，以及完整的版本号`${PACKAGE_VERSION}`。但是仅仅设置版本号相关的变量还没有解决一个问题：到底哪个版本的库将会被安装。为此，我们需要在安装之前通过引用根目录的`CMakeLists.txt`中的版本号相关的变量来进行安装的配置。
+这个版本控制文件接受`${PACKAGE_FIND_VERSION_MAJOR/MINOR}`格式的版本号，并设置相应的合适版本号变量`${PACKAGE_VERSION_EXACT/COMPATIBLE/UNSUITABLE}`，以及完整的版本号`${PACKAGE_VERSION}`。但是仅仅设置版本号相关的变量还没有解决一个问题：到底哪个版本的库将会被安装。为此，我们需要在安装之前通过引用根目录的`CMakeLists.txt`中的版本号相关的变量来进行安装的配置。
 
 这里有一个简单的脚本，需要一个指定的大版本号以及必须大于等于的小版本号：
 ```
