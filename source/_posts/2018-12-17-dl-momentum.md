@@ -26,18 +26,18 @@ tags: [深度学习, 训练参数, 动量, momentum]
 
 一般，神经网络在更新权值时，采用如下公式:
 <center>
-w = w - learning_rate * dw
+`w = w - learning_rate * dw`
 </center>
 
 引入momentum后，采用如下公式：
 <center>
-v = mu * v - learning_rate * dw
+`v = mu * v - learning_rate * dw`
 </center>
 
 <center>
-w = w + v
+`w = w + v`
 </center>
 
-其中，v初始化为0，mu就是动量设定的超参数，最常见的设定值是 **0.9**。
+其中，v初始化为 **0**，mu就是动量设定的超参数，最常见的设定值是 **0.9**。
 
 上式也可以直观的理解为：要是当前时刻的梯度与历史时刻梯度方向相似，这种趋势在当前时刻则会加强；要是不同，则当前时刻的梯度方向减弱。前者能够加速收敛，守着能够减小摆动。
