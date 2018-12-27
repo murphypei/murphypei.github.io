@@ -214,3 +214,6 @@ awk BEGIN{ comands } pattern { commands } END { commands } file
 * awk 配合批量resize图片
     * `for im in $(ls -l source/*.jpg | awk '{print $9}'); do convert -resize 128X256 $im dest/$(basename $im); done`
     * 利用awk和ls配合获得原始图片，然后利用convert命令（需要安装imagemagick）resize并存入目标文件夹
+
+* awk 批量移动部分文件到新文件夹
+    * `ls -l src_dir | head -n 200001 | awk '{if(NR>1) system("mv ./src_dir/"$9" ./dest_dir")}'`
