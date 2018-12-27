@@ -217,3 +217,6 @@ awk BEGIN{ comands } pattern { commands } END { commands } file
 
 * awk 批量移动部分文件到新文件夹
     * `ls -l src_dir | head -n 200001 | awk '{if(NR>1) system("mv ./src_dir/"$9" ./dest_dir")}'`
+
+    * 随机挑选要移动的部分文件
+        * `ls -l src_dir | awk 'BEGIN{srand();}{idx=int(rand()*10000000); if(NR>1) print idx $0}' | sort | head -n 11 | awk '{print $9}'`
