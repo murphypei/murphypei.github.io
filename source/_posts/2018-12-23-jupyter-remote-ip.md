@@ -1,6 +1,6 @@
 ---
 title: jupyter远程配置的ip问题
-date: 2018-12-23-10 09:19:44
+date: 2018-12-23 09:19:44
 update: 2018-12-23 09:19:44
 categories: Python
 tags: [Python, ipython, jupyter, notebook]
