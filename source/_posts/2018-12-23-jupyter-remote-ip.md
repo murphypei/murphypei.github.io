@@ -1,6 +1,6 @@
 ---
 title: jupyter远程配置的ip问题
-date: 2018-12-23 09:19:44
+date: 2018-12-23-10 09:19:44
 update: 2018-12-23 09:19:44
 categories: Python
 tags: [Python, ipython, jupyter, notebook]
@@ -43,8 +43,3 @@ jupyter十分好用，如果想在服务器上运行jupyter，然后本地进行
     ```
 
 坑就出在这里，如果`ip='*'`，启动jupyter notebook就会报错，错误原因是ip地址错误，我看网上一堆教程，包括官网都是这么设置，我觉得原因是python执行不认这个配置吧。`ip='*'`的意思是允许任意的电脑访问这个notebook，当然了，需要密码。我尝试将其改为`ip='0.0.0.0'`，就可以了。果然，计算机编程原理都是类似的。
-
-
-
-
-
