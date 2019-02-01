@@ -220,3 +220,5 @@ awk BEGIN{ comands } pattern { commands } END { commands } file
 
     * 随机挑选要移动的部分文件
         * `ls -l src_dir | awk 'BEGIN{srand();}{idx=int(rand()*10000000); if(NR>1) print idx $0}' | sort | head -n 11 | awk '{print $9}'`
+ * 读取classes-list，内容是按行排列的单词，将其用双引号包裹，打印成一行（也就是python字符串list的形式）
+    * awk 'BEGIN{RS="\n";ORS=" ";}  {print "\""$0"\","} END{print "\n"}' /path/to/classes-list
