@@ -1,4 +1,14 @@
-Linux堆内存管理深入分析
+---
+title: Linux堆内存管理深入分析
+date: 2019-01-26 09:19:44
+update: 2019-01-26 09:19:44
+categories: C++
+tags: [C++, heap, chunk, 堆内存管理]
+---
+
+最近看了一篇堆内存管理的分析文章，觉得非常棒，结合一些其他博文的参考，整理记录。
+
+<!--more-->
 
 [Understanding glibc的malloc](https://sploitfun.wordpress.com/2015/02/10/understanding-glibc-malloc/comment-page-1/)是一篇非常优秀的文章，深入浅出的介绍了Linux的堆内存分配情况，下面就是对原文的一些翻译和理解，表达其中的意思，并不是原本照搬，有兴趣建议阅读原文。
 
@@ -16,11 +26,11 @@ Linux堆内存管理深入分析
 
 本文主要学习介绍在Linux的`glibc`使用的`ptmalloc2`实现原理。本来linux默认的是`dlmalloc`，但是由于其不支持多线程堆管理，所以后来被支持多线程的`prmalloc2`代替了。当然在linux平台`*malloc`本质上都是通过系统调用`brk`或者`mmap`实现的。原文作者的另一篇文章也介绍的很清楚[Syscalls used by malloc](https://sploitfun.wordpress.com/2015/02/11/syscalls-used-by-malloc/)。鉴于篇幅，本文就不加以详细说明了，只是为了方便后面对堆内存管理的理解，截取其中函数调用关系图：
 
-![](/home/peic/Downloads/malloc-func-call.png)
+![](/images/posts/cplusplus/heap/malloc-func-call.png)
 
 再来一张进程的虚拟内存分布示意图：
 
-![](/home/peic/Downloads/linuxFlexibleAddressSpaceLayout.png)
+![](/images/posts/cplusplus/heap/linuxFlexibleAddressSpaceLayout.png)
 
 **注意：**
     * 这个图是**32位系统的进程虚拟内存分布，所以最大是4G(2^32)**，内核默认占用1G
@@ -89,7 +99,7 @@ int main()
 
 1. Before malloc in main thread 
 
-![](/home/peic/Pictures/heap-maps1.png)
+![](/images/posts/cplusplus/heap/heap-maps1.png)
 
 可以看到，在本机上（Ubuntu16.04，x64），在主线程调用`malloc`之前，就已经给主线程分配了一块堆内存，这和原文作者在32位机上的实验结果是不同的。这块默认大小的内存是200KB。
 
@@ -97,7 +107,7 @@ heap是紧接着数据段的，说明这个系统是通过`brk`来进行内存�
 
 2. After malloc in main thread
 
-![](/home/peic/Pictures/heap-maps2.png)
+![](/images/posts/cplusplus/heap/heap-maps2.png)
 
 （不小心ctrl+c了，所以进程id不一样），在主线程中调用`malloc`之后，发现heap仍然是200K，我分析是因为默认分配的内存够用，因此`malloc`并没有引起heap的自增长。作者原文中有一种解释：
 
@@ -111,13 +121,13 @@ heap是紧接着数据段的，说明这个系统是通过`brk`来进行内存�
 
 4. Before malloc in thread 1
 
-![](/home/peic/Pictures/heap-maps3.png)
+![](/images/posts/cplusplus/heap/heap-maps3.png)
 
 请注意红色框这一部分地址，和下面的`/lib/x86_64-linux-gnu/libc-2.23.so`等动态库位于的`Memory Mapping Segment`区域的地址很接近，结合上图的内存分布图可以知道，**就地址而言：stack > Memory Mapping Segment > heap**。这里有一个知识：**Linux子线程是由mmap创建的，所以其栈是位于`Memory Mapping Segment`区域**[Where are the stacks for the other threads located in a process virtual address space?]（https://stackoverflow.com/questions/44858528/where-are-the-stacks-for-the-other-threads-located-in-a-process-virtual-address）。因此可以看出，**在子线程`malloc`之前，已经创建了子线程的stack，其大小是8MB**。
 
 5. After malloc in thread 1
 
-![](/home/peic/Pictures/heap-maps4.png)
+![](/images/posts/cplusplus/heap/heap-maps4.png)
 
 继续关注红色区域的地址，**在malloc之后，为子线程分配了堆**，这个大小是132K（这个大小倒是和原文的一致），并且同样是位于`Memory Mapping Segment`区域，这部分区域就是thread1的堆空间，即thread1 `arena`。
 
@@ -246,11 +256,11 @@ struct malloc_chunk {
 
 首先，通过内存分布图理清`malloc_state`与`heap_info`之间的组织关系。下图是只有一个heap segment的`main arena`和`thread arena`的内存分布图：
 
-![](single-thread-`arena`.png)
+![](/images/posts/cplusplus/heap/arena-single-segment.png)
 
 下图是一个`thread arena`中含有多个heap segments的情况：
 
-![](multi-thread-`arena`.png)
+![](/images/posts/cplusplus/heap/arena-multi-segment.png)
 
 从上图可以看出，`thread arena`只含有一个malloc_state(即`arena header`)，却有两个`heap_info`(即`heap header`)。由于两个heap segments是通过`mmap`分配的内存，两者在内存布局上并不相邻而是分属于不同的内存区间，所以为了便于管理，`glibc`的`malloc`将第二个`heap_info`结构体的`prev`成员指向了第一个`heap_info`结构体的起始位置（即`ar_ptr`成员），而第一个`heap_info`结构体的`ar_ptr`成员指向了`malloc_state`，这样就构成了一个单链表，方便后续管理。
 
@@ -271,7 +281,7 @@ struct malloc_chunk {
 
 ### allocated chunk
 
-![](allocated-chunk.png)
+![](/images/posts/cplusplus/heap/allocated-chunk.png)
 
 顾名思义，是已经被分配使用的`chunk`，
 
@@ -295,7 +305,7 @@ struct malloc_chunk {
 
 ### free chunk
 
-![](free-chunk.png)
+![](/images/posts/cplusplus/heap/free-chunk.png)
 
 * `prev_size`: 为了防止碎片化，堆中不存在两个相邻的`chunk`（如果存在，则被堆管理器合并了）。因此对于一个`free chunk`，这个prev_size区域中一定包含的上一个`chunk`的部分有效数据或者为了地址对齐所做的padding。
 * `size`: 同`allocated chunk`，表示当前`chunk`的大小
@@ -351,7 +361,7 @@ struct malloc_chunk {
 
 * 而说到`chunk unused size`，就表示该`malloc_chunk`中刨除诸如`prev_size`, `size`, `fd`和`bk`这类辅助成员之后的实际可用的大小。因此，对`free chunk`而言，其实际可用大小总是比实际整体大小少16字节。
 
-![](fast-bin.png)
+![](/images/posts/cplusplus/heap/fast-bin.png)
 
 **在内存分配和释放过程中，`fast bin`是所有bin中操作速度最快的**。下面详细介绍`fast bin`的一些特性：
 
@@ -553,7 +563,7 @@ Large bin的特性如下：
 
 下面附上各类上述三类bin的逻辑：
 
-![](unsorted-small-large-bin.jpg)
+![](/images/posts/cplusplus/heap/unsorted-small-large-bin.jpg)
 
 
 ### last remainder chunk 补充
@@ -565,12 +575,9 @@ Large bin的特性如下：
 然后回答第二个问题。此类型的`chunk`用于提高连续`malloc(small chunk`)的效率，主要是提高内存分配的局部性。那么具体是怎么提高局部性的呢？举例说明。当用户请求一个`small chunk`，且该请求无法被`small bin`满足，那么就转而交由`unsorted bin`处理。同时，假设当前`unsorted bin`中只有一个`chunk`的话——就是`last remainder chunk`，那么就将该`chunk`分成两部分：前者分配给用户，剩下的部分放到`unsorted bin`中，并成为新的`last remainder chunk`。这样就保证了连续`malloc(small chunk`)中，各个`small chunk`在内存分布中是相邻的，即提高了内存分配的局部性。
 
 
-参考链接：
+**本文参考链接：**
 
-[Understanding glibc的malloc](https://sploitfun.wordpress.com/2015/02/10/understanding-glibc-malloc/comment-page-1/)
-
-[Syscalls used by malloc](https://sploitfun.wordpress.com/2015/02/11/syscalls-used-by-malloc/)
-
-[Linux堆内存管理深入分析(上半部)](https://blog.csdn.net/AliMobileSecurity/article/details/51384912)
-
-[Linux堆内存管理深入分析(下半部)](https://blog.csdn.net/AliMobileSecurity/article/details/51481718)
+* [Understanding glibc的malloc](https://sploitfun.wordpress.com/2015/02/10/understanding-glibc-malloc/comment-page-1/)
+* [Syscalls used by malloc](https://sploitfun.wordpress.com/2015/02/11/syscalls-used-by-malloc/)
+* [Linux堆内存管理深入分析(上半部)](https://blog.csdn.net/AliMobileSecurity/article/details/51384912)
+* [Linux堆内存管理深入分析(下半部)](https://blog.csdn.net/AliMobileSecurity/article/details/51481718)

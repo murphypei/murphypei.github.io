@@ -90,7 +90,7 @@ theme: next
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repository: git@github.com:ChaoPei/ChaoPei.github.io.git
+  repository: https://github.com/ChaoPei/ChaoPei.github.io.git
   branch: master
 
 # 设置头像

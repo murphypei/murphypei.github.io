@@ -1,5 +1,5 @@
 ---
-title: jupyter配合virtualenvs管理多个kernel
+title: jupyter设置多个虚拟环境的kernel
 date: 2019-01-11 09:19:44
 update: 2019-01-11 09:19:44
 categories: Python
@@ -16,24 +16,24 @@ jupyter中可以方便的切换python的运行环境，由于我平时的python�
 
 1. 安装虚拟环境env
 
-* 省略
+    省略
 
 2. 安装jupyter
 
-* `sudo pip install -U jupyter`
+    `sudo pip install -U jupyter`
 
-注意这个jupyter是安装在系统的python环境中的
+    注意这个jupyter是安装在系统的python环境中的
 
 2. 在虚拟环境中安装ipykernel
 
-切换到虚拟环境中，安装ipykernel
+    切换到虚拟环境中，安装ipykernel：
 
-* `pip install ipykernel`
+    `pip install ipykernel`
 
 3. 注册虚拟环境
 
-在虚拟环境中执行注册
+    在虚拟环境中执行注册：
 
-* `python -m ipykernel install --user --name=env`
+    `python -m ipykernel install --user --name=env`
 
 大功告成，重启jupyter notebook就可以看到不同的kernel了。

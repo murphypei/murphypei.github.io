@@ -1,13 +1,26 @@
-python 拷贝virtualenv
+---
+title: python拷贝虚拟环境的方法
+date: 2019-02-01 09:19:44
+update: 2018-12-23 09:19:44
+categories: Python
+tags: [Python, virtualenv, 虚拟环境拷贝]
+---
 
+python虚拟环境拷贝并不是仅仅的复制目录，本文用于记录自己实践的拷贝python虚拟环境的方法。
 
-python虚拟环境非常耗用，有时候需要我们拷贝一个已经配置好的虚拟环境，网上找了一下发现全是`pip freeze > requirements.txt`，然后`pip install -r requirements.txt`。这种操作很常见，但是对于一些不用pip安装的包，就没办法处理了，而且安装时间也是一个问题。
+<!-- more -->
+
+python虚拟环境非常好用，有时候需要我们拷贝一个已经配置好的虚拟环境，网上找了一下发现全是`pip freeze > requirements.txt`，然后`pip install -r requirements.txt`。这种操作很常见，但是对于一些不用pip安装的包，就没办法处理了，而且安装时间也是一个问题。
 
 ### 1. 同一个机器之间拷贝
 
 直接使用虚拟环境`virtualenv`自带的工具`virtualenv-clone`或者`virtualenvwrapper`包装的工具`cpvirtualenv`，用法很简单：
 
-`cpvirtualenv src dest`或者`virtualenv-clone source target`
+`cpvirtualenv src dest`
+
+或者
+
+`virtualenv-clone source target`
 
 ### 2. 不同机器之间的拷贝
 
@@ -15,7 +28,7 @@ python虚拟环境非常耗用，有时候需要我们拷贝一个已经配置�
 
 #### 2.1 直接拷贝源的`.virtualenvs`目录到目标机器
 
-    这一步一般是从一个home目录到另一个home目录，假设源机器是`/src/.virtualenvs`，目标机器是`/dest/.virtualenvs`。
+这一步一般是从一个home目录到另一个home目录，假设源机器是`/src/.virtualenvs`，目标机器是`/dest/.virtualenvs`。
 
 这一步拷贝之后，如果你的两个`.virtualenvs`的路径是一样的，恭喜你，你已经完成了，如果不一样，下面就需要做一些操作。
 
