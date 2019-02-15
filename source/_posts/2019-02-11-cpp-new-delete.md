@@ -12,9 +12,9 @@ C++的new和delete是一种特殊的表达式。
 
 ## new 和 delete 到底是什么？
 
-我们都知道`sizeof`不是函数，然后举出一堆的理由来证明`sizeof`不是函数。在这里，和`sizeof`类似，`new`和`delete`也不是函数，它们都是**C++定义的关键字**，通过特定的语法可以组成表达式。和`sizeof`不同的是，`sizeof`在编译时候就可以确定其返回值，`new`和`delete`背后的机制则比较复杂。
+我们都知道C++中`sizeof`不是函数，并且可以举出一堆的理由来证明`sizeof`不是函数。和`sizeof`类似，`new`和`delete`也不是函数，它们都是**C++定义的关键字**，通过特定的语法可以组成表达式。和`sizeof`不同的是，`sizeof`在编译时候就可以确定其返回值，`new`和`delete`背后的机制则比较复杂。
 
-首先我们应该搞清楚，`new`应该要做些什么？也许你第一反应是，`new`不就和C语言中的`malloc`函数一样嘛，就用来动态申请空间的。你答对了一半，看看下面语句：
+首先我们应该搞清楚，`new`应该要做些什么？也许你第一反应是，`new`不就和C语言中的`malloc`函数一样嘛，就用来动态申请空间的。你只答对了一半，看看下面语句：
 
 ```c++
 string *ps = new string("hello world");
@@ -27,10 +27,10 @@ string *ps = new string("hello world");
 不同与一般的`operator***`形式的操作符重载函数，`operator new` 和 `operator delete`这两个函数其实是 C++ 语言标准库的库函数，原型分别如下：
 
 ```c
-void *operator new(size_t);     //allocate an object
+void *operator new(size_t);       //allocate an object
 void *operator delete(void *);    //free an object
 
-void *operator new[](size_t);     //allocate an array
+void *operator new[](size_t);       //allocate an array
 void *operator delete[](void *);    //free an array
 ```
 
@@ -70,7 +70,7 @@ private:
 我们创建一个类的对象，返回其指针`pA`。
 
 ```c++
-class A *pA = `new` A(10);
+class A *pA = new A(10);
 ```
 
 如下图所示 `new` 背后完成的工作：
@@ -107,8 +107,8 @@ delete pA;
 
 如何申请和释放一个数组？我们经常要用到动态分配一个数组，也许是这样的：
 ```c++
-string *psa = `new` string[10];      //array of 10 empty strings
-int *pia = `new` int[10];            //array of 10 uninitialized ints
+string *psa = new string[10];      //array of 10 empty strings
+int *pia = new int[10];            //array of 10 uninitialized ints
 ```
 
 上面在申请一个数组时都用到了`new []`这个表达式来完成，按照我们上面讲到的`new`和`delete`知识，第一个数组是`string`类型，分配了保存对象的内存空间之后，将调用`string`类型的默认构造函数依次初始化数组中每个元素；第二个是申请具有内置类型的数组，分配了存储10个`int`对象的内存空间，但并没有初始化。
@@ -125,10 +125,10 @@ delete [] pia;
 
 这个问题直接导致我们需要在 `new []` 一个对象数组时，需要保存数组的维度，C++ 的做法是**在分配数组空间时多分配了4个字节的大小，专门保存数组的大小（这4个字节一般位于数组首地址的前面，紧挨着数组），在 `delete []` 时就可以取出这个保存的数，就知道了需要调用析构函数多少次了**。
 
-还是用图来说明比较清楚，我们定义了一个类 A，但不具体描述类的内容，这个类中有显示的构造函数、析构函数等。那么 当我们调用
+还是用图来说明比较清楚，我们定义了一个类A，但不具体描述类的内容，这个类中有显示的构造函数、析构函数等。那么当我们调用
 
 ```c++
-class A *pAa = `new` A[3];
+class A *pAa = new A[3];
 ```
 
 时需要做的事情如下：
@@ -152,17 +152,17 @@ delete []pAa;
 
 为什么 `new`和`delete` 、`new []`和`delete []` 要配对使用？
 
-从上面解释的你应该懂了 `new`/`delete`、`new []`/`delete []`的工作原理了，因为它们之间有差别，所以需要配对使用。但偏偏问题不是这么简单，这也是我遇到的问题，如下这段代码：
+从上面解释的你应该懂了 `new` / `delete`、`new []` / `delete []`的工作原理了，因为它们之间有差别，所以需要配对使用。但偏偏问题不是这么简单，这也是我遇到的问题，如下这段代码：
 ```c++
-int *pia = `new` int[10];
-`delete []pia`;
+int *pia = new int[10];
+delete []pia;
 ```
 
 这肯定是没问题的，但如果把 `delete []pia`换成 `delete pia`的话，会出问题吗？
 
 这就涉及到上面一节没提到的问题了。上面我提到了在`new []`时多分配 4 个字节的缘由，因为析构时需要知道数组的大小，但如果不调用析构函数呢（如内置类型，这里的`int`数组）？我们在 `new []`时就没必要多分配那4个字节， `delete []`时直接到第二步释放为`int`数组分配的空间。如果这里使用 `delete pia`;那么将会调用 `operator delete` 函数，传入的参数是分配给数组的起始地址，所做的事情就是释放掉这块内存空间。不存在问题的。
 
-**这里说的使用 `new []` 用 `delete` 来释放对象的提前是：对象的类型是内置类型或者是无自定义的析构函数的类类型！最好别这么做！**
+**这里说的使用 `new []` 用 `delete` 来释放对象的提前是：对象的类型是内置类型或者是无自定义的析构函数的类类型！最好别这么做，因为如果没有正确地调用构造函数，类似有指针成员的类很容易造成内存泄露！**
 
 我们看看如果是带有自定义析构函数的类类型，用 `new []` 来创建类对象数组，而用 `delete` 来释放会发生什么？用上面的例子来说明：
 
