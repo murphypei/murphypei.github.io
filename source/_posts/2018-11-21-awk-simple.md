@@ -55,7 +55,7 @@ awk -F "\t" '{OFS="\t"} {if ($4==3) $4=5}1' test.txt
 * END不匹配任何的输入文件，但是执行动作块中的所有动作，它在整个输入文件处理完成后被执行，也就是后处理。
 
 ```s
-awk BEGIN{FS=":"; OFS="\t"; ORS="\n\n"} {print $1,$2,$3} END{print "${FILENAME} processing done" } test。
+awk 'BEGIN{FS=":"; OFS="\t"; ORS="\n\n"} {print $1,$2,$3} END{print "${FILENAME} processing done" }' test。
 ```
 上面这条语句在打印之前，更改了FS，OFS，ORS等变量，然后处理完毕打印文本名字（${FILENAME）processing done。
 
