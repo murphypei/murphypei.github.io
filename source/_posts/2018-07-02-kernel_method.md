@@ -10,7 +10,7 @@ tags: [机器学习, 核函数, 非线性映射, 回归]
 
 <!--more-->
 
-<script type="text/javascript"src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=default"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
 假如已经有训练样本\\(x_i\\)，以及其标注 \\(y_i\\)，其中\\(i=1,2,3...N\\)。
 现在欲求解一个回归函数\\(f(z)\\)，使得\\(f(x_i) = y_i\\)。
