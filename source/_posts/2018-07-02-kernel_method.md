@@ -4,13 +4,12 @@ date: 2018-07-02 09:19:44
 update: 2018-07-02 09:19:44
 categories: 机器学习
 tags: [机器学习, 核函数, 非线性映射, 回归]
+mathjax: true
 ---
 
 机器学习领域中对于线性不可分的情况通常使用核函数的方法将其映射到高维空间，实现线性可分，之前一直对于核函数理解不到位，容易陷入数学公式推导的深区，本文则通过总结核函数的基本原理摒弃绝大多数数学推导，来对核函数的概念进行归纳总结。
 
 <!--more-->
-
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
 假如已经有训练样本\\(x_i\\)，以及其标注 \\(y_i\\)，其中\\(i=1,2,3...N\\)。
 现在欲求解一个回归函数\\(f(z)\\)，使得\\(f(x_i) = y_i\\)。
