@@ -217,8 +217,13 @@ awk BEGIN{ comands } pattern { commands } END { commands } file
 
 * awk 批量移动部分文件到新文件夹
     * `ls -l src_dir | head -n 200001 | awk '{if(NR>1) system("mv ./src_dir/"$9" ./dest_dir")}'`
-
     * 随机挑选要移动的部分文件
         * `ls -l src_dir | awk 'BEGIN{srand();}{idx=int(rand()*10000000); if(NR>1) print idx $0}' | sort | head -n 11 | awk '{print $9}'`
- * 读取classes-list，内容是按行排列的单词，将其用双引号包裹，打印成一行（也就是python字符串list的形式）
-    * awk 'BEGIN{RS="\n";ORS=" ";}  {print "\""$0"\","} END{print "\n"}' /path/to/classes-list
+
+* 读取classes-list，内容是按行排列的单词，将其用双引号包裹，打印成一行（也就是python字符串list的形式）
+    * `awk 'BEGIN{RS="\n";ORS=" ";}  {print "\""$0"\","} END{print "\n"}' /path/to/classes-list`
+
+* 读取md5文件，其中第一列是md5值，第二列是绝对路径，将第二列的绝对路径改为只有文件的名
+    * `cat test.txt | awk '{"basename "$2 |& getline $2; print $1" "$2}`
+    * `"basename "$2`：构建获取文件名的命令
+    * `|& geline $2`：将构建的命令执行，获取结果
