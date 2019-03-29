@@ -53,7 +53,7 @@ init Base
 init B
 ```
 
-可以看到，两种方法都可以调用父类的方法对父类进行初始化。需要注意的是，两种方法都要传入self。
+可以看到，两种方法都可以调用父类的方法对父类进行初始化。需要注意的是，两种方法都要传入self，但是在**子类中调用父类的super中传入的self是子类对象。**
 
 ## 菱形继承
 
@@ -193,5 +193,6 @@ B.spam
 
 **参考：**
 
-[python3官方文档](http://python3-cookbook.readthedocs.io/zh_CN/latest/c08/p07_calling_method_on_parent_class.html)
+* [python3官方文档](http://python3-cookbook.readthedocs.io/zh_CN/latest/c08/p07_calling_method_on_parent_class.html)
+* https://mozillazg.com/2016/12/python-super-is-not-as-simple-as-you-thought.html
 
