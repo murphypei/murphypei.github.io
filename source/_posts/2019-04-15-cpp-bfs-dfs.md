@@ -2,7 +2,7 @@
 title: C++实现图的DFS和BFS
 date: 2019-04-15 16:53:17
 update: 2019-04-15 16:53:17
-categories: [C++, 算法]
+categories: C++
 tags: [C++, 图, DFS, BFS, 递归]
 ---
 
