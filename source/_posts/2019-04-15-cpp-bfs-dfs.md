@@ -1,12 +1,12 @@
 ---
-title: C++实现图的DFS和BFS
+title: C++ 实现图的 DFS 和 BFS
 date: 2019-04-15 16:53:17
 update: 2019-04-15 16:53:17
 categories: C++
 tags: [C++, 图, DFS, BFS, 递归]
 ---
 
-图的DFS和BFS的思想在实际编程中也非常常见，本文对其实现思路进行了一个小小的记录。
+图的 DFS 和 BFS 的思想在实际编程中也非常常见，本文对其实现思路进行了一个小小的记录。
 
 <!-- more -->
 
@@ -18,7 +18,7 @@ tags: [C++, 图, DFS, BFS, 递归]
 std::vector<std::list<int>> graph;
 ```
 
-### 图的BFS
+### 图的 BFS
 
 #### 非递归实现，借助队列
 
