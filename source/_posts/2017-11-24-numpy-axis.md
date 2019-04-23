@@ -4,10 +4,10 @@ title: numpy中axis的理解
 date: 2017-11-24
 update: 2018-04-12
 categories: Python
-tags: [python, numpy, axis]
+tags: [Python, numpy, axis]
 ---
 
-axis在python的numpy库中是一个基本概念，出现的非常多，特别是在函数调用、合并数据等操作的时候，本文对axis的作用和规律做一下梳理，加深对python中的numpy库的axis理解。
+axis在Python的numpy库中是一个基本概念，出现的非常多，特别是在函数调用、合并数据等操作的时候，本文对axis的作用和规律做一下梳理，加深对Python中的numpy库的axis理解。
 
 <!--more-->
 
@@ -17,7 +17,7 @@ axis在python的numpy库中是一个基本概念，出现的非常多，特别�
 
 为什么会有axis这个东西，原因很简单：**numpy是针对矩阵或者多为数组进行运算的，而在多维数组中，对数据的操作有太多的可能，特别是数组有多个维度，对于不同维度的操作会有不同的结果**，我们先来看一个例子。比如我们有一个二维数组：
 
-```python
+```Python
 >>> import numpy as np
 >>> data = np.array([
 ... [1,2,1],
@@ -30,21 +30,21 @@ axis在python的numpy库中是一个基本概念，出现的非常多，特别�
 
 如果在分析样本的过程中需要对每个样本的三个特征求和，该如何处理？简单：
 
-```python
+```Python
 >>> np.sum(data, axis=1)
 array([4, 4, 7, 5])
 ```
 
 那如果想求每种特征的最小值，该如何处理？也简单：
 
-```python
+```Python
 >>> np.min(data, axis=0)
 array([0, 1, 1])
 ```
 
 又如果想得知所有样本所有特征的平均值呢？还是很简单：
 
-```python
+```Python
 >>> np.average(data)
 1.6666666666666667
 ```
@@ -59,7 +59,7 @@ array([0, 1, 1])
 
 下面我们举一个四维的求sum的例子来验证一下：
 
-```python
+```Python
 >>> data = np.random.randint(0, 5, [4,3,2,3])
 >>> data
 array([[[[4, 1, 0],
@@ -94,7 +94,7 @@ array([[[[4, 1, 0],
 
 当axis=0时，numpy验证第0维的方向来求和，也就是第一个元素值=a0000+a1000+a2000+a3000=11,第二个元素=a0001+a1001+a2001+a3001=5，同理可得最后的结果如下：
 
-```python
+```Python
 >>> data.sum(axis=0)
 array([[[11,  5,  6],
         [ 7,  9,  4]],
@@ -108,7 +108,7 @@ array([[[11,  5,  6],
 
 当axis=3时，numpy验证第3维的方向来求和，也就是第一个元素值=a0000+a0001+a0002=5,第二个元素=a0010+a0011+a0012=7，同理可得最后的结果如下：
 
-```python
+```Python
 >>> data.sum(axis=3)
 array([[[ 5,  7],
         [ 7,  7],
@@ -133,7 +133,7 @@ array([[[ 5,  7],
 
 ### sort
 
-```python
+```Python
 >>> data = np.random.randint(0, 5, [3,2,3])
 >>> data
 array([[[4, 2, 0],
@@ -186,7 +186,7 @@ array([0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4, 4, 4])
 
 ### prod(即product，乘积)
 
-```python
+```Python
  >>> np.prod([[1.,2.],[3.,4.]])
  24.0
 

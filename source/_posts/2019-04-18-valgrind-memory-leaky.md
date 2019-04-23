@@ -8,6 +8,8 @@ tags: [valgrind, C/C++, 内存泄露, memory leaky]
 
 C/C++ 程序的一大问题就是内存泄露问题，对于我们写的程序，有必要进行内存泄露的检测，Valgrind 就是一个内存泄露检测工具。
 
+<!-- more -->
+
 ### Valgrind 安装
 
 ubuntu16.04，截止今日，现在可以安装 3.15 版本了，直接去官网下载源码。然后编译安装
@@ -24,7 +26,7 @@ sudo make install
 
 首先看一段 C 程序示例，比如：
 
-```c
+```c++
 #include <stdlib.h>
 int main()
 {
@@ -32,8 +34,8 @@ int main()
     return 0;
 }
 ```
-
-编译程序：`gcc -g -o main main.c`，比哪一需要加上`-g`选项打开调试，使用 IDE 的可以用 Debug 模式编译。
+ 
+编译程序：`gcc -g -o main main.c`，比哪一需要加上 `-g` 选项打开调试，使用 IDE 的可以用 Debug 模式编译。
 
 使用 Valgrind 检测内存使用情况：
 
@@ -67,16 +69,17 @@ int main()
 ==31416== ERROR SUMMARY: 1 errors from 1 contexts (suppressed: 0 from 0)
 ```
 
-先看看输出信息中的`HEAP SUMMARY`，它表示程序在堆上分配内存的情况，其中的`1 allocs`表示程序分配了 1 次内存，`0 frees`表示程序释放了 0 次内存，`4 bytes allocated`表示分配了 4 个字节的内存。
+先看看输出信息中的 `HEAP SUMMARY`，它表示程序在堆上分配内存的情况，其中的 `1 allocs` 表示程序分配了 1 次内存，`0 frees` 表示程序释放了 0 次内存，`4 bytes allocated` 表示分配了 4 个字节的内存。
 
-另外，Valgrind 也会报告程序是在哪个位置发生内存泄漏。例如，从下面的信息可以看到，程序发生了一次内存泄漏，位置是`main.c`文件的第 5 行：
+另外，Valgrind 也会报告程序是在哪个位置发生内存泄漏。例如，从下面的信息可以看到，程序发生了一次内存泄漏，位置是 `main.c` 文件的第 5 行：
+
 ```
 ==31416== 4 bytes in 1 blocks are definitely lost in loss record 1 of 1
 ==31416==    at 0x4C2DBF6: malloc (vg_replace_malloc.c:299)
 ==31416==    by 0x400537: main (main.c:5)
 ```
 
-对于C++程序一样如此：
+对于 C++ 程序一样如此：
 
 ```c++
 #include <string>
@@ -122,6 +125,6 @@ int main()
 ==31438== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
 ```
 
-使用 Valgrind 分析 C++ 程序时，有一些问题需要留意。例如，这个程序并没有发生内存泄漏，但是从`HEAP SUMMARY`可以看到，程序分配了 2 次内存，但却只释放了 1 次内存，为什么会这样呢？实际上这是由于 C++ 在分配内存时，为了提高效率，使用了它自己的内存池。当程序终止时，内存池的内存才会被操作系统回收，所以 Valgrind 会将这部分内存报告为`reachable`的，需要注意，`reachable`的内存不代表内存泄漏，例如，从上面的输出中可以看到，有 72704 个字节是dddd`reachable`的，但没有报告内存泄漏。
+使用 Valgrind 分析 C++ 程序时，有一些问题需要留意。例如，这个程序并没有发生内存泄漏，但是从` HEAP SUMMARY` 可以看到，程序分配了 2 次内存，但却只释放了 1 次内存，为什么会这样呢？实际上这是由于 C++ 在分配内存时，为了提高效率，使用了它自己的内存池。当程序终止时，内存池的内存才会被操作系统回收，所以 Valgrind 会将这部分内存报告为 `reachable` 的，需要注意，**`reachable` 的内存不代表内存泄漏**，例如，从上面的输出中可以看到，有 72704 个字节是 `reachable` 的，但没有报告内存泄漏。
 
-不仅如此，Valgrind还能进行越界访问检测，内存未初始化检测等等。
+不仅如此，Valgrind 还能进行越界访问检测，内存未初始化检测等等。

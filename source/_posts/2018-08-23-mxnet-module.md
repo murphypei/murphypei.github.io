@@ -3,7 +3,7 @@ title: MXNet框架学习（3）：数据处理和Module
 date: 2018-08-23 12:02:41
 update: 2018-08-23 12:02:41
 categories: 深度学习
-tags: [深度学习, MXNet, python, module]
+tags: [深度学习, MXNet, Python, module]
 ---
 
 在[MXNet框架学习（2）](https://chaopei.github.io/blog/2018/08/mxnet-symbol.html)中，我们介绍了如何使用Symbols定义计算中使用的Graph，并处理存储在NDArray（在第一篇文章中有介绍）中的数据。本文将介绍如何使用Symbol和NDArray准备所需数据并构建神经网络。随后将使用Module API训练该网络并预测结果。

@@ -10,7 +10,7 @@ awk是Linux环境下重要的结构化文本处理工具，非常便捷好用。
 
 <!--more-->
 
-之前我一直使用python来处理Linux的一些文本，但是对于一些大文本的简单处理，python麻烦而且慢，于是现在慢慢改用awk来处理，很多时候一行命令就能解决，因此非常方便。针对使用是过程的一些心得，写个小小的教程，awk太强大了，需要慢慢长时间的学习，我尽量保持更新这个教程吧。
+之前我一直使用 Python 来处理 Linux 的一些文本，但是对于一些大文本的简单处理，Python 麻烦而且慢，于是现在慢慢改用awk来处理，很多时候一行命令就能解决，因此非常方便。针对使用是过程的一些心得，写个小小的教程，awk太强大了，需要慢慢长时间的学习，我尽量保持更新这个教程吧。
 
 ## awk基本概念
 
@@ -220,10 +220,10 @@ awk BEGIN{ comands } pattern { commands } END { commands } file
     * 随机挑选要移动的部分文件
         * `ls -l src_dir | awk 'BEGIN{srand();}{idx=int(rand()*10000000); if(NR>1) print idx $0}' | sort | head -n 11 | awk '{print $9}'`
 
-* 读取classes-list，内容是按行排列的单词，将其用双引号包裹，打印成一行（也就是python字符串list的形式）
+* 读取 classes-list，内容是按行排列的单词，将其用双引号包裹，打印成一行（也就是 Python 字符串 list 的形式）
     * `awk 'BEGIN{RS="\n";ORS=" ";}  {print "\""$0"\","} END{print "\n"}' /path/to/classes-list`
 
-* 读取md5文件，其中第一列是md5值，第二列是绝对路径，将第二列的绝对路径改为只有文件的名
+* 读取 md5 文件，其中第一列是 md5 值，第二列是绝对路径，将第二列的绝对路径改为只有文件的名
     * `cat test.txt | awk '{"basename "$2 |& getline $2; print $1" "$2}`
     * `"basename "$2`：构建获取文件名的命令
     * `|& geline $2`：将构建的命令执行，获取结果

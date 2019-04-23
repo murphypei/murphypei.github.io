@@ -1,9 +1,9 @@
 ---
-title: MXNet框架学习（4）：数据处理和Module
+title: MXNet框架学习（4）：模型加载和使用
 date: 2018-08-24 12:02:41
 update: 2018-08-24 12:02:41
 categories: 深度学习
-tags: [深度学习, MXNet, python, pretrained]
+tags: [深度学习, MXNet, Python, pretrained]
 ---
 
 在[MXNet框架学习（3）]((https://chaopei.github.io/blog/2018/08/mxnet-module.html))中，我们构建并训练了第一个神经网络，这篇文章我们学习如何加载和使用一个已有模型。
@@ -54,7 +54,7 @@ n01494475 hammerhead, hammerhead shark
 
 * 加载模型的保存状态：MXNet称为checkpoint。返回结果是，模型的symbol和模型的参数
 
-```python
+```Python
 import mxnet as mx
 
 sym, arg_params, aux_params = mx.model.load_checkpoint('Inception-BN', 0) # 这个0就是修改参数文件的原因，也可以传入未修改的数值。
@@ -62,7 +62,7 @@ sym, arg_params, aux_params = mx.model.load_checkpoint('Inception-BN', 0) # 这�
 
 * 利用得到的symbol创建一个新的module，我们也可以设置一个context参数用来决定在哪里运行这个模型：默认参数是cpu(0),但是我们可以使用gpu(0)来让模型运行在GPU上。
 
-```python
+```Python
 mod = mx.mod.Module(symbol=sym, context=gpu(0))
 ```
 
@@ -70,7 +70,7 @@ mod = mx.mod.Module(symbol=sym, context=gpu(0))
 
 * 定义data的数据维度为1x3x224x224：224x224是图像的分辨率，3是图像的RGB三通道，1是batch size（我们一次只预测一张图片）
 
-```python
+```Python
 mod.bind(for_training=False, data_shapes=[('data', (1,3,224,224))])
 ```
 
@@ -84,7 +84,7 @@ mod.set_params(arg_params, aux_params)
 
 ### 4. 准备数据
 
-模型需要的是4维的NDArray数据，包括RGB三通道和224x224的图像大小，我们使用OpenCV库从输入的图像来来构造NDArray。如果你没有安装OpenCV，运行`pip install opencv-python`应该就行了（大多数情况下）。
+模型需要的是4维的NDArray数据，包括RGB三通道和224x224的图像大小，我们使用OpenCV库从输入的图像来来构造NDArray。如果你没有安装OpenCV，运行`pip install opencv-Python`应该就行了（大多数情况下）。
 
 步骤如下：
 

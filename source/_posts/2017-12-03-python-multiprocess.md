@@ -1,19 +1,19 @@
 ---
 layout: post
-title: python中的并发之多进程
+title: Python中的并发之多进程
 date: 2017-12-03
 update: 2018-04-12
 categories: Python
-tags: [python, 多进程, multiprocessing]
+tags: [Python, 多进程, multiprocessing]
 ---
 
-在python的并发变成中，由于GIL的限制（参考我的文章：CPython中的全局解释锁），多线程无法很好的应对计算密集型的并发情况，这时候就需要使用多进程的方法进行解决。
+在Python的并发变成中，由于GIL的限制（参考我的文章：CPython中的全局解释锁），多线程无法很好的应对计算密集型的并发情况，这时候就需要使用多进程的方法进行解决。
 
 <!--more-->
 
-python在 `os` 模块中，对Linux的fork函数进行了封装，可以很简单的就创建了一个子进程：
+Python在 `os` 模块中，对Linux的fork函数进行了封装，可以很简单的就创建了一个子进程：
 
-```python
+```Python
 import os
 
 print 'Process (%s) start...' % os.getpid()
@@ -32,7 +32,7 @@ else:
 
 利用 `multiprocessing` 模块创建一个进程非常简单：
 
-```python
+```Python
 from multiprocessing import Process
 import os
 
@@ -62,7 +62,7 @@ Process end.
 
 如果需要大量的子进程，可以利用进程池的方法来批量创建子进程
 
-```python
+```Python
 from multiprocessing import Pool
 import os, time, random
 
@@ -111,7 +111,7 @@ All subprocesses done.
 
 除了for循环以外，还可以利用map的方式来批量执行子进程
 
-```python 
+```Python 
 # -*- coding: utf-8 -*-
 import multiprocessing as mp
 
@@ -132,11 +132,11 @@ if __name__ == '__main__':
 [0, 2, 4, 6, 8, 10, 12, 14, 16, 18]
 ```
 
-* map的用法和python自带的map很像，而且能够直接获取函数的返回结果
+* map的用法和Python自带的map很像，而且能够直接获取函数的返回结果
 
 ### 获取子进程的结果
 
-从通俗的意义上来讲，获取子进程的结果可以归纳为IPC，python对于这方面在 `multiprocessing` 模块中也进行了一些封装，这个需要开辟一个新的话题来讲。这里给出一些简单的获取子进程的结果的方法。
+从通俗的意义上来讲，获取子进程的结果可以归纳为IPC，Python对于这方面在 `multiprocessing` 模块中也进行了一些封装，这个需要开辟一个新的话题来讲。这里给出一些简单的获取子进程的结果的方法。
 
 #### `map` 方式直接获取结果
 
@@ -146,7 +146,7 @@ if __name__ == '__main__':
 
 `pool.apply_async`返回的是一个Process对象，这个对象会异步执行，我们可以在执行结束后，利用`get`方法获取结果，具体操作如下：
 
-```python
+```Python
 import multiprocessing
 import time
 
@@ -192,7 +192,7 @@ Sub-process(es) done.
 
 定义一个类，然后使用类的方法进行并发运算，大概如下：
 
-```python
+```Python
 
 import multiprocessing as mp
 
@@ -216,7 +216,7 @@ for r in results:
 
 查阅了资料，发现有人提到：
 
-> python的multiprocessing pool进程池隐形的加入了一个任务队列，在你apply_async的时候，他会使用pickle序列化对象，但是python 2.x的pickle应该是不支持这种模式的序列化. 
+> Python的multiprocessing pool进程池隐形的加入了一个任务队列，在你apply_async的时候，他会使用pickle序列化对象，但是Python 2.x的pickle应该是不支持这种模式的序列化. 
 
 所以就会出错，解决方法大概有：
 
@@ -225,5 +225,5 @@ for r in results:
 * 利用getattr对定义在类中的方法进行包装
 * ...
 
-具体可参考这篇 [博文](http://xiaorui.cc/2016/01/18/python-multiprocessing%E9%81%87%E5%88%B0cant-pickle-instancemethod%E9%97%AE%E9%A2%98/)
+具体可参考这篇 [博文](http://xiaorui.cc/2016/01/18/Python-multiprocessing%E9%81%87%E5%88%B0cant-pickle-instancemethod%E9%97%AE%E9%A2%98/)
 

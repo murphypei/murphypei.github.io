@@ -4,16 +4,16 @@ title: Python算法实践：栈
 date: 2017-05-30
 update: 2018-04-12
 categories: Python
-tags: [python, stack, 栈, 算法]
+tags: [Python, stack, 栈, 算法]
 ---
 
-python没有内置栈的数据结构，但是可以通过list来实现一个栈
+Python没有内置栈的数据结构，但是可以通过list来实现一个栈
 
 <!--more-->
 
-## python中的栈
+## Python中的栈
 
-python中的数据结构list可以实现栈的操作，无需单独实现一个栈
+Python中的数据结构list可以实现栈的操作，无需单独实现一个栈
 
 | list接口 | 对应栈操作描述 |
 | :---: | :---: |
@@ -50,8 +50,8 @@ python中的数据结构list可以实现栈的操作，无需单独实现一个�
 
 **算法代码：**
 
-```python
-#!/usr/bin/env python
+```Python
+#!/usr/bin/env Python
 # -*- coding:utf-8 -*-
 
 LEFT = {'(', '[', '{'}
@@ -90,7 +90,7 @@ print(result)
 
 迷宫如图所示，出去的正确线路如图中的红线所示:
 
-![迷宫](/images/posts/python/migong.png)
+![迷宫](/images/posts/Python/migong.png)
 
 **思路：**
 
@@ -102,8 +102,8 @@ print(result)
 
 **算法代码：**
 
-```python
-#!/usr/bin/env python
+```Python
+#!/usr/bin/env Python
 # -*-coding:utf-8-*-
 
 def initMaze():
@@ -182,8 +182,8 @@ print(result)
 
 **算法代码：**
 
-```python
-#!/usr/bin/env python
+```Python
+#!/usr/bin/env Python
 # -*- coding:utf-8 -*-
 
 operators = {

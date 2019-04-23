@@ -4,7 +4,7 @@ title: 分布式爬虫：Scrapy-Redis使用
 date: 2017-06-21
 update: 2018-04-12
 categories: Python
-tags: [python, scrapy, redis, 分布式, 爬虫]
+tags: [Python, scrapy, redis, 分布式, 爬虫]
 ---
 
 个人整理的关于srapy-redis的使用教程。
@@ -13,7 +13,7 @@ tags: [python, scrapy, redis, 分布式, 爬虫]
 
 ## 前言
 
-python中Scrapy可以算是很基本的爬虫框架了，我自己也用过。感觉很方便，只需要写好几个组件，配置好环境就能运行。关于Scrapy我就不介绍了，可以看文档（有中文的）。
+Python中Scrapy可以算是很基本的爬虫框架了，我自己也用过。感觉很方便，只需要写好几个组件，配置好环境就能运行。关于Scrapy我就不介绍了，可以看文档（有中文的）。
 
 为了提升爬虫效率主要有两种实现办法：
  
@@ -26,7 +26,7 @@ python中Scrapy可以算是很基本的爬虫框架了，我自己也用过。�
 
 [Scrapy中文文档](http://scrapy-chs.readthedocs.io/zh_CN/1.0/)
 
-安装好相关python库之后，直接可以执行`scrapy startproject tutorial`来创建一个scrapy工程，会自动在当前目录下创建一个文件夹，结构如下：
+安装好相关Python库之后，直接可以执行`scrapy startproject tutorial`来创建一个scrapy工程，会自动在当前目录下创建一个文件夹，结构如下：
 
 ```
 tutorial/
@@ -66,7 +66,7 @@ Scrapy-Redis是一个基于Redis的Scrapy分布式组件。它利用Redis对用�
 
 * `connect.py` 进行Redis数据库连接和操作
     
-    在这个文件中引入了redis模块，这个是redis-python库的接口，用于通过python访问redis数据库，可见，这个文件主要是实现连接redis数据库的功能（返回的是redis库的Redis对象或者StrictRedis对象，这俩都是可以直接用来进行数据操作的对象）。这些连接接口在其他文件中经常被用到。其中，我们可以看到，要想连接到redis数据库，和其他数据库差不多，需要一个ip地址、端口号、用户名密码（可选）和一个整形的数据库编号，同时我们还可以在scrapy工程的setting文件中配置套接字的超时时间、等待时间等。
+    在这个文件中引入了redis模块，这个是redis-Python库的接口，用于通过Python访问redis数据库，可见，这个文件主要是实现连接redis数据库的功能（返回的是redis库的Redis对象或者StrictRedis对象，这俩都是可以直接用来进行数据操作的对象）。这些连接接口在其他文件中经常被用到。其中，我们可以看到，要想连接到redis数据库，和其他数据库差不多，需要一个ip地址、端口号、用户名密码（可选）和一个整形的数据库编号，同时我们还可以在scrapy工程的setting文件中配置套接字的超时时间、等待时间等。
 
 * `dupefilters.py` 进行request的判重功能
 
@@ -78,7 +78,7 @@ Scrapy-Redis是一个基于Redis的Scrapy分布式组件。它利用Redis对用�
 
 * `picklecompat.py` 进行序列化操作
 
-    这里实现了loads和dumps两个函数，其实就是实现了一个serializer，因为redis数据库不能存储复杂对象（value部分只能是字符串，字符串列表，字符串集合和hash，key部分只能是字符串），所以我们存啥都要先串行化成文本才行。这里使用的就是python的pickle模块，一个兼容py2和py3的串行化工具。这个serializer主要用于一会的scheduler存reuqest对象，至于为什么不实用json格式，我也不是很懂，item pipeline的串行化默认用的就是json。
+    这里实现了loads和dumps两个函数，其实就是实现了一个serializer，因为redis数据库不能存储复杂对象（value部分只能是字符串，字符串列表，字符串集合和hash，key部分只能是字符串），所以我们存啥都要先串行化成文本才行。这里使用的就是Python的pickle模块，一个兼容py2和py3的串行化工具。这个serializer主要用于一会的scheduler存reuqest对象，至于为什么不实用json格式，我也不是很懂，item pipeline的串行化默认用的就是json。
 
 * `pipeline.py` 对所爬取的item进行Redis操作
 
@@ -119,4 +119,4 @@ Scrapy-Redis是一个基于Redis的Scrapy分布式组件。它利用Redis对用�
 * [Redis命令参考](http://doc.redisfans.com/)
 * [xpath语法](http://www.w3school.com.cn/xpath/xpath_syntax.asp)
 * [使用scrapy-redis构建简单的分布式爬虫](http://blog.csdn.net/howtogetout/article/details/51633814)
-* [scrapy-redis分布式爬虫原理分析](http://www.codexiu.cn/python/blog/24719/)
+* [scrapy-redis分布式爬虫原理分析](http://www.codexiu.cn/Python/blog/24719/)

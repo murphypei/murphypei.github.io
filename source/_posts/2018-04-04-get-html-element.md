@@ -1,17 +1,17 @@
 ---
 layout: post
-title: python简单方法获取网页页面元素内容
+title: Python简单方法获取网页页面元素内容
 date: 2018-04-04
 update: 2018-04-12
 categories: Python
-tags: [python, urllib, request, beautifulsoup]
+tags: [Python, urllib, request, beautifulsoup]
 ---
 
-使用python的`urllib`和`BeautifulSoup`库进行简单的页面元素提取测试
+使用 Python 的 `urllib` 和 `BeautifulSoup` 库进行简单的页面元素提取测试
 
 <!--more-->
 
-```python
+```Python
 import urllib.request
 from bs4 import BeautifulSoup
 

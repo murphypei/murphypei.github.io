@@ -1,24 +1,24 @@
 ---
-title: python操作字节流以及Struct模块简易教程（MNIST为例）
+title: Python操作字节流以及Struct模块简易教程（MNIST为例）
 date: 2017-02-25
 update: 2018-04-12
 categories: Python
-tags: [python, 字节, mnist, struct]
+tags: [Python, 字节, mnist, struct]
 ---
 
-在编程中，对于数据操作最常见的就是字符流和字节流操作，本文以解析MNIST数据集为例，对python中如何操作字节流进行总结
+在编程中，对于数据操作最常见的就是字符流和字节流操作，本文以解析MNIST数据集为例，对 Python 中如何操作字节流进行总结
 
 <!--more-->
 
-利用caffe训练MNIST数据集，发现数据集是IDX文件格式，需要进行二进制的读取操作。网上查了一些利用python进行字节流操作的教程，整理了struct模块的简易教程。
+利用 Caffe 训练 MNIST 数据集，发现数据集是 IDX 文件格式，需要进行二进制的读取操作。网上查了一些利用 Python 进行字节流操作的教程，整理了 struct 模块的简易教程。
 
-> 一般认为：二进制流==字节流==二进制数组==字节数组
+> 一般认为：二进制流 == 字节流 == 二进制数组 == 字节数组
 
-### struct模块简介
+### struct 模块简介
 
-struct模块中最重要的三个函数是pack(), unpack(), calcsize()
+struct 模块中最重要的三个函数是 `pack()`, `unpack()`, `calcsize()`
 
-```python
+```py
 # 按照给定的格式化字符串，把数据封装成字符串(实际上是类似于c结构体的字节流)
 string = struct.pack(fmt, v1, v2, ...)
 
@@ -29,7 +29,7 @@ tuple = unpack(fmt, string)
 offset = calcsize(fmt)
 ```
 
-**struct中支持的格式如下表：**
+**struct 中支持的格式如下表：**
 
 | Format | C Type | Python | 字节数 |
 | :------: | :-----:  | :----: | :----: |
@@ -54,13 +54,13 @@ offset = calcsize(fmt)
 
 **需要注意的一些问题：**
 
-* q和Q只在机器支持64位操作时有意思
+* q 和 Q 只在机器支持 64 位操作时有意义
 * 每个格式前可以有一个数字，表示个数
-* s格式表示一定长度的字符串，4s表示长度为4的字符串，但是p表示的是pascal字符串
-* P用来转换一个指针，其长度和机器字长相关
-* 最后一个可以用来表示指针类型的，占4个字节
+* s 格式表示一定长度的字符串，4s 表示长度为 4 的字符串，但是 p 表示的是 pascal 字符串
+* P 用来转换一个指针，其长度和机器字长相关
+* 最后一个可以用来表示指针类型的，占 4 个字节
 
-为了同c中的结构体交换数据，还要考虑有的c或c++编译器使用了字节对齐，通常是以4个字节为单位的32位系统，故而struct根据本地机器字节顺序转换.可以用格式中的第一个字符来改变对齐方式.定义如下：
+为了同 C 中的结构体交换数据，还要考虑有的 C/C++ 编译器使用了字节对齐，通常是以 4 个字节为单位的 32 位系统，故而 struct 根据本地机器字节顺序转换.可以用格式中的第一个字符来改变对齐方式.定义如下：
 
 |Character|	Byte order|	Size and alignment|
 | :---: | :---: | :---: |
@@ -70,11 +70,11 @@ offset = calcsize(fmt)
 |>|	big-endian	standard |按原字节数
 |!|	network (= big-endian)	standard| 按原字节数
 
-**使用方法是放在fmt的第一个位置，就像'@5s6sif'**
+**使用方法是放在 fmt 的第一个位置，就像 `@5s6sif`**
 
-### 利用struct解析MNIST数据集
+### 利用 struct 解析 MNIST 数据集
 
-MNIST数据集从官网下载解压，得到四个IDX数据文件
+MNIST 数据集从官网下载解压，得到四个 IDX 数据文件
 
 ```
 t10k-images.idx3-ubyte
@@ -85,7 +85,7 @@ train-labels.idx1-ubyte
 
 **解析并保存数据：**
 
-```python
+```py
 # -*- coding=utf-8 -*-
 
 """

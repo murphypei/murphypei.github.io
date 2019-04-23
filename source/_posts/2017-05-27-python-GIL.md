@@ -4,10 +4,10 @@ title: CPython中的全局解释锁(GIL)
 date: 2017-05-27
 update: 2018-04-12
 categories: Python
-tags: [python, GIL, CPython, 全局解释锁]
+tags: [Python, GIL, CPython, 全局解释锁]
 ---
 
-全局解释锁（GIL）是python解释器中实现的一个全局锁，控制python程序的执行。
+全局解释锁（GIL）是Python解释器中实现的一个全局锁，控制Python程序的执行。
 
 <!--more-->
 
@@ -40,10 +40,10 @@ PyEval_InitThreads(void)
 
 两个线程各自分别连接一个套接字：
 
-```python
+```Python
 def do_connect():
     s = socket.socket()
-    s.connect(('python.org', 80))  # drop the GIL
+    s.connect(('Python.org', 80))  # drop the GIL
  
 for i in range(2):
     t = threading.Thread(target=do_connect)
@@ -122,7 +122,7 @@ for (;;) {
 
 看看这个代码：
 
-```python
+```Python
 n = 0
 def foo():
     global n
@@ -131,7 +131,7 @@ def foo():
 
 我们可以看到这个函数用 Python 的标准 dis 模块编译的字节码：
 
-```python
+```Python
 >>> import dis
 >>> dis.dis(foo)
 LOAD_GLOBAL              0 (n)
@@ -149,7 +149,7 @@ STORE_GLOBAL             0 (n)
 
 记住，一个线程每运行 1000 字节码，就会被解释器打断夺走 GIL 。如果运气不好，这（打断）可能发生在线程加载 n 值到堆栈期间，以及把它存储回 n 期间。很容易可以看到这个过程会如何导致更新丢失：
 
-```python
+```Python
 threads = []
 for i in range(100):
     t = threading.Thread(target=foo)
@@ -165,7 +165,7 @@ print(n)
 
 所以，尽管有 GIL，你仍然需要加锁来保护共享的可变状态：
 
-```python
+```Python
 n = 0
 lock = threading.Lock()
 def foo():
@@ -176,7 +176,7 @@ def foo():
 
 如果我们使用一个原子操作比如 sort() 函数会如何呢？：
 
-```python
+```Python
 lst = [4, 1, 3, 2]
 def foo():
     lst.sort()
@@ -184,7 +184,7 @@ def foo():
 
 这个函数的字节码显示 sort() 函数不能被中断，因为它是原子的：
 
-```python
+```Python
 >>> dis.dis(foo)
 LOAD_GLOBAL              0 (lst)
 LOAD_ATTR                1 (sort)
@@ -207,7 +207,7 @@ CALL_FUNCTION            0
 
 线程中代码运行更快
 
-```python
+```Python
 import threading
 import requests
 urls = [...]
@@ -231,7 +231,7 @@ for _ in range(10):
 
 这个例子 fork 出 10 个进程，比只有 1 个进程要完成更快，因为进程在多核中并行运行。但是 10 个线程与 1 个线程相比，并不会完成更快，因为在一个时间点只有 1 个线程可以执行 Python：
 
-```python
+```Python
 import os
 import sys
 nums =[1 for _ in range(1000000)]

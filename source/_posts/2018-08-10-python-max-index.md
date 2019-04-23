@@ -3,10 +3,10 @@ title: Python找出矩阵中最大值的位置
 date: 2018-08-10 09:19:44
 update: 2018-08-10 09:19:44
 categories: Python
-tags: [python, numpy, max, argmax]
+tags: [Python, numpy, max, argmax]
 ---
 
-实际工程中发现，python做for循环非常缓慢，因此转换成numpy再找效率高很多。numpy中有两种方式可以找最大值（最小值同理）的位置。
+实际工程中发现，Python做for循环非常缓慢，因此转换成numpy再找效率高很多。numpy中有两种方式可以找最大值（最小值同理）的位置。
 
 <!--more-->
 
@@ -14,7 +14,7 @@ tags: [python, numpy, max, argmax]
 
 通过np.max()找矩阵的最大值，再通过np.where获得最大值的位置，测试如下：
 
-```python
+```Python
 a = np.random.randint(10, 100, size=9)
 a = a.reshape((3,3))
 print(a)
@@ -24,7 +24,7 @@ print(r,c)
 
 输出：
 
-```python
+```Python
 [[77 54 16]
  [93 96 43]
  [92 78 88]]
@@ -37,7 +37,7 @@ print(r,c)
 
 np.argmax可以直接返回最大值的索引，不过索引值是一维的，需要做一下处理得到其在二维矩阵中的位置。
 
-```python
+```Python
 a = np.random.randint(10, 100, size=9)
 a = a.reshape((3,3))
 print(a)
@@ -49,7 +49,7 @@ print(r, c)
 
 输出：
 
-```python
+```Python
 [[42 86 40]
  [63 36 77]
  [38 60 98]]

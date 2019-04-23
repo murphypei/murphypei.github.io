@@ -3,7 +3,7 @@ title: MXNet框架学习（1）：MXNet安装和NDArray
 date: 2018-08-21 12:02:41
 update: 2018-08-21 12:02:41
 categories: 深度学习
-tags: [深度学习, MXNet, python]
+tags: [深度学习, MXNet, Python]
 ---
 
 最近开始学习MXNet框架的使用，看到一篇较好的入门[英文博客](https://becominghuman.ai/an-introduction-to-the-mxnet-api-part-1-848febdcf8ab)，讲解的很实用，推荐看原文，基本读完可以上手试试模型了，因此觉得非常不错，就想翻译一遍做个记录，也方便其他新手。
@@ -48,7 +48,7 @@ source ~/.bashrc
 
 **再次强调，个人经验，多看官网的那个安装指南的PDF文件，而不是去网上找乱七八糟的教程！！！**
 
-### 1.2 安装MXNet-python
+### 1.2 安装MXNet-Python
 
 这里只推荐一种方法，virtualenv和pip，具体怎么操作看MXNet官网，说的很明白了。注意，`pip install`需要制定cuda的版本，比如`pip install mxnet-cu80`这种。
 ```sh

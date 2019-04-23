@@ -3,7 +3,7 @@ title: 在 virtualenv 中安装 dmlc-tensorboard 的坑
 date: 2019-03-28 11:17:56
 update: 2019-03-28 11:17:56
 categories: [Linux]
-tags: [dmlc, tensorboard, python, virtualenv]
+tags: [dmlc, tensorboard, Python, virtualenv]
 mathjax: false
 ---
 
@@ -23,7 +23,7 @@ mathjax: false
     * 是的，你没看错，为了万无一失，连 bazel 也删除了，如果你的 bazel 不是用户安装，也就是不在这个位置，那就去相应的位置删除
 * `rm -rf dmlc-tensorboard`
     * 为了防止以前编译的 tensorflow 有问题，你最好连下载的 dmlc-tensorboard 都删除了
-    * 如果实在不想删除源码，建议至少清除恢复，特别是不同版本 python 编译的时候，更是必须的
+    * 如果实在不想删除源码，建议至少清除恢复，特别是不同版本 Python 编译的时候，更是必须的
         * `git reset --hard HEAD && git clean -fd`
 
 ## 安装准备
@@ -31,9 +31,9 @@ mathjax: false
 * 安装 bazel
     * `chmod +x bazel-0.6.1-installer-linux-x86_64.sh && ./bazel-0.6.1-installer-linux-x86_64.sh --user`
     * 建议 0.6.1 这个版本，我实测没问题，直接下载 bazel-0.6.1-installer-linux-x86_64.sh 这个文件，执行上述命令即可，使用用户安装
-* 安装 python 依赖
+* 安装 Python 依赖
     * `sudo apt install python2-dev && sudo apt install python3-dev`
-    * 这一步在很多 ubuntu 系统是必须的，特别是 python3 环境，因为没有安装 python3-dev，因此编译 tensorflow 的时候会报 `Python.h` 找不到的错误，网上解释了一堆，其实都是因为这个开发包没安装而已。
+    * 这一步在很多 ubuntu 系统是必须的，特别是 Python3 环境，因为没有安装 Python3-dev，因此编译 tensorflow 的时候会报 `python.h` 找不到的错误，网上解释了一堆，其实都是因为这个开发包没安装而已。
 * 设置环境变量
     * `export PYTHON_BIN_PATH=~/.virtualenv/py3/bin/python`
     * `export PYTHON_LIB_PATH=~/.virtualenvs/py3/lib/python3.5/site-packages/`
@@ -50,10 +50,10 @@ mathjax: false
 
 ### 注意事项
 
-* python2 和 python3 的 tensorboard 需要分开（最好这样），或者每次都要清除 tensorboard 文件夹，因为编译出来的安装文件不一样
+* Python2 和 Python3 的 tensorboard 需要分开（最好这样），或者每次都要清除 tensorboard 文件夹，因为编译出来的安装文件不一样
 * virtualenv 有一个 bug，安装完之后需要修改 tensorboard 的可执行文件 `~/.virtualenvs/py3/bin/tensorboard` 中的 `FindModuleSpace` 函数
 
-```python
+```Python
  # Find the runfiles tree
  def FindModuleSpace():
    # Follow symlinks, looking for my module space

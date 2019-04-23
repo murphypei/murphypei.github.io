@@ -59,7 +59,7 @@ net/rpc包实现了最基本的rpc调用，它默认通过HTTP协议传输gob数
 
 * net/rpc/jsonrpc
 
-net/rpc/jsonrpc包实现了JSON-RPC协议，即实现了net/rpc包的ClientCodec接口与ServerCodec，增加了对json数据的序列化与反序列化来取代gob格式的数据，使得调用更加具有通用性，可以使用python等利用http请求，直接发送json字符串来调用服务器上的应用程序。
+net/rpc/jsonrpc包实现了JSON-RPC协议，即实现了net/rpc包的ClientCodec接口与ServerCodec，增加了对json数据的序列化与反序列化来取代gob格式的数据，使得调用更加具有通用性，可以使用Python等利用http请求，直接发送json字符串来调用服务器上的应用程序。
 
 ## Go中的JSON-RPC示例
 
