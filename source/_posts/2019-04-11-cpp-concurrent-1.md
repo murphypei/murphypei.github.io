@@ -1,5 +1,5 @@
 ---
-title: C++11 并发编程系列（一）：多线程初探（thread）
+title: C++11 并发编程系列(一)：多线程初探(thread)
 date: 2019-04-11 16:57:19
 update: 2019-04-11 16:57:19
 categories: C++

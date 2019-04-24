@@ -1,5 +1,5 @@
 ---
-title: C++11 并发编程系列（四）：异步操作（future）
+title: C++11 并发编程系列(四)：异步操作(future)
 date: 2019-04-23 09:37:04
 update: 2019-04-23 09:37:04
 categories: C++

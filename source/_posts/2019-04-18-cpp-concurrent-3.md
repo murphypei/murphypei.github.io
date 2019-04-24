@@ -1,5 +1,5 @@
 ---
-title: C++11 并发编程系列（三）：条件变量（condition_variable）
+title: C++11 并发编程系列(三)：条件变量(condition_variable)
 date: 2019-04-18 17:58:56
 update: 2019-04-18 17:58:56
 categories: C++
