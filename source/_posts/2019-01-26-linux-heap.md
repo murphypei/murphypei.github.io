@@ -577,7 +577,7 @@ malloc_init_state (mstate av)
 
 然后回答第二个问题。此类型的“chunk”用于提高连续`malloc(small chunk`)的效率，主要是提高内存分配的局部性。那么具体是怎么提高局部性的呢？举例说明。当用户请求一个`small chunk`，且该请求无法被`small bin`满足，那么就转而交由`unsorted bin`处理。同时，假设当前`unsorted bin`中只有一个“chunk”的话——就是`last remainder chunk`，那么就将该“chunk”分成两部分：前者分配给用户，剩下的部分放到`unsorted bin`中，并成为新的`last remainder chunk`。这样就保证了连续`malloc(small chunk`)中，各个`small chunk`在内存分布中是相邻的，即提高了内存分配的局部性。
 
-**本文参考链接：**
+#### 参考资料
 
 * [Understanding glibc的malloc](https://sploitfun.wordpress.com/2015/02/10/understanding-glibc-malloc/comment-page-1/)
 * [Syscalls used by malloc](https://sploitfun.wordpress.com/2015/02/11/syscalls-used-by-malloc/)

@@ -272,7 +272,7 @@ target_link_libraries(client_target PUBLIC my_library)
 
 这样就能够自动地寻找合适版本的库进行链接。
 
-**本文相关参考：**
+#### 参考资料
 
 * 本文翻译自： https://foonathan.net/blog/2016/03/03/cmake-install.html
 * 项目的源码地址： https://github.com/foonathan/memory

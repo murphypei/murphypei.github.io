@@ -39,6 +39,6 @@ hexo clean
 hexo g
 ```
 
-本文参考：
+#### 参考资料
 
 * http://xiaofeima1990.github.io/2018/05/18/solve-mathjax-display%20in%20next/

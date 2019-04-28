@@ -114,7 +114,7 @@ Scrapy-Redis是一个基于Redis的Scrapy分布式组件。它利用Redis对用�
 
 **我的参考项目**： https://github.com/ChaoPei/meizitu_distribute_crawler
 
-### 参考
+#### 参考资料
 
 * [Redis命令参考](http://doc.redisfans.com/)
 * [xpath语法](http://www.w3school.com.cn/xpath/xpath_syntax.asp)

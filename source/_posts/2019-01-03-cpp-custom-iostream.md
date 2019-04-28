@@ -257,4 +257,6 @@ while(tcpInOut >> c) {
 
 也就是将服务端发送过来的字母全部转为大写并发送回去。
 
-本文参考：http://kaiyuan.me/2017/06/22/custom-streambuf/
+#### 参考资料
+
+* http://kaiyuan.me/2017/06/22/custom-streambuf/

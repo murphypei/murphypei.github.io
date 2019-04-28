@@ -282,7 +282,7 @@ Python的gc模块采用了分代回收方法，将对象根据存活的时间分
 
 本文整理了网络相关的博客，对Python中的内存管理基本情况进行了总结，对于Python基本的内存对象机制进行了说明，有利于更好的理解Python程序的执行，同时在日常编写Python程序时防止内存泄漏等缺陷。
 
-**相关参考：**
+#### 参考资料
 
 [Python内存管理](https://chenrudan.github.io/blog/2016/04/23/Pythonmemorycontrol.html)
 

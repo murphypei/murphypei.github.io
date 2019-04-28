@@ -51,7 +51,7 @@ mathjax: false
 ### 注意事项
 
 * Python2 和 Python3 的 tensorboard 需要分开（最好这样），或者每次都要清除 tensorboard 文件夹，因为编译出来的安装文件不一样
-* virtualenv 有一个 bug，安装完之后需要修改 tensorboard 的可执行文件 `~/.virtualenvs/py3/bin/tensorboard` 中的 `FindModuleSpace` 函数
+* virtualenv 有一个 bug，安装完之后需要修改 tensorboard 的可执行文件 `~/.virtualenvs/py2/bin/tensorboard` 中的 `FindModuleSpace` 函数
 
 ```Python
  # Find the runfiles tree

@@ -241,7 +241,7 @@ Bagging和Boosting的区别：
 * Bagging：各个预测函数可以并行生成
 * Boosting：各个预测函数只能顺序生成，因为后一个模型参数需要前一轮模型的结果。
 
-**参考文献：**
+#### 参考资料
 
 * https://www.jianshu.com/p/708dff71df3a
 * http://www.cnblogs.com/pinard/p/6156009.html

@@ -184,7 +184,7 @@ delete pAa;
 
 总的来说，记住一点即可：`new`和`delete`、`new []`和`delete []` 要配套使用总是没错的！
 
-**参考资料：**
+#### 参考资料
 
 * https://www.cnblogs.com/hazir/p/`new`_and_`delete`.html
 * C++ primer 5th

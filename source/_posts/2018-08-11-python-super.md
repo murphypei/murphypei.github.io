@@ -191,7 +191,7 @@ B.spam
 * Ppthon2super调用 super（开始类名，self）.函数名()
 * Python3  super().函数名（）
 
-**参考：**
+#### 参考资料
 
 * [Python3官方文档](http://Python3-cookbook.readthedocs.io/zh_CN/latest/c08/p07_calling_method_on_parent_class.html)
 * https://mozillazg.com/2016/12/Python-super-is-not-as-simple-as-you-thought.html
