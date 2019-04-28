@@ -1,5 +1,5 @@
 ---
-title: jupyter设置多个虚拟环境的kernel
+title: jupyter 设置多个虚拟环境的 kernel
 date: 2019-01-11 09:19:44
 update: 2019-01-11 09:19:44
 categories: Python
