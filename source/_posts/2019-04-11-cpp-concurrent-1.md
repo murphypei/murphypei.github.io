@@ -65,7 +65,7 @@ print in new thread: Hello World!
 print in main thread: Changed
 ```
 
-可以看到，我们创建了一个线程，然后传入一个 `std::string` 的引用，因为函数声明的参数是一个引用，所以在这里，我们必须通过 `std::ref` 将引用传进去，具体可以参考[C++11的std::ref用法](https://chaopei.github.io/blog/2019/04/cpp-std-ref.html)。在子线程中我们改变了这个字符串，然后调用 `join()` 等待子线程完成，在主线程中打印可以看到字符串已经被改变。这就是线程的基本用法。
+可以看到，我们创建了一个线程，然后传入一个 `std::string` 的引用，因为函数声明的参数是一个引用，所以在这里，我们必须通过 `std::ref` 将引用传进去，具体可以参考[C++11的std::ref用法](https://murphypei.github.io/blog/2019/04/cpp-std-ref.html)。在子线程中我们改变了这个字符串，然后调用 `join()` 等待子线程完成，在主线程中打印可以看到字符串已经被改变。这就是线程的基本用法。
 
 ### thread 详解
 

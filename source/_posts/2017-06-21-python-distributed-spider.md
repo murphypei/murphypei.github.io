@@ -112,7 +112,7 @@ Scrapy-Redis是一个基于Redis的Scrapy分布式组件。它利用Redis对用�
 
 对于布置分布式爬虫，也很简单。不要一上来就分什么主从服务器什么的，就记住一点，需要有一台机器装有Redis数据库，并且所有其余的机器都要能够访问这个数据库。然后在你想跑爬虫程序的机器上，都拷贝一份代码，包括装有Redis数据库的也可以，然后运行就完事了。对于主从服务器什么的而言，一般是为了性能上的考虑。
 
-**我的参考项目**： https://github.com/ChaoPei/meizitu_distribute_crawler
+**我的参考项目**： https://github.com/murphypei/meizitu_distribute_crawler
 
 #### 参考资料
 

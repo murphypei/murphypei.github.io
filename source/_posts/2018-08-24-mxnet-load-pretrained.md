@@ -6,7 +6,7 @@ categories: 深度学习
 tags: [深度学习, MXNet, Python, pretrained]
 ---
 
-在[MXNet框架学习（3）]((https://chaopei.github.io/blog/2018/08/mxnet-module.html))中，我们构建并训练了第一个神经网络，这篇文章我们学习如何加载和使用一个已有模型。
+在[MXNet框架学习（3）]((https://murphypei.github.io/blog/2018/08/mxnet-module.html))中，我们构建并训练了第一个神经网络，这篇文章我们学习如何加载和使用一个已有模型。
 
 <!--more-->
 

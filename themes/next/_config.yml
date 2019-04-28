@@ -160,8 +160,8 @@ site_state: true
 # Value before `||` delimeter is the target permalink.
 # Value after `||` delimeter is the name of FontAwesome icon. If icon (with or without delimeter) is not specified, globe icon will be loaded.
 social:
-  GitHub: https://github.com/ChaoPei || github
-  E-Mail: mailto:peichao0118@gmail.com || envelope
+  GitHub: https://github.com/murphypei || github
+  E-Mail: mailto:murphypei47@gmail.com || envelope
   #Google: https://plus.google.com/yourname || google
   #Twitter: https://twitter.com/yourname || twitter
   #FB Page: https://www.facebook.com/yourname || facebook
@@ -511,8 +511,8 @@ gitment:
   lazy: false # Comments lazy loading with a button
   cleanly: true # Hide 'Powered by ...' on footer, and more
   language: zh-CN # Force language, or auto switch by theme
-  github_user: ChaoPei # MUST HAVE, Your Github Username
-  github_repo: ChaoPei.github.io # MUST HAVE, The name of the repo you use to store Gitment comments
+  github_user: murphypei # MUST HAVE, Your Github Username
+  github_repo: murphypei.github.io # MUST HAVE, The name of the repo you use to store Gitment comments
   client_id: 801a88393eb4742ee3d2 # MUST HAVE, Github client id for the Gitment
   client_secret: c2761152996f876442c6de88de547b2fd742bd06 # EITHER this or proxy_gateway, Github access secret token for the Gitment
   proxy_gateway: # Address of api proxy, See: https://github.com/aimingoo/intersect
