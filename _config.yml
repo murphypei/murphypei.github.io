@@ -7,13 +7,13 @@ title: 拾荒志
 subtitle: 虚怀若谷，大智若愚
 description: 虚怀若谷，大智若愚
 keywords:
-author: Chao Pei
+author: Murphy
 language: zh-CN # 修改语言环境为简体汉字
 timezone: Asia/Shanghai
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: https://ChaoPei.github.io/
+url: https://murphypei.github.io/
 root: /
 permalink: /blog/:year/:month/:title.html
 permalink_defaults:
@@ -90,7 +90,7 @@ theme: next
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repository: https://github.com/ChaoPei/ChaoPei.github.io.git
+  repository: https://github.com/murphypei/murphypei.github.io.git
   branch: master
 
 # 设置头像
