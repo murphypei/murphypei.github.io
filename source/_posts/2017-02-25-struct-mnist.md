@@ -1,12 +1,12 @@
 ---
-title: Python操作字节流以及Struct模块简易教程（MNIST为例）
+title: Python 操作字节流以及 struct 模块简易教程
 date: 2017-02-25
 update: 2018-04-12
 categories: Python
 tags: [Python, 字节, mnist, struct]
 ---
 
-在编程中，对于数据操作最常见的就是字符流和字节流操作，本文以解析MNIST数据集为例，对 Python 中如何操作字节流进行总结
+在编程中，对于数据操作最常见的就是字符流和字节流操作，本文以解析 MNIST 数据集为例，对 Python 中如何操作字节流进行总结。
 
 <!--more-->
 
@@ -60,7 +60,7 @@ offset = calcsize(fmt)
 * P 用来转换一个指针，其长度和机器字长相关
 * 最后一个可以用来表示指针类型的，占 4 个字节
 
-为了同 C 中的结构体交换数据，还要考虑有的 C/C++ 编译器使用了字节对齐，通常是以 4 个字节为单位的 32 位系统，故而 struct 根据本地机器字节顺序转换.可以用格式中的第一个字符来改变对齐方式.定义如下：
+为了同 C 中的结构体交换数据，还要考虑有的 C/C++ 编译器使用了字节对齐，通常是以 4 个字节为单位的 32 位系统，故而 struct 根据本地机器字节顺序转换。可以用格式中的第一个字符来改变对齐方式。定义如下：
 
 |Character|	Byte order|	Size and alignment|
 | :---: | :---: | :---: |
@@ -90,9 +90,6 @@ train-labels.idx1-ubyte
 
 """
 解析MNIST数据集的IDX格式文件
-
-author = peic
-
 """
 import scipy.misc
 import numpy as np
@@ -116,7 +113,6 @@ test_labels_idx_ubyte_file = 't10k-labels.idx1-ubyte'
 
 save_test_images_path = "test_images"
 save_test_labels_file = "test_labels.txt"
-
 
 
 def decode_idx3_ubyte(idx3_ubyte_file, save_path):
