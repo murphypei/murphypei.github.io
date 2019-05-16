@@ -12,7 +12,7 @@ tags: [C++, 阿里巴巴, 实习生, 编程测试]
 
 ### 题目要求：
 
-小明在工作中需要为一种编码格式编写解码程序。这种编码格式会将整数0到1114111编码成1-4个字节
+小明在工作中需要为一种编码格式编写解码程序。这种编码格式会将整数 0 到 1114111 编码成 1-4 个字节：
 
 | 数值范围（十进制） | 编码（二进制） |
 | :---: | :---: |
@@ -23,8 +23,8 @@ tags: [C++, 阿里巴巴, 实习生, 编程测试]
 
 这个题目的意思是：
 
-* 0~127可以用7位二进制来表示，然后前面加个0
-* 128~2047可以用11位二进制表示（11位二进制最大表示2047），然后将前5位前面加上110，后6位前面加上10，再将二者组合成一个字符串。
+* 0~127 可以用 7 位二进制来表示，然后前面加个 0
+* 128~2047 可以用 11 位二进制表示（11 位二进制最大表示 2047），然后将前 5 位前面加上 110，后 6 位前面加上 10，再将二者组合成一个字符串。
 * 依次类推....
 
 代码的思路还是比较简单的，将输入的字符串表示的数字用二进制表示出来，然后加上相应的标识就行了。
@@ -48,69 +48,69 @@ using namespace std;
 /** 当然，你也可以不按照这个模板来作答，完全按照自己的想法来 ^-^  **/
 string Decode(string in)
 {
-	// 将输入字符串转换为数字，检查输入是否有效
-	int num = 0;
-	try
-	{
-		num = stoi(in);
-	}
-	catch (invalid_argument)
-	{
-		cerr << "Invalid_argument !" << endl;
-		return "-1";
-	}
+    // 将输入字符串转换为数字，检查输入是否有效
+    int num = 0;
+    try
+    {
+        num = stoi(in);
+    }
+    catch (invalid_argument)
+    {
+        cerr << "Invalid_argument !" << endl;
+        return "-1";
+    }
 
-	if (num > 1114111 || num < 0)
-	{
-		cerr << "The number is not in range !" << endl;
-	}
-	
-	bitset<32> t = num;
-	string bs = t.to_string();
+    if (num > 1114111 || num < 0)
+    {
+        cerr << "The number is not in range !" << endl;
+    }
+    
+    bitset<32> t = num;
+    string bs = t.to_string();
 
-	string result = "";
-	if (num <= 127)
-	{
-		string t = bs.substr(bs.length() - 7, 7);
-		result = "0" + t;
-	}
-	else if (num <= 2047)
-	{
-		string t1 = bs.substr(bs.length() - 11, 5);
-		string t2 = bs.substr(bs.length() - 6, 6);
-		result = "110" + t1 + "10" + t2;
-	}
-	else if (a <= 65535)
-	{
-		string t1 = bs.substr(bs.length() - 16, 4);
-		string t2 = bs.substr(bs.length() - 12, 6);
-		string t3 = bs.substr(bs.length() - 6, 6);
-		result = "1110" + t1 + "10" + t2 + "10" + t3;
-	}
-	else
-	{
-		string t1 = bs.substr(bs.length() - 21, 3);
-		string t2 = bs.substr(bs.length() - 18, 6);
-		string t3 = bs.substr(bs.length() - 12, 6);
-		string t4 = bs.substr(bs.length() - 6, 6);
-		result = "11110" + t1 + "10" + t2 + "10" + t3 + "10" + t4;
-	}
+    string result = "";
+    if (num <= 127)
+    {
+        string t = bs.substr(bs.length() - 7, 7);
+        result = "0" + t;
+    }
+    else if (num <= 2047)
+    {
+        string t1 = bs.substr(bs.length() - 11, 5);
+        string t2 = bs.substr(bs.length() - 6, 6);
+        result = "110" + t1 + "10" + t2;
+    }
+    else if (a <= 65535)
+    {
+        string t1 = bs.substr(bs.length() - 16, 4);
+        string t2 = bs.substr(bs.length() - 12, 6);
+        string t3 = bs.substr(bs.length() - 6, 6);
+        result = "1110" + t1 + "10" + t2 + "10" + t3;
+    }
+    else
+    {
+        string t1 = bs.substr(bs.length() - 21, 3);
+        string t2 = bs.substr(bs.length() - 18, 6);
+        string t3 = bs.substr(bs.length() - 12, 6);
+        string t4 = bs.substr(bs.length() - 6, 6);
+        result = "11110" + t1 + "10" + t2 + "10" + t3 + "10" + t4;
+    }
 
-	return result;
+    return result;
 }
 
 int main()
 {
 
-	string res;
+    string res;
 
-	string _in;
-	getline(cin, _in);
+    string _in;
+    getline(cin, _in);
 
-	res = Decode(_in);
-	cout << res << endl;
+    res = Decode(_in);
+    cout << res << endl;
 
-	getchar();
-	return 0;
+    getchar();
+    return 0;
 }
 ```
