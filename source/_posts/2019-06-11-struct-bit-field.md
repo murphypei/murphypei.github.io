@@ -83,7 +83,7 @@ struct stuff
 
 `field1` + `field2` = 34 Bits，超出 32 Bits, 编译器会将 `field2` 移位至下一个 unsigned int 单元存放， `stuff.field1` 和 `stuff.field2` 之间会留下一个 2 Bits 的空隙， `stuff.field3` 紧跟在 `stuff.field2` 之后，该结构现在大小为 2 * 32 = 64 Bits。
 
-这个空洞可以用之前提到的未命名的位域成员填充，我们也可以**使用一个宽度为 0 的未命名位域成员令下一位域成员与下一个整数对齐**，这个用法很常用，也就是将前后两个位域成员分开存在不同的基本类型内存中。例如:
+这个空洞可以用之前提到的未命名的位域成员填充，我们也可以**使用一个宽度为 0 的未命名位域成员令下一位域成员与下一个整数对齐**，这个用法很常用，也就是**将前后两个位域成员分开存在不同的基本类型内存中**。例如:
 
 ```c++
 struct stuff 
@@ -97,6 +97,8 @@ struct stuff
 ```
 
 这里 `stuff.field1` 与 `stuff.field2` 之间有一个 2 Bits 的空隙，`stuff.field3` 则存储在下一个 unsigned int 中，该结构现在大小为 3 * 32 = 96 Bits。
+
+这个用法是非常常见的，特别是高性能的 cache 友好设计中，解决 cache 伪共享问题，关于 cache 相关，可以参阅[这篇文章](http://www.broadview.com.cn/article/347)。
 
 ## 位域的初始化和位的重映射
 
