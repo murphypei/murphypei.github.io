@@ -345,7 +345,7 @@ chunk 原意是块，用在内存中表示的意思就是一块内存。
 * 均为 *free chunk*。
 * 同一个链表中各个 *chunk* 的大小相等（有一个特例，详情见后文）。
 
- *bin* 作为一种记录 *free chunk* 的链表数据结构。系统针对不同大小的 *free chunk* ，将 *bin* 分为了 4 类：
+*bin* 作为一种记录 *free chunk* 的链表数据结构。系统针对不同大小的 *free chunk* ，将 *bin* 分为了 4 类：
 
 * *fast bin*
 * *unsorted bin*
@@ -364,7 +364,7 @@ chunk 原意是块，用在内存中表示的意思就是一块内存。
 
 #### fast bin
 
- *fast bin* 是指 *fast chunk* 的链表，而 *fast chunk* 是指那些 16 到 80 字节的 *chunk*。为了便于后文描述，这里对 *chunk* 大小做如下约定：
+*fast bin* 是指 *fast chunk* 的链表，而 *fast chunk* 是指那些 16 到 80 字节的 *chunk*。为了便于后文描述，这里对 *chunk* 大小做如下约定：
 
 * 只要说到 *chunk size* ，那么就表示该 *chunk* 的实际整体大小。
 * 而说到 *chunk unused size*，就表示该 *chunk* 中刨除诸如 `prev_size`，`size`，`fd`和`bk`这类辅助成员之后的实际可用的大小。因此，对 *free chunk* 而言，其实际可用大小总是比实际整体大小少16字节。

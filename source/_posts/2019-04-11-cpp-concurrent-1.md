@@ -65,7 +65,7 @@ print in new thread: Hello World!
 print in main thread: Changed
 ```
 
-可以看到，我们创建了一个线程，然后传入一个 `std::string` 的引用，因为函数声明的参数是一个引用，所以在这里，我们必须通过 `std::ref` 将引用传进去，具体可以参考[C++11的std::ref用法](https://murphypei.github.io/blog/2019/04/cpp-std-ref.html)。在子线程中我们改变了这个字符串，然后调用 `join()` 等待子线程完成，在主线程中打印可以看到字符串已经被改变。这就是线程的基本用法。
+可以看到，我们创建了一个线程，然后传入一个 `std::string` 的引用，因为函数声明的参数是一个引用，所以在这里，我们必须通过 `std::ref` 将引用传进去，具体可以参考 [C++11 的 std::ref 用法](https://murphypei.github.io/blog/2019/04/cpp-std-ref.html)。在子线程中我们改变了这个字符串，然后调用 `join()` 等待子线程完成，在主线程中打印可以看到字符串已经被改变。这就是线程的基本用法。
 
 ### thread 详解
 
@@ -83,7 +83,7 @@ print in main thread: Changed
 * 拷贝构造函数(被禁用)，意味着 thread 不可被拷贝构造。
 * move 构造函数，move 构造函数，调用成功之后 `x` 不代表任何 thread 执行对象。
 
-**线程对象可以被 move，但是不能被拷贝**。而对于 move 赋值操作，如果当前对象不可 joinable，需要传递一个右值引用给 move 赋值操作；如果当前对象可被 joinable，则 `terminate()` 报错。关于线程是否 joinable，可以通过调用 `joinable()` 来获得，更多关于 joinable 的资料，可以参考[std::thread::joinable](http://www.cplusplus.com/reference/thread/thread/joinable/)
+**线程对象可以被 move，但是不能被拷贝**。而对于 move 赋值操作，如果当前对象不可 joinable，需要传递一个右值引用给 move 赋值操作；如果当前对象可被 joinable，则 `terminate()` 报错。关于线程是否 joinable，可以通过调用 `joinable()` 来获得，更多关于 joinable 的资料，可以参考 [std::thread::joinable](http://www.cplusplus.com/reference/thread/thread/joinable/)
 
 注意：可被 joinable 的 thread 对象必须在他们销毁之前被主线程 `join` 或者将其设置为 `detached`。
 
