@@ -102,7 +102,7 @@ footer:
 canonical: true
 
 # Change headers hierarchy on site-subtitle (will be main site description) and on all post/pages titles for better SEO-optimization.
-seo: false
+seo: true
 
 # If true, will add site-subtitle to index page, added in main hexo config.
 # subtitle: Subtitle
@@ -513,8 +513,8 @@ gitment:
   language: zh-CN # Force language, or auto switch by theme
   github_user: murphypei # MUST HAVE, Your Github Username
   github_repo: murphypei.github.io # MUST HAVE, The name of the repo you use to store Gitment comments
-  client_id: 801a88393eb4742ee3d2 # MUST HAVE, Github client id for the Gitment
-  client_secret: c2761152996f876442c6de88de547b2fd742bd06 # EITHER this or proxy_gateway, Github access secret token for the Gitment
+  client_id: e14928c5d4e586a1be33 # MUST HAVE, Github client id for the Gitment
+  client_secret: b58488475e69824177de7fa4e52325a0de1dbdb7 # EITHER this or proxy_gateway, Github access secret token for the Gitment
   proxy_gateway: # Address of api proxy, See: https://github.com/aimingoo/intersect
   redirect_protocol: # Protocol of redirect_uri with force_redirect_protocol when mint enabled
 
@@ -628,7 +628,7 @@ rating:
 # Show number of visitors to each article.
 # You can visit https://leancloud.cn get AppID and AppKey.
 leancloud_visitors:
-  enable: true
+  enable: false
   app_id: P93z3X0rIIyBnzDrvVgyoOn3-gzGzoHsz
   app_key: 678MApxYeVRUvRDxIR4KqnVr #<app_key>
   # Dependencies: https://github.com/theme-next/hexo-leancloud-counter-security
@@ -650,7 +650,7 @@ firestore:
 # Show Views/Visitors of the website/page with busuanzi.
 # Get more information on http://ibruce.info/2015/04/04/busuanzi/
 busuanzi_count:
-  enable: false
+  enable: true
   total_visitors: true
   total_visitors_icon: user
   total_views: true

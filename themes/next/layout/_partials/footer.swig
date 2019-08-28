@@ -53,7 +53,7 @@
 {% if theme.footer.theme.enable %}
   <div class="theme-info">
   {{ __('footer.theme') }} -
-  <a class="theme-link" href="https://github.com/murphypei/hexo-next-theme">
+  <a class="theme-link" href="https://github.com/theme-next/hexo-theme-next">
     NexT.{{ theme.scheme }}
   </a>
 {% endif %}
