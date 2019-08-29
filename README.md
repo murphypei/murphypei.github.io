@@ -1,6 +1,3 @@
 ## Hexo-Blog
 
-使用Hexo模板和NexT主题搭建的个人github主页
-
-* Hexo: v3.7.0
-* NexT: v6.1
+使用 Hexo 模板和 NexT 主题搭建的个人博客主页
