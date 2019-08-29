@@ -93,9 +93,6 @@ deploy:
   repository: https://github.com/murphypei/murphypei.github.io.git
   branch: master
 
-# 设置头像
-avatar: /images/title_favicon_128.ico
-
 # hexo sitemap网站地图
 sitemap:
   path: sitemap.xml
@@ -104,18 +101,25 @@ baidusitemap:
 
 plugins: hexo-generate-feed
 
-# Live2D
-# live2d:
-#   model: z16 # 模型名称 默认值: z16
-#   width: 100 # 宽度 默认值: 150
-#   height: 200 # 高度 默认值: 300
-#   scaling: 1 # 分辨率缩放倍率 默认值: 2
-#   opacityDefault: 0.7 # 初始的透明度 默认值: 0.7
-#   opacityHover: 1 # 鼠标悬浮时的透明度 默认值: 1
-#   mobileShow: true # 是否在移动设备上显示 默认值: true
-#   mobileScaling: 0.5 # 移动设备缩放倍率 默认值: 0.5
-#   position: right # 模型左右侧放置位置 默认值: right
-#   horizontalOffset: 0 # 元素的水平偏移 默认值: 0
-#   verticalOffset: -20 # 元素的底部偏移 默认值: -20
-#   id: live2dcanvas # 元素的id 默认值: live2dcanvas
-#   deviceJsSource: local # current-device 脚本的来源 默认值: local
+live2d:
+  enable: true
+  scriptFrom: local
+  pluginRootPath: live2dw/
+  pluginJsPath: lib/
+  pluginModelPath: assets/
+  tagMode: false
+  log: false
+  model:
+    use: live2d-widget-model-haru/01  # 修改：npm install 模型的包名
+  display:
+    position: left
+    width: 200
+    height: 350
+  mobile:
+    show: false
+
+# live2d-widget-model-haru模型需要安装npm install live2d-widget-model-haru
+# 在使用的时候，live2d-widget-model-haru有两个模型，所以在使用的时候，是这样的：
+# use: live2d-widget-model-haru/01 或者
+# use: live2d-widget-model-haru/02
+# 01和02的json文件是空的，所以需要把live2d-widget-model-haru文件夹下的json文件复制进去
