@@ -25,6 +25,7 @@
     "hexo-renderer-mathjax": "^0.6.0",
     "hexo-renderer-stylus": "^0.3.1",
     "hexo-server": "^0.2.0",
+    "hexo-symbols-count-time": "^0.6.1",
     "live2d-widget-model-haru": "^1.0.5",
     "live2d-widget-model-z16": "^1.0.5"
   }

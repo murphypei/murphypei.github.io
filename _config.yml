@@ -113,8 +113,8 @@ live2d:
     use: live2d-widget-model-haru/01  # 修改：npm install 模型的包名
   display:
     position: left
-    width: 200
-    height: 350
+    width: 250
+    height: 400
   mobile:
     show: false
 
@@ -123,3 +123,10 @@ live2d:
 # use: live2d-widget-model-haru/01 或者
 # use: live2d-widget-model-haru/02
 # 01和02的json文件是空的，所以需要把live2d-widget-model-haru文件夹下的json文件复制进去
+
+# 文章字数和阅读时间统计
+symbols_count_time:
+  symbols: true
+  time: true
+  total_symbols: true
+  total_time: true

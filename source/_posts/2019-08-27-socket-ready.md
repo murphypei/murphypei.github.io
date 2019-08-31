@@ -1,16 +1,16 @@
 ---
-title: socket 读写就绪条件
+title: Socket 读写就绪条件
 date: 2019-08-27 15:07:38
 update: 2019-08-27 15:07:38
 categories: [Linux]
 tags: [Linux, socket, read, write, unix]
 ---
 
-关于 socket 的读写就绪条件。
+关于 Socket 的读写就绪条件。
 
 <!-- more -->
 
-我们知道 socket 读写都是有缓冲区，而且读写时阻塞的，因此通常用 I/O 多路复用来监听多个 socket 的就绪。这个就绪是十分有意思的，内核是如何得知某个 socket 就绪了呢？引用《Unix网络编程》中的解释：
+我们知道 Socket 读写都是有缓冲区，而且读写时阻塞的，因此通常用 I/O 多路复用来监听多个 Socket 的就绪。这个就绪是十分有意思的，内核是如何得知某个 Socket 就绪了呢？引用《Unix网络编程》中的解释：
 
 当满足下列条件之一时，一个套接字准备好读：
 
