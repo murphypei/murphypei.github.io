@@ -25,13 +25,13 @@ mathjax: true
 * 结合 DetNet 的经验，以 ShuffleNet V2 轻量化骨架为蓝本针对检测任务的特性设计了 SNet 网络作为检测骨架。
 * detection 部分则是对 RPN 网络和 prediction head 进行了压缩，同时为了弥补压缩带来的网络表现力的损失引入了 context enhancement module 结合局部和全局特征来提高特征层的表达能力和 spatial attention module 引入 RPN 的前后景信息优化特征的分布。
 
-## 网络结构
+### 网络结构
 
 ThunderNet 的网络结构如下图所示：
 
 ![](/images/posts/dl/thundernet/thundernet1.png)
 
-### backbone
+#### backbone
 
 对检测任务来说，backbone 的感受野大小和对 early stage 及 later stage feature 影响很大：
 
@@ -52,17 +52,17 @@ SNet 与 ShuffleNet V2 的不同之处主要在于：
 
 ![](/images/posts/dl/thundernet/thundernet3.png)
 
-### 压缩 RPN 和 detection head
+#### 压缩 RPN 和 detection head
 
 对于 SNet 来说，现有的 RPN 和 detection head 太重了，因此作者在 light head R-CNN 的基础上将 **RPN** 的 256 通道 3x3 卷积替换成了 5x5 depthwise + 256 通道 1x1 卷积（计算量下降 28% 但是精度几乎没影响）。anchor 生成包含5种大小（32²，64²，128²，256²，512²​​​​）和 5 种长宽比（1:2，3:4，1:1，4:3，2:1）。此外使用 **PSRoI align** 进行 RoI warping，并且将输出的 channel 从 10 削减一半到 5，输出 feature map 尺寸为 7x7x5；而 PSRoI align 之后的输出只有 245d（7x7x5），因此再添加一个 1024d 的 fc。
 
-### Context enhancement module(CEM)
+#### Context enhancement module(CEM)
 
 CEM 可以看做是一个简单的单层 FPN：即将多尺度的局部特征和全局特征进行整合。在 CEM 中合并的特征层为 C4，C5 和 Cglb，并且是由1x1卷积调整输出 channel 到 245，计算开销小。
 
 ![](/images/posts/dl/thundernet/thundernet4.png)
 
-### Spatial Attention Module (SAM)
+#### Spatial Attention Module (SAM)
 
 在 RoI warping 中我们期望前景的特征很强而背景的特征很弱。对于轻量网络和小输入，这个特征分布的学习就会更加困难。因此作者设计了 SAM 在 RoI warping 之前来重新 weight 特征图的分布。其核心思想是**由于 RPN 是训练用来识别前景区域，因此 RPN 的中间特征可以用来区分前景特征和背景特征，因此 SAM 引入 RPN 的信息来重新优化前后景的特征分布**。
 
@@ -80,7 +80,7 @@ $\theta$​ 函数用 1x1 卷积进行维度匹配；sigmoid 函数用于限制�
 
 ![](/images/posts/dl/thundernet/thundernet6.png)
 
-## 实验结果
+### 实验结果
 
 效果很不错，具体参见原文吧，懒得贴图了。
 
