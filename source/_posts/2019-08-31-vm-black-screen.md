@@ -2,7 +2,7 @@
 title: win10 虚拟机黑屏卡死
 date: 2019-08-31 15:07:38
 update: 2019-08-31 15:07:38
-categories: [Windows]
+categories: Windows
 tags: [Windows, vm, vmware, virtualbox]
 ---
 

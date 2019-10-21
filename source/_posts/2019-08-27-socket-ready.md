@@ -2,7 +2,7 @@
 title: Socket 读写就绪条件
 date: 2019-08-27 15:07:38
 update: 2019-08-27 15:07:38
-categories: [Linux]
+categories: Linux
 tags: [Linux, socket, read, write, unix]
 ---
 
