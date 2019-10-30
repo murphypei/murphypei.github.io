@@ -2,8 +2,8 @@
 title: CUDA 多线程并行
 date: 2019-10-30 17:47:03
 update: 2019-10-30 17:47:03
-categories: 
-tags:
+categories: C++
+tags: [cuda, kernel, simd, block, grid]
 ---
 
 cuda 中核函数执行使用多线程并行（SIMD）的方式，同时计算多个数据，因此核函数的线程管理以及相应的任务分配就显得尤为重要。
