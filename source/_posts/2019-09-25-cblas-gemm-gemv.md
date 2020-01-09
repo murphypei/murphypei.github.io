@@ -22,7 +22,7 @@ OpenBLAS 库实现成熟优化的矩阵与矩阵乘法的函数 `cblas_sgemm` �
 
 `cblas_sgemm(layout, transA, transB, M, N, K, alpha, A, LDA, B, LDB, beta, C, LDC);`
 
-- `layout`：存储格式，有行主序（`CblasRowMajor`）和列主序（`CblasRowMajor`），C/C++ 一般是行主序。
+- `layout`：存储格式，有行主序（`CblasRowMajor`）和列主序（`CblasColMajor`），C/C++ 一般是行主序。
 - `transA`：`A` 矩阵是否需要转置。
 - `transB`：`B` 矩阵是否需要转置。
 - `M`，`N`，`K`：`A` 矩阵经过 `transA` 之后的维度是 `M*K` ，`B` 矩阵经过 `transB` 之后的维度是 `K*N` ，`C` 矩阵的维度是 `M*N`。

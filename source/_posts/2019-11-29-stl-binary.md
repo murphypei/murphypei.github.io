@@ -29,15 +29,15 @@ int lower_bound(int *array, int size, int key)
     int first = 0, middle;
     int half, len;
     len = size;
-    
-    while(len > 0) 
+
+    while(len > 0)
     {
         half = len >> 1;    // half 表示待查找序列的一半长度
         middle = first + half;  // 确定待查找序列的中间位置
         // 根据比较结果，更新待查找序列
-        if(array[middle] < key) 
-        {     
-            first = middle + 1;  
+        if(array[middle] < key)
+        {
+            first = middle + 1;
             len = len-half-1;       //在右边子序列中查找
         }
         else
@@ -74,3 +74,31 @@ int upper_bound(int *array, int size, int key)
 ```
 
 回想一下，我们日常见到的二分查找都是使用两个位置变量标记一段待查找序列，STL中使用一个起始位置和长度来标记一段待查找序列，都是通过缩小待查找范围来更新，原理并没有什么不同，实现的复杂度也是类似的。
+
+这里附一个我自己平时用的二分查找的模板：
+
+```c++
+int binarySearch(int *data, int size, int target)
+{
+    int left = 0, right = size - 1;
+    while(left <= right)
+    {
+        int mid =  left + ((right - left) >> 1);
+        if (data[mid] == target)
+        {
+            return mid;
+        }
+        else if (data[mid] > target)
+        {
+            right = mid - 1;
+        }
+        else
+        {
+            left = mid + 1;
+        }
+    }
+    return -1;
+}
+```
+
+**这里要特别注意，`>>` 和 `+` 运算符有优先级，所以必须使用 `()`**。
