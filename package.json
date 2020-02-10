@@ -8,6 +8,7 @@
   "dependencies": {
     "eslint": "^5.15.0",
     "hexo": "^3.9.0",
+    "hexo-cli": "^3.1.0",
     "hexo-deployer-git": "^1.0.0",
     "hexo-deployer-heroku": "^0.1.2",
     "hexo-generator-archive": "^0.1.5",
