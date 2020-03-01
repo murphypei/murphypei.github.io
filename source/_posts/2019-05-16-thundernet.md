@@ -70,9 +70,7 @@ CEM 可以看做是一个简单的单层 FPN：即将多尺度的局部特征和
 
 特征计算公式为：​​
 
-​​​​​​​​$$
-F^{SAM}=F^{CEM}.sigmoid(\theta(F^{RPN}))
-$$
+​​​​​​​​$$F^{SAM}=F^{CEM}.sigmoid(\theta(F^{RPN}))$$
 
 $\theta$​ 函数用 1x1 卷积进行维度匹配；sigmoid 函数用于限制值到 [0, 1]，然后 $F^{CEM}$ 重新weight ​的特征分布。
 
