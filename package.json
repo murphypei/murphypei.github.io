@@ -23,7 +23,7 @@
     "hexo-renderer-kramed": "^0.1.4",
     "hexo-renderer-stylus": "^0.3.3",
     "hexo-server": "^0.2.0",
-    "hexo-symbols-count-time": "^0.6.1",
+    "hexo-symbols-count-time": "^0.6.3",
     "live2d-widget-model-haru": "^1.0.5",
     "live2d-widget-model-z16": "^1.0.5"
   }
