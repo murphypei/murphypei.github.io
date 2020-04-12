@@ -2,7 +2,7 @@
 title: Linux 堆内存管理深入分析
 date: 2019-01-26 09:19:44
 update: 2019-01-26 09:19:44
-categories: C++
+categories: C/C++
 tags: [C++, heap, chunk, 堆内存管理]
 ---
 

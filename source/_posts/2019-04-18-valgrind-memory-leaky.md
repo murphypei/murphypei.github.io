@@ -2,7 +2,7 @@
 title: C/C++ 内存泄漏检测工具：Valgrind
 date: 2019-04-18 18:09:30
 update: 2019-04-18 18:09:30
-categories: C++
+categories: C/C++
 tags: [valgrind, C/C++, 内存泄露, memory leaky]
 ---
 

@@ -2,7 +2,7 @@
 title: C++中inline和#define的区别总结
 date: 2018-08-05 09:19:44
 update: 2018-08-05 09:19:44
-categories: C++
+categories: C/C++
 tags: [C++, inline, 内联, define, 宏定义]
 ---
 

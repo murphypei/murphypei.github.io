@@ -3,7 +3,7 @@ layout: post
 title: windows7 x64环境使用GLOG日志库
 date: 2017-06-01
 update: 2018-04-12
-categories: C++
+categories: C/C++
 tags: [windows7, qt5, VS2013, glog]
 ---
 

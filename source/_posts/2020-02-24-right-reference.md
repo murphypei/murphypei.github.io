@@ -2,7 +2,7 @@
 title: C++ 右值引用使用总结
 date: 2020-02-24 19:38:13
 update: 2020-02-24 19:38:13
-categories: [C++]
+categories: C/C++
 tags: [C++11, 移动, 完美转发, 右值引用]
 ---
 

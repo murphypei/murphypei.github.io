@@ -3,7 +3,7 @@ layout: post
 title: windows7搭建Qt和opencv环境（借助VS2015编译器）
 date: 2017-05-16
 update: 2018-04-12
-categories: C++
+categories: C/C++
 tags: [qt5, opencv, VS2015, MSVC2015]
 ---
 

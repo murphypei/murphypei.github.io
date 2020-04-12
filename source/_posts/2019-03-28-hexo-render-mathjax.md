@@ -2,7 +2,7 @@
 title: 解决hexo-next主题和mathjax下划线冲突问题
 date: 2019-03-28 15:47:30
 update: 2019-03-28 15:47:30
-categories: [Hexo]
+categories: Hexo
 tags: [hexo, next, mathjax, kramed, 下划线]
 ---
 

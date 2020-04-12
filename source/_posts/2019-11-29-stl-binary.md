@@ -2,7 +2,7 @@
 title: STL 中的二分查找
 date: 2019-11-29 11:27:44
 update: 2019-11-29 11:27:44
-categories: C++
+categories: C/C++
 tags: [C++, binary, lower_bound, upper_bound]
 ---
 

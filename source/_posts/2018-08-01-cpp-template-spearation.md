@@ -2,7 +2,7 @@
 title: C++模板声明和定义分离
 date: 2018-08-01 09:19:44
 update: 2018-08-01 09:19:44
-categories: C++
+categories: C/C++
 tags: [C++, 模板, 定义, 声明]
 ---
 

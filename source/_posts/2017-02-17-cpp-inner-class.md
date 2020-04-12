@@ -2,7 +2,7 @@
 title: C++内部类（嵌套类）与外部类和友元
 date: 2017-02-17
 update: 2018-04-12
-categories: C++
+categories: C/C++
 tags: [C++, 内部类, 外部类, 友元]
 ---
 

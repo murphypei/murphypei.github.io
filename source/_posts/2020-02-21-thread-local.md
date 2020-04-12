@@ -2,7 +2,7 @@
 title: C++11 thread_local 用法
 date: 2020-02-21 13:34:19
 update: 2020-02-21 13:34:19
-categories: C++
+categories: C/C++
 tags: [C++, thread, thread_local, static]
 ---
 

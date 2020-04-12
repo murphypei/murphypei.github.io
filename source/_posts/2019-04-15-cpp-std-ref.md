@@ -2,7 +2,7 @@
 title: C++11 的 std::ref 用法
 date: 2019-04-15 15:43:50
 update: 2019-04-15 15:43:50
-categories: C++
+categories: C/C++
 tags: [C++, STL, ref, bind, thread]
 ---
 

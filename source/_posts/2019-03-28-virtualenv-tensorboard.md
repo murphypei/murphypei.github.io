@@ -2,7 +2,7 @@
 title: 在 virtualenv 中安装 dmlc-tensorboard 的坑
 date: 2019-03-28 11:17:56
 update: 2019-03-28 11:17:56
-categories: [Linux]
+categories: Linux
 tags: [dmlc, tensorboard, Python, virtualenv]
 mathjax: false
 ---

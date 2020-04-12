@@ -2,7 +2,7 @@
 title: 线程安全和可重入函数
 date: 2019-07-16 15:58:43
 update: 2019-07-16 15:58:43
-categories: C++
+categories: C/C++
 tags: [C++, 线程安全, 可重入函数, malloc]
 ---
 

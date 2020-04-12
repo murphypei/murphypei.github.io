@@ -2,7 +2,7 @@
 title: C++11的右值引用和转移语义
 date: 2018-08-19 12:02:41
 update: 2018-08-19 12:02:41
-categories: C++
+categories: C/C++
 tags: [C++, 右值引用, C++11, 引用]
 ---
 

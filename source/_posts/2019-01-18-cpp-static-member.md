@@ -2,7 +2,7 @@
 title: C++类的静态成员初始化
 date: 2019-01-18 09:19:44
 update: 2019-01-18 09:19:44
-categories: C++
+categories: C/C++
 tags: [C++, 静态成员, static, 类, 初始化]
 ---
 

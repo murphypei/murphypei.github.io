@@ -3,7 +3,7 @@ layout: post
 title: Qt中使用多线程的同时更新UI
 date: 2017-06-10
 update: 2018-04-12
-categories: C++
+categories: C/C++
 tags: [qt, C++, 多线程]
 ---
 

@@ -3,7 +3,7 @@ layout: post
 title: "C++11中的线程、锁和条件变量"
 date: 2017-08-17
 update: 2018-04-12
-categories: C++
+categories: C/C++
 tags: [并发编程, 多线程, C++11, thread, tmux]
 ---
 

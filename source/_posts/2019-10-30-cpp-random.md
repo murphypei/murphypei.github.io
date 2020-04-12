@@ -2,7 +2,7 @@
 title: C++11 的随机数
 date: 2019-10-30 17:46:32
 update: 2019-10-30 17:46:32
-categories: C++
+categories: C/C++
 tags: [C++, C++11, random, engine]
 ---
 

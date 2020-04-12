@@ -2,7 +2,7 @@
 title: C++11 并发编程系列(二)：互斥量(mutex)
 date: 2019-04-16 16:57:19
 update: 2019-04-16 16:57:19
-categories: C++
+categories: C/C++
 tags: [C++, thread, 多线程, mutex]
 ---
 

@@ -2,7 +2,7 @@
 title: C++ Debug常用的宏定义记录
 date: 2018-12-27 09:19:44
 update: 2018-12-27 09:19:44
-categories: C++
+categories: C/C++
 tags: [C++, macro, debug, 宏定义]
 ---
 

@@ -2,7 +2,7 @@
 title: Assert 在 Debug 和 Release 引起的问题
 date: 2020-01-17 16:56:49
 update: 2020-01-17 16:56:49
-categories: C++
+categories: C/C++
 tags: [C++, assert, 断言, debug, 宏]
 ---
 

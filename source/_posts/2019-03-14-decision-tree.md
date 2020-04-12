@@ -2,7 +2,7 @@
 title: 机器学习之决策树小结
 date: 2019-03-14 14:09:15
 update: 2019-03-14 14:09:15
-categories: [机器学习]
+categories: 机器学习
 tags: [机器学习, 决策树, ID3, C4.5, CART]
 mathjax: true
 ---

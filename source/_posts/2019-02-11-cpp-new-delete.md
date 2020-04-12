@@ -2,7 +2,7 @@
 title: C++ new和delete探究
 date: 2019-02-11 09:19:44
 update: 2019-02-11 09:19:44
-categories: C++
+categories: C/C++
 tags: [C++, new, delete]
 ---
 

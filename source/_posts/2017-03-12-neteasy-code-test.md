@@ -2,7 +2,7 @@
 title: 网易游戏暑期实习招聘编程实例
 date: 2017-03-12
 update: 2018-04-12
-categories: 求职
+categories: 随笔
 tags: [C++, 网易, 实习生, 笔试]
 ---
 

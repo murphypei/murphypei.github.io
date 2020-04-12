@@ -3,7 +3,7 @@ layout: post
 title: STL迭代器失效问题
 date: 2017-05-03
 update: 2018-04-12
-categories: C++
+categories: C/C++
 tags: [STL, C++, 迭代器]
 ---
 

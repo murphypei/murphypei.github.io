@@ -2,7 +2,7 @@
 title: 父类成员函数调用子类成员函数
 date: 2020-03-07 19:38:13
 update: 2020-03-07 19:38:13
-categories: [C++]
+categories: C/C++
 tags: [C++11, 函数指针, 模板]
 ---
 

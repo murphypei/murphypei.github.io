@@ -2,7 +2,7 @@
 title: C++ 接口和实现分离初步简介
 date: 2018-12-12 10:47:46
 update: 2018-12-12 16:46:46
-categories: C++
+categories: C/C++
 tags: [C++, interface, 接口, 实现, pImpl]
 ---
 

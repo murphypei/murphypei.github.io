@@ -2,7 +2,7 @@
 title: OpenBLAS 中矩阵运算函数学习
 date: 2019-09-25 14:20:11
 update: 2019-09-25 14:20:11
-categories: C++
+categories: C/C++
 tags: [OpenBLAS, cblas_sgemm, cblas_sgemv, gemm]
 ---
 

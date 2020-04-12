@@ -2,7 +2,7 @@
 title: C++ 简单内存池实现
 date: 2019-07-27 13:54:03
 update: 2019-07-27 13:54:03
-categories: C++
+categories: C/C++
 tags: [C++, 内存池, memory pooling, malloc]
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: C++11多线程编程介绍
-categories: C++
+categories: C/C++
 date: 2017-05-02
 update: 2018-04-12
 tags: [并发编程, 多线程, C++11, thread, tmux]

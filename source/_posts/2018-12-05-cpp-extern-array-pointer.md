@@ -2,7 +2,7 @@
 title: C++ 中extern数组和指针
 date: 2018-12-05 10:47:46
 update: 2018-12-05 16:46:46
-categories: C++
+categories: C/C++
 tags: [C++, extern, 数组, 指针, 地址符号]
 ---
 

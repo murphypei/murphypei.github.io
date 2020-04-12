@@ -2,7 +2,7 @@
 title: C++中条件编译
 date: 2018-08-17 09:19:44
 update: 2018-08-17 09:19:44
-categories: C++
+categories: C/C++
 tags: [C++, if, ifdef, t条件编译]
 ---
 

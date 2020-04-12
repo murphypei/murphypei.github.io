@@ -2,7 +2,7 @@
 title: C++ 定制输入输出流
 date: 2019-01-03 09:19:44
 update: 2019-01-03 09:19:44
-categories: C++
+categories: C/C++
 tags: [C++, stream, streambuf, ios]
 ---
 

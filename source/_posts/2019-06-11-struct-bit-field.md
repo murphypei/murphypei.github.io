@@ -2,7 +2,7 @@
 title: C++ struct 位域
 date: 2019-06-11 15:58:43
 update: 2019-06-11 15:58:43
-categories: C++
+categories: C/C++
 tags: [C++, struct, bit fields, 位域]
 ---
 

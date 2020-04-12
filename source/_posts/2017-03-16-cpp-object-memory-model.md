@@ -2,7 +2,7 @@
 title: C++ 对象内存模型详解
 date: 2017-03-16
 update: 2018-04-12
-categories: C++
+categories: C/C++
 tags: [C++, 虚函数, 内存模型, 虚继承]
 ---
 

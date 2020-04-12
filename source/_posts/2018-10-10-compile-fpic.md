@@ -2,7 +2,7 @@
 title: fPIC编译简介
 date: 2018-10-10 16:46:46
 update: 2018-10-10 16:46:46
-categories: C++
+categories: C/C++
 tags: [Linux, C++, 编译, 链接]
 ---
 

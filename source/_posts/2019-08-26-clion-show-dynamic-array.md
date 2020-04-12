@@ -2,7 +2,7 @@
 title: clion 显示动态数组内容
 date: 2019-08-26 10:23:40
 update: 2019-08-26 10:23:40
-categories: C++
+categories: C/C++
 tags: [C++, IDE, clion]
 ---
 

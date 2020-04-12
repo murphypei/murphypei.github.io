@@ -2,7 +2,7 @@
 title: CUDA 多线程并行
 date: 2019-10-30 17:47:03
 update: 2019-10-30 17:47:03
-categories: C++
+categories: C/C++
 tags: [cuda, kernel, simd, block, grid]
 ---
 

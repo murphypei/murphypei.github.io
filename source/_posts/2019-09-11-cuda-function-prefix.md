@@ -2,7 +2,7 @@
 title: CUDA 函数前缀
 date: 2019-09-11 14:46:47
 update: 2019-09-11 14:46:47
-categories: C++
+categories: C/C++
 tags: [cuda, global, host, device]
 ---
 
