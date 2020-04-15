@@ -1,18 +1,18 @@
 ---
-title: MXNet框架学习（2）：数据流编程和Symbol
+title: MXNet 框架学习（2）：数据流编程和 Symbol
 date: 2018-08-22 12:02:41
 update: 2018-08-22 12:02:41
-categories: 深度学习
+categories: MXNet
 tags: [深度学习, MXNet, Python, symbol]
 ---
 
-在[MXNet框架学习（1）](https://murphypei.github.io/blog/2018/08/mxnet-install-ndarray.html)中，我们介绍了一些有关MXNet的安装和基础知识，并介绍了NDArray API（简而言之：NDArrays可用于存储数据、参数等信息）。在介绍过数据的存储后，本文将谈谈MXNet定义计算步骤的方式。
+在[MXNe t框架学习（1）](https://murphypei.github.io/blog/2018/08/mxnet-install-ndarray.html)中，我们介绍了一些有关MXNet的安装和基础知识，并介绍了NDArray API（简而言之：NDArrays可用于存储数据、参数等信息）。在介绍过数据的存储后，本文将谈谈MXNet定义计算步骤的方式。
 
 <!--more-->
 
 ### 1. 数据流编程
 
-symbol可以说是MXNet最重要的一部分API了，主要定义了计算流程。在此之前，我觉得有必要说一下不同的编程方式：
+symbol 可以说是 MXNet 最重要的一部分API了，主要定义了计算流程。在此之前，我觉得有必要说一下不同的编程方式：
 
 我们都知道那个著名的公式：“程序=数据结构+代码（算法）”。在MXNet中，NDArrays是数据结构，那么接下来需要写代码（算法）了，所谓的代码或者算法其实就是如何指导计算机来进行一步步的计算。
 

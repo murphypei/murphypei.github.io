@@ -2,7 +2,7 @@
 title: MXNet框架学习（1）：MXNet安装和NDArray
 date: 2018-08-21 12:02:41
 update: 2018-08-21 12:02:41
-categories: 深度学习
+categories: MXNet
 tags: [深度学习, MXNet, Python]
 ---
 

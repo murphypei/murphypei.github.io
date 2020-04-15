@@ -112,6 +112,17 @@ extern "C" void *MNNMemoryAllocAlign(size_t size, size_t alignment) {
     aligned[-1]    = origin;
     return aligned;
 #endif
+
+extern "C" void MNNMemoryFreeAlign(void *aligned) {
+#ifdef MNN_DEBUG_MEMORY
+    free(aligned);
+#else
+    if (aligned) {
+        void *origin = ((void **)aligned)[-1];
+        free(origin);
+    }
+#endif
+}
 }
 ```
 
@@ -127,6 +138,6 @@ extern "C" void *MNNMemoryAllocAlign(size_t size, size_t alignment) {
 (void **)((intptr_t)((unsigned char *)ptr + alignment - 1) & -alignment)
 ```
 
-`&` 符号是按位与，`-alignment` 的补码表示就是 `aliginment` 符号位不变，其余位按位取反并加 1。我们以 AVX 所需要的 32 bytes 对齐为例，`alignment` 就是 256，二进制就是 `0...00000100000000`，`-alignment` 在计算中的表示就是 `1...11111100000000`，也就是后 8 位为 0，其余位为均为 1， 因此任何数与 `-alignment` 按位与的后 8 为都为 0，所以结果肯定是 32 bytes 对齐的。`((unsigned char *)ptr + alignment - 1) & -alignment` 就相当于把 `ptr + alignment - 1` 的后 8 位置为 0，这个数比 `ptr + alignment - 1` 小，而且一定是对齐的。
+`&` 符号是按位与，`-alignment` 的补码表示就是 `aliginment` 符号位不变，其余位按位取反并加 1。我们以 AVX 所需要的 32 bytes 对齐为例，`alignment` 就是 256，二进制就是 `0...00000100000000`，`-alignment` 在计算中的表示就是 `1...11111100000000`，也就是后 8 位为 0，其余位为均为 1， 因此任何数与 `-alignment` 按位与的后 8 为都为 0，所以结果肯定是 32 bytes 对齐的。`((unsigned char *)ptr + alignment - 1) & -alignment` 就相当于把 `ptr + alignment - 1` 的后 8 位置为 0，这个数比 `ptr + alignment - 1` 小，而且一定是对齐的。最后将**真正的地址放在对齐后的地址前面，释放的时候取原始的地址及其前面的信息释放内存**。
 
 通过以上代码，我们可以获取一块在堆上新创建的并且地址对齐的内存。

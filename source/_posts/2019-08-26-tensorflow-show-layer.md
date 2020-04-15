@@ -2,8 +2,8 @@
 title: TensorFlow 显示运行中间结果方法
 date: 2019-08-26 11:22:25
 update: 2019-08-26 11:22:25
-categories: 深度学习
-tags: [tensorflow, 静态图, ckpt, meta]
+categories: TensorFlow
+tags: [TensorFlow, 静态图, ckpt, meta]
 ---
 
 TensorFlow 以静态图运行，因此想查看中间结果比较麻烦。本文以强化学习的 ppo 网络为例，结合代码注释提供一个思路。
