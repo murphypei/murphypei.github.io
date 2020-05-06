@@ -1,5 +1,5 @@
 ---
-title: PCA 数学原理总结
+title: PCA数学原理再探讨
 date: 2019-12-09 10:59:54
 update: 2019-12-09 10:59:54
 categories: 机器学习

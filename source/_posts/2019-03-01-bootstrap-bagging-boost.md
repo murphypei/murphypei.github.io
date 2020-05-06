@@ -1,5 +1,5 @@
 ---
-title: 机器学习之 Bootstrap、Bagging、Boosting 介绍
+title: 集成学习方法小结
 date: 2019-03-01 07:50:05
 update: 2019-03-01 07:50:05
 categories: 机器学习
