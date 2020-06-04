@@ -25,9 +25,13 @@
 
 ### 常见错误记录
 
-hexo g
+#### 生成错误
 
 * `SyntaxError: ${project_dir}/node_modules/live2d-widget-model-haru/01/package.json: Unexpected end of JSON input`。
     * 使用 live2d-widget-model-haru，安装完毕后，需要将 `node_modules/live2d-widget-model-haru/package.json` 复制进 01, 02 两个子文件夹中。
 * `WARN  No layout: about/index.html`
     * 子模块 NexT 主题没有拉下来，需要更新子模块：`git submodule update --init --recursive`。
+
+#### 数学公式和 Markdown 渲染问题
+
+* https://murphypei.github.io/blog/2019/03/hexo-render-mathjax.html
