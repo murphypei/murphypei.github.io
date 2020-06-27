@@ -75,7 +75,7 @@ class A *pA = new A(10);
 
 如下图所示 `new` 背后完成的工作：
 
-![](/images/posts/cplusplus/new_a_object_work.jpeg)
+![](/images/posts/cplusplus/new_delete/new_a_object_work.jpeg)
 
 简单总结一下：
 
@@ -93,7 +93,7 @@ delete pA;
 
 `delete` 所做的事情如下图所示：
 
-![](/images/posts/cplusplus/delete_a_object_work.jpeg)
+![](/images/posts/cplusplus/new_delete/delete_a_object_work.jpeg)
 
 `delete`就做了两件事情：
 
@@ -133,7 +133,7 @@ class A *pAa = new A[3];
 
 时需要做的事情如下：
 
-![](/images/posts/cplusplus/new_array_work.jpeg)
+![](/images/posts/cplusplus/new_delete/new_array_work.jpeg)
 
 从这个图中我们可以看到申请时在数组对象的上面还多分配了4个字节用来保存数组的大小，但是最终返回的是对象数组的指针，而不是所有分配空间的起始地址。
 
@@ -143,7 +143,7 @@ class A *pAa = new A[3];
 delete []pAa;
 ```
 
-![](/images/posts/cplusplus/delete_array_work.jpeg)
+![](/images/posts/cplusplus/new_delete/delete_array_work.jpeg)
 
 这里要注意的两点是：
 

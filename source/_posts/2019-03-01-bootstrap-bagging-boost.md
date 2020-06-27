@@ -47,7 +47,7 @@ Bagging是一种集成学习方法，其思想是通过样本的重采样构造�
 
 Bagging方法的示意图如下：
 
-![Bagging](/images/posts/ml/bagging.png)
+![Bagging](/images/posts/ml/cluster_learning/bagging.png)
 
 1. 从样本集中用Bootstrap采样选出n个训练样本(放回，因为别的分类器抽训练样本的时候也要用)
 2. 在所有属性上，用这n个样本训练分类器（CART or SVM or ...）
@@ -96,7 +96,7 @@ Boosting是一种框架算法，用来提高弱分类器准确度的方法，这
 
 Boosting与Baggin方法不同之处在于不同的分类器之间是有关联的，Boosting方法示意图如下：
 
-![Boosting](/images/posts/ml/boosting.png)
+![Boosting](/images/posts/ml/cluster_learning/boosting.png)
 
 从图中可以看出，Boosting算法的工作机制是首先从训练集用初始权重训练出一个弱分类器Classifier1，根据弱学习的学习结果Result1表现来更新训练样本的权重，使得之前Classifier1学习误差率高的训练样本点的权重变高，使得这些误差率高的点在后面的Classifier2中得到更多的重视。然后基于调整权重后的训练集来训练Classifier2，如此重复进行，直到弱学习器数达到事先指定的数目L，最终将这L个弱学习器通过集合策略进行整合，得到最终的强学习器。　　
 
