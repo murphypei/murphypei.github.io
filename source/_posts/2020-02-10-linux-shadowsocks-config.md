@@ -1,5 +1,5 @@
 ---
-title: Linux下shadowsocks使用配置
+title: Linux 下 shadowsocks 使用配置
 date: 2020-02-10 11:43:08
 update: 2020-02-10 11:43:08
 categories: Linux

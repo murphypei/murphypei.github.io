@@ -2,7 +2,7 @@
 title: MXNet框架学习（3）：数据处理和Module
 date: 2018-08-23 12:02:41
 update: 2018-08-23 12:02:41
-categories: MXNet
+categories: MxNet
 tags: [深度学习, MXNet, Python, module]
 ---
 
