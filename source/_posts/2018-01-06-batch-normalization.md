@@ -2,46 +2,75 @@
 layout: post
 title: Batch Normalization
 date: 2018-01-06
-update: 2018-04-12
+update: 2020-09-23
 categories: 深度学习
 tags: [深度学习, Batch Normalization, BN]
+mathjax: true
 ---
 
-Batch Normalization，简称BN，来源于《Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift》这篇论文，本文将对BN的出现原因、作用和原理进行说明。
+Batch Normalization，简称BN，来源于《Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift》这篇论文。
 
-<!--more-->
+<!-- more -->
 
-## Motivation
+### Internal Covariate Shift
 
-作者认为：网络训练过程中参数不断改变导致后续每一层输入的分布也发生变化，而学习的过程又要使每一层适应输入的分布，因此我们不得不降低学习率、小心地初始化。作者将分布发生变化称之为 internal covariate shift。
+在深度学习中，由于问题的复杂性，我们往往会使用较深层数的网络进行训练。在这个过程中，我们需要去尝试不同的学习率、初始化参数方法（例如 Xavier 初始化）等方式来帮助我们的模型加速收敛。深度神经网络之所以如此难训练，其中一个重要原因就是网络中层与层之间存在高度的关联性与耦合性。
 
-大家应该都知道，我们一般在训练网络的时会将输入减去均值，还有些人甚至会对输入做白化等操作，目的是为了加快训练。为什么减均值、白化可以加快训练呢，这里做一个简单地说明：
+网络中层与层之间的关联性会导致如下的状况：随着训练的进行，网络中的参数也随着梯度下降在不停更新。一方面，当底层网络中参数发生微弱变化时，由于每一层中的线性变换与非线性激活映射，这些微弱变化随着网络层数的加深而被放大（类似蝴蝶效应）；另一方面，参数的变化导致每一层的输入分布会发生改变，进而上层的网络需要不停地去适应这些分布变化，使得我们的模型训练变得困难。上述这一现象叫做 Internal Covariate Shift。
 
-首先，图像数据是高度相关的，假设其分布如下图a所示(简化为2维)。由于初始化的时候，我们的参数一般都是0均值的，因此开始的拟合y=Wx+b，基本过原点附近，如图b红色虚线。因此，网络需要经过多次学习才能逐步达到如紫色实线的拟合，即收敛的比较慢。如果我们对输入数据先作减均值操作，如图c，显然可以加快学习。更进一步的，我们对数据再进行去相关操作，使得数据更加容易区分，这样又会加快训练，如图d。 
+> 同时随着网络加深的还有反向传播的梯度消失问题，这个问题通过 ResNet 的残差连接解决。
 
-![](/images/posts/dl/batch_normalization/data_process.png)
+#### 什么是 Internal Covariate Shift？
 
-白化的方式有好几种，常用的有PCA白化：即对数据进行PCA操作之后，在进行方差归一化。这样数据基本满足0均值、单位方差、弱相关性。作者首先考虑，对每一层数据都使用白化操作，但分析认为这是不可取的。因为白化需要计算协方差矩阵、求逆等操作，**计算量很大**；此外，反向传播时，**白化操作不一定可导**。于是，作者采用下面的Normalization方法。
+Batch Normalization 的原论文作者给了 Internal Covariate Shift 一个较规范的定义：在深层网络训练的过程中，由于网络中参数变化而引起内部结点数据分布发生变化的这一过程被称作Internal Covariate Shift。
 
-## Normalization via Mini-Batch Statistics
+> 这个概念简单的理解就是 w 和 b 都在更新，导致激活层的输入也在不断改变，进而激活层的输出也会发生变化。而前一层激活层的输出变化进一步导致后一层的输入数据分布发生改变，说白了就是每一层的输入数据分布都因为学习到新的 w 和 b 而发生变化。
 
-数据归一化方法很简单，就是要让数据具有0均值和单位方差，如下式： 
+#### Internal Covariate Shift 会带来什么问题？
 
-![](/images/posts/dl/batch_normalization/normalization.png)
+1. 上层网络需要不停调整来适应输入数据分布的变化，导致网络学习速度的降低。
+2. 网络的训练过程容易陷入梯度饱和区，减缓网络收敛速度。
+   * 如果网络使用饱和激活函数，比如 sigmoid，但 w 和 b 不断增大，那么最终进入激活函数的梯度饱和区（变化不大的区域），网络更新速度减慢，拖累收敛。
+   * 解决方法的思路一方面可以使用非饱和激活函数，比如 ReLU。另一方面可以让激活函数输入分布保持在非梯度饱和区，也就是 normalization。
 
-但是作者又说如果**只是**简单的这么干，会降低层的表达能力。比如下图，在使用sigmoid激活函数的时候，如果把数据限制到0均值单位方差，那么相当于**只使用了激活函数中近似线性的部分**，这显然会降低模型表达能力。 
+#### 如何缓解 Internal Covariate Shift
 
-![](/images/posts/dl/batch_normalization/sigmod.jpg)
+Internal Covariate Shift 产生的原因是每一层输入数据不断的变化，那么缓解的方法自然就是限制每一层输入数据的分布，让其不再剧烈变化甚至同分布。这自然就想到了数据规范化。数据归一化的方式有很多，比如 PCA 白化等等。但是由于计算成本以及保留原始数据的信息表达能力（这个也很重要）等原因，作者使用 batch normalization 这种方式。
 
-为此，作者又为BN增加了2个参数，用来保持模型的表达能力。 
-于是最后的输出为：
+### Batch Normalization
 
-![](/images/posts/dl/batch_normalization/batch_norm.png)
+思路很简单，就是对深度神经网络中每个层逐通道的做 normalization。比如输入的 blob 是 (N,C,H,W)，每个 normalization 参与的数据数量就是 N\*H\*W。
 
-上述公式中用到了均值E和方差Var，需要注意的是理想情况下E和Var应该是针对整个数据集的，但显然这是不现实的。因此，作者做了简化，用一个Batch的均值和方差作为对整个数据集均值和方差的估计。 
+Batch Normalization 的算法思路如下：
 
-![](/images/posts/dl/batch_normalization/algorithm.jpg)
+![](/images/posts/dl/batch_normalization/bn.jpg)
 
-求导的过程也非常简单，有兴趣地可以自己再推导一遍或者直接参见原文。
+规范化计算很简单：
 
-作者在文章中说应该把BN放在激活函数之前，这是因为Wx+b具有更加一致和非稀疏的分布。但是也有人做实验表明**放在激活函数后面效果更好。**
+1. 计算参与规范化的数据的均值
+2. 计算参与规范化的数据的反差
+3. 每个数据减均值，除方差（引入一个极小值防止除零）。
+
+> BN 中有减均值操作，所以要使用 BN 的层不需要再使用偏置项了。
+
+最初版本的 BN 大概就是这么简单，但是作者直接对其做了改进，图中的算法是第二版了，也就是增加了 scale-shift 操作。
+
+直接使用归一化后的数据和 PCA 白化一样，导致数据的表达能力丢失了，主要是上一层传递过来的数据分布信息到本层完全丢失了。另一方面，如果是 sigmoid 或者 tanh 这种激活函数，BN 之后的数据基本都落在了线性区域，那么其非线性区域的功能就丢失了。
+
+> 关于为什么丢失我觉得可以参考 PCA 白化中数据信息量的讲解，我理解就是数据信息被压缩了。
+
+#### scale-shift
+
+应该注意到，算法中还有一个 scale-shift 操作，其中包含两个可学习的参数。这两个参数的引入是为了恢复数据本身的表达能力，对规范化后的数据进行线性变换，特别地，当 $\gamma = \sigma ^2, \beta = \mu$ 时，可以实现等价变换（identity transform）并且保留了原始输入特征的分布信息。
+
+原文的意思大概就是锦上添花。通过 scale-shift 操作加入一些可缩放的自由度，从而没那么僵硬导致信息丢失。**scale-shift 在训练和测试的时候都执行，其参数通过反向传播更新学习**。
+
+#### 测试阶段如何使用 Batch Normalization？
+
+我们知道 BN 在每一层计算的 $\mu$ 与 $\sigma ^2$ 都是基于当前 mini-batch 中的训练数据，但是这就带来了一个问题：我们在预测阶段，有可能只需要预测一个样本或很少的样本，没有像训练样本中那么多的数据，此时 $\mu$ 与 $\sigma ^2$  的计算一定是有偏估计，这个时候我们该如何进行计算呢？
+
+BN 训练好模型后，保留每组 mini-batch 训练数据在网络中每一层逐通道的均值和方差，然后求得训练数据整体的均值和方差（每一层，逐通道）。也就是说在测试的时候使用训练数据整体的均值和方差来对测试数据做推理，基于训练数据和测试数据属于统一数据分布的假设，这可以看作是测试数据的无偏估计。
+
+> Quora 中有人指出，在 style-transfer 中，在 inference 的时候，使用单张图片直接计算均值和方差效果更好，这应该是其任务比较特殊。
+
+tensorflow 中保存模型的时候不能只保存 trainable_variables，因为 BN 的参数不属于 trainable_variables。为了方便，可以用 global_variables。同理，读取的时候也应该使用 global_variables。
