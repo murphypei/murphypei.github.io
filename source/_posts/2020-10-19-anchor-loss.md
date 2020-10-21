@@ -1,14 +1,19 @@
-目标检测种 Anchor 与 Loss 的计算。
-
-
+---
+title: 目标检测中 Anchor 与 Loss 计算的梳理
+date: 2020-10-19 16:59:34
+update: 2020-10-19 16:59:34
+categories: [深度学习]
+tags: [ReLU, LeakyReLU, 激活函数, 梯度消失]
+mathjax: true
+---
 
 anchor 是一类目标检测方法种的一个核心概念，其本质是一个预设的框，但是这个框也为 loss 计算带来一些麻烦。
+
+<!-- more -->
 
 对于一般的目标检测 loss 计算，通常分为几部分。比如 yolo 系列分为 objectness（是否包含目标）、classification（目标分类）、boundingbox-regression（目标位置）。其中，每个样本都需要计算 objectness 得分的损失，正样本需要计算 classification 和 bbox-regression 损失，其中每种损失又有不同的计算方式和组合方法，比如 bbox-regression 有 D\_IoU、G\_IoU、C\_IoU 等等，组合方法有 Focal Loss 等等。但是这些不是我们这篇文章关注的重点。
 
 对于目标检测我们要搞明白一个核心问题：**如何生成参与 loss 计算的样本**？anchor 和 ground-truth 的纠缠不休就是在这个问题上，各种框混杂一起。要搞明白这个问题，我们把带 anchor 的目标检测中出现各种框的核心概念一一剥开。
-
-
 
 一般来说，带 anchor 的目标检测包含以下几种框：
 
@@ -24,8 +29,6 @@ anchor 是一类目标检测方法种的一个核心概念，其本质是一个�
 总结以上核心：**正负样本通常由 gt 和先验框 anchor 匹配生成，参与计算的是 anchor 的和 gt（只有尺寸，没有类别），而计算 loss 则是其对应的 predict 和 gt（包含类别信息）**。这句话就点明了 3 种框的关系，可以看出 anchor 是桥梁，非常重要。
 
 有了以上概念，我们来实际操作解读以下经典的目标检测中一些具体实际操作。
-
-
 
 ### Faster-RCNN
 
@@ -52,16 +55,15 @@ one-stage 最爱。废话少说，yolo v2 步骤如下：
 
 我参考了这篇[YOLOv2原理与实现](https://zhuanlan.zhihu.com/p/35325884)，上述原理在代码中实现是倒过来的，同时在开始时还有计算 predict 和 anchor  的位置偏移，这个能够加快 predict 的形状向 anchor 的形状收敛。因为 yolo 中的 anchor 是聚合而来，本身就比较合理。仔细看下面的 loss 计算公式：
 
-![v2 loss](/images/posts/dl/anchor/yolov2_loss.jpg)
+![](/images/posts/dl/anchor/yolov2_loss.jpg)
 
 1. 求和公式中 W H A 分别表示 feature map 的长、宽以及每个 cell 的 anchor 数量。
-
- 	2. 第一项是负样本，只计算 objectness 的置信度误差。
- 	3. 第二项是 anchor 先验框和预测框的坐标误差，只计算前 12800 个迭代，加速预测框向先验框的收敛。
- 	4. 第三项是正样本，其中又包含三项：
-      	1. 第一项是预测框与 gt 的坐标误差（coord）；
-      	2. 第二项是是 objectness 置信度误差（obj）；
-      	3. 第三项是分类误差。
+2. 第一项是负样本，只计算 objectness 的置信度误差。
+3. 第二项是 anchor 先验框和预测框的坐标误差，只计算前 12800 个迭代，加速预测框向先验框的收敛。
+4. 第三项是正样本，其中又包含三项：
+   1. 第一项是预测框与 gt 的坐标误差（coord）；
+   2. 第二项是是 objectness 置信度误差（obj）；
+   3. 第三项是分类误差。
 
 上述公式弄明白了，也就基本理解了各种框的用途和意义了。v3 和 v2 一样是基于 max iou 的匹配规则，只不过有多个检测分支，其规定一个 gt 不可能出现在多个检测分支上，也就是每个 gt 取三个检测分支上 anchor 匹配最大的那个。
 
@@ -73,15 +75,14 @@ yolo v5 相对 v2/v3 变动很大，主要是匹配规则变了，首先明确�
 2. 对于剩余 gt，计算其中心落在哪个 cell 中，同时利用四舍五入方法，找出最近的两个 cell，认为这 3 个 cell 都负责预测这个 gt。很明显，通过这种方法，正样本的数量将明显增多。
    1. 一个 cell 相邻的有上下左右 4 个cell，根据中心点在当前 cell 中的偏移来找出和中心点比较近的两个相邻 cell。
 
-![相邻 cell](/images/posts/dl/anchor/yolov5_near_cell.jpg)
+![](/images/posts/dl/anchor/yolov5_near_cell.jpg)
 
 代码中的具体做法是：在任何一预测层，将每个 gt 复制和 anchor 个数一样多的数目（3个），然后将 gt 和 anchor 一一对应计算，去除本层不匹配的 gt，然后对 gt 原始中心点网格坐标扩展两个邻居像素，因此每个 gt 总共有 3 个 cell 上的若干个 anchor 负责预测。有个细节需要注意，前面 shape 过滤时候是不考虑 xy 坐标的，也就是说 gt 的 wh 是和所有 anchor 匹配的，会导致找到的邻居也相当于进行了 shape 过滤规则。详见 `build_targets` 函数，可以参考解析：[yolov5深度可视化解析](https://zhuanlan.zhihu.com/p/183838757) 。
 
 yolo v5 的改动造成的变化主要如下：
 
 1. 不同于 yolov3 和 v4，其 gt 可以跨层预测，即有些 gt 在多个预测层都算正样本。
+2. 不同于 yolov3 和 v4，其 gt 匹配数范围扩大，明显增加了很多正样本。（但是引入了很多低质量的负样本）
+3. 不同于 yolov3 和 v4，有些 gt 由于和 anchor 匹配度不高，而变成背景。
 
- 	2. 不同于 yolov3 和 v4，其 gt 匹配数范围扩大，明显增加了很多正样本。（但是引入了很多低质量的负样本）
- 	3. 不同于 yolov3 和 v4，有些 gt 由于和 anchor 匹配度不高，而变成背景。
-
-有了正负样本，v5 的 loss 计算也很简单，classification 和 objectness confidence 分支都是 bce loss，bbox regression 直接采用 giou loss（后改为 ciou）。
+有了正负样本，v5 的 loss 计算也很简单，classification 和 objectness confidence 分支都是 bce loss，bbox regression 直接采用 giou loss。
