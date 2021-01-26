@@ -66,7 +66,7 @@ void func(int& a)
    std::thread t(func, std::ref(a));
    t.join();
 
-   std::stringcout << a << std::endl;
+   std::cout << a << std::endl;
 
    return 0;
 }

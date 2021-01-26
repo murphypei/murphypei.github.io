@@ -2,16 +2,26 @@
 layout: post
 title: Batch Normalization
 date: 2018-01-06
-update: 2020-09-23
+update: 2021-01-25
 categories: 深度学习
 tags: [深度学习, Batch Normalization, BN]
 mathjax: true
 ---
 
-Batch Normalization，简称BN，来源于《Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift》这篇论文。
+Batch Normalization，简称 BN，来源于《Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift》这篇论文。BN 对于深度学习领域是突破性的成果，直接改善了网络设计和训练的很多缺点，我认为有必要深入学习。我觉得可以从由浅入深好好说一说 BN 的由来的。
 
 <!-- more -->
 
+### Feature Scaling
+
+特征缩放（feature scaling）是机器学习中非常重要的一个预处理。因为数据来源于自然界和人类社会，数据的数值必然有大有小，范围分布都不一致，虽然可以通过机器学习到不同大小的权重和偏差来纠正数据，最终拟合，但是学习的周期变长，甚至因此走入过拟合等不归路，因此将数据规范化是非常重要的一个处理步骤。特征缩放就是为了将数据规范化。一般来说都是将其做均值为 0，方差为 1 的标准化处理，这样能加速模型的收敛。
+
+这是一个具有两个特征的算法学习示意图。
+
+![](/images/posts/dl/batch_normalization/feature_scaling.jpg)
+
+
+上图很好的反应了特征缩放的好处。左边是原始数据，学习的时候 loss 是范围极广，不同特征分布不均匀，我们必须使用很小的学习率小心的更新参数（因为一个特征的数据非常敏感，数值比较大，对结果影响大，所以在不同方向上梯度不一样）。反之，右边经过特征缩放，数值已经标准化了，所有方向上梯度都一样，因此很快就完成了学习，迅速收敛。
 ### Internal Covariate Shift
 
 在深度学习中，由于问题的复杂性，我们往往会使用较深层数的网络进行训练。在这个过程中，我们需要去尝试不同的学习率、初始化参数方法（例如 Xavier 初始化）等方式来帮助我们的模型加速收敛。深度神经网络之所以如此难训练，其中一个重要原因就是网络中层与层之间存在高度的关联性与耦合性。
