@@ -2,7 +2,7 @@
 title: MXNet 框架学习（2）：数据流编程和 Symbol
 date: 2018-08-22 12:02:41
 update: 2018-08-22 12:02:41
-categories: MxNet
+categories: DeepLearning
 tags: [深度学习, MXNet, Python, symbol]
 ---
 

@@ -2,7 +2,7 @@
 title: PCA数学原理再探讨
 date: 2019-12-09 10:59:54
 update: 2019-12-09 10:59:54
-categories: 机器学习
+categories: MachineLearning
 tags: [机器学习, PCA, 矩阵分解, 协方差]
 mathjax: true
 ---

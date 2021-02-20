@@ -2,7 +2,7 @@
 title: TensorRT 实战教程
 date: 2019-09-09 15:39:03
 update: 2019-09-09 15:39:03
-categories: TensorRT
+categories: DeepLearning
 tags: [TensorRT, c++, trt, cuda, tensorflow, caffe]
 ---
 

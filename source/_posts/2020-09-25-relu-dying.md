@@ -2,7 +2,7 @@
 title: ReLU 激活函数中神经元死亡问题
 date: 2020-09-25 16:59:34
 update: 2020-09-25 16:59:34
-categories: [深度学习]
+categories: DeepLearning
 tags: [ReLU, LeakyReLU, 激活函数, 梯度消失]
 mathjax: true
 ---

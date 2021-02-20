@@ -2,7 +2,7 @@
 title: 最长不重复子串的有趣解法
 date: 2019-07-05 15:58:43
 update: 2019-07-05 15:58:43
-categories: 算法
+categories: Algorithm
 tags: [C++, 算法, 最长不重复子串, 滑动窗口法]
 ---
 

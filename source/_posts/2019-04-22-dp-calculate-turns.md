@@ -2,7 +2,7 @@
 title: 动态规划：计算路径数目(有限拐点)
 date: 2019-04-22 15:07:15
 update: 2019-04-22 15:07:15
-categories: 算法
+categories: Algorithm
 tags: [动态规划, C++]
 ---
 

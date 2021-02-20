@@ -3,7 +3,7 @@ layout: post
 title: Batch Normalization
 date: 2018-01-06
 update: 2021-01-25
-categories: 深度学习
+categories: DeepLearning
 tags: [深度学习, Batch Normalization, BN]
 mathjax: true
 ---

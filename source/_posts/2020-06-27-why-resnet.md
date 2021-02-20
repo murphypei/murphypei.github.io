@@ -2,7 +2,7 @@
 title: ResNet 原理剖析
 date: 2020-06-27 11:01:55
 update: 2020-06-27 11:01:55
-categories: 深度学习
+categories: DeepLearning
 tags: [深度学习, resnet, 残差连接, 模型退化]
 mathjax: true
 ---

@@ -2,7 +2,7 @@
 title: 贝叶斯定理
 date: 2020-03-14 19:38:13
 update: 2020-03-14 19:38:13
-categories: 机器学习
+categories: MachineLearning
 tags: [机器学习, 贝叶斯定理, 概率论]
 mathjax: true
 ---

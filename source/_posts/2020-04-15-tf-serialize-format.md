@@ -2,7 +2,7 @@
 title: TensorFlow 序列化数据格式
 date: 2020-04-15 12:14:38
 update: 2020-04-15 12:14:38
-categories: TensorFlow
+categories: DeepLearning
 tags: [TensorFlow, 序列化, protobuf, pbtxt]
 ---
 

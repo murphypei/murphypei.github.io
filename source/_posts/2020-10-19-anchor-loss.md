@@ -2,7 +2,7 @@
 title: 目标检测中 Anchor 与 Loss 计算的梳理
 date: 2020-10-19 16:59:34
 update: 2020-10-19 16:59:34
-categories: [深度学习]
+categories: DeepLearning
 tags: [ReLU, LeakyReLU, 激活函数, 梯度消失]
 mathjax: true
 ---

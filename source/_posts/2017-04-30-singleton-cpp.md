@@ -1,6 +1,6 @@
 ---
 title: 单例模式(C++)
-categories: 设计模式
+categories: C/C++
 date: 2017-04-30
 update: 2018-04-12
 tags: [单例模式, C++, Singleton]

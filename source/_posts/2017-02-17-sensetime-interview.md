@@ -2,7 +2,7 @@
 title: SenseTime 实习生面试
 date: 2017-02-17
 update: 2018-04-12
-categories: 随笔
+categories: Essay
 tags: [实习生面试，sensetime，虚函数，memcpy]
 ---
 

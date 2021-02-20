@@ -2,7 +2,7 @@
 title: TensorFlow 显示运行中间结果方法
 date: 2019-08-26 11:22:25
 update: 2019-08-26 11:22:25
-categories: TensorFlow
+categories: DeepLearning
 tags: [TensorFlow, 静态图, ckpt, meta]
 ---
 

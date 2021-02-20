@@ -2,7 +2,7 @@
 title: MySQL索引原理及慢查询优化
 date: 2017-04-25
 update: 2018-04-12
-categories: 数据库
+categories: Database
 tags: [慢查询, 索引, MySQL, 数据库, B-Tree]
 ---
 
@@ -54,12 +54,12 @@ MySQL官方对索引的定义为：索引（Index）是帮助MySQL高效获取�
 
 **MyISAM、InnoDB引擎、Memory三个常用引擎类型比较**
 
-| 索引 | MyISAM引擎 | InnoDB引擎 | Memory引擎 |
-| :-: | :-: | :-: | :-: |
-| B-Tree索引 | 支持 | 支持 | 支持 |
-| HASH索引 | 不支持 | 不支持 | 支持 |
-| R-Tree索引 | 支持 | 不支持 | 不支持 |
-| Full-text索引 | 不支持 | 不支持 | 不支持 |
+|     索引      | MyISAM引擎 | InnoDB引擎 | Memory引擎 |
+| :-----------: | :--------: | :--------: | :--------: |
+|  B-Tree索引   |    支持    |    支持    |    支持    |
+|   HASH索引    |   不支持   |   不支持   |    支持    |
+|  R-Tree索引   |    支持    |   不支持   |   不支持   |
+| Full-text索引 |   不支持   |   不支持   |   不支持   |
 
 ### 索引的数据结构（B-Tree & B+ Tree）
 

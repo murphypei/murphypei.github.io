@@ -2,7 +2,7 @@
 title: 使用wireshark抓取本地包
 date: 2017-06-30
 update: 2018-04-12
-categories: 网络编程
+categories: ComputerNetwork
 tags: [wireshark, localhost, 抓包]
 ---
 

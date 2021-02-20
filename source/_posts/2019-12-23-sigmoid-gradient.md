@@ -2,7 +2,7 @@
 title: 梯度消失和梯度爆炸
 date: 2019-12-23 14:33:54
 update: 2019-12-23 14:33:54
-categories: 机器学习
+categories: MachineLearning
 tags: [机器学习, sigmoid, 梯度消失, 梯度爆炸]
 mathjax: true
 ---

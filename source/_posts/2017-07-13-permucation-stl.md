@@ -3,7 +3,7 @@ layout: post
 title: STL中的排列组合算法：字典式排序
 date: 2017-07-13
 update: 2018-04-12
-categories: 算法
+categories: Algorithm
 tags: [C++, 算法, STL, permucation, 排列组合]
 ---
 

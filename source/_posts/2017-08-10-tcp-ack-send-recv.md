@@ -3,7 +3,7 @@ layout: post
 title: TCP发送、接收和确认机制
 date: 2017-08-10
 update: 2018-04-12
-categories: 网络编程
+categories: ComputerNetwork
 tags: [TCP, send, recv, ack]
 ---
 

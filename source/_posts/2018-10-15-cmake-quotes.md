@@ -2,7 +2,7 @@
 title: CMake中引号用法总结
 date: 2018-10-15 16:46:46
 update: 2018-10-15 16:46:46
-categories: CMake
+categories: C/C++
 tags: [CMake, C++, 编译, 链接, 引号]
 ---
 

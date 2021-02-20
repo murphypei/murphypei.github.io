@@ -2,7 +2,7 @@
 title: 核函数的基本原理
 date: 2018-07-02 09:19:44
 update: 2018-07-02 09:19:44
-categories: 机器学习
+categories: MachineLearning
 tags: [机器学习, 核函数, 非线性映射, 回归]
 mathjax: true
 ---

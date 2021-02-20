@@ -3,7 +3,7 @@ layout: post
 title: 排列组合算法(C++)
 date: 2017-05-02
 update: 2018-04-12
-categories: 算法
+categories: Algorithm
 tags: [C++, 排列组合, permucation, 算法]
 ---
 

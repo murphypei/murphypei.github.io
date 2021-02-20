@@ -2,7 +2,7 @@
 title: SVM 核函数数学原理深入理解
 date: 2019-02-25 07:50:05
 update: 2019-02-25 07:50:05
-categories: 机器学习
+categories: MachineLearning
 tags: [机器学习, SVM, 对偶求解, 核函数]
 mathjax: true
 ---

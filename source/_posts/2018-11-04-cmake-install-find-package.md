@@ -2,7 +2,7 @@
 title: CMake库打包以及支持find_package
 date: 2018-11-04 16:46:46
 update: 2018-11-04 16:46:46
-categories: CMake
+categories: C/C++
 tags: [CMake, C++, 编译, 链接, 打包, find_package]
 ---
 

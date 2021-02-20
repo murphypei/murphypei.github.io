@@ -3,7 +3,7 @@ layout: post
 title: 快速求素数序列方法
 date: 2017-07-30
 update: 2018-04-12
-categories: 算法
+categories: Algorithm
 tags: [算法, 素数序列, primer]
 ---
 

@@ -2,7 +2,7 @@
 title: MXNet框架学习（4）：模型加载和使用
 date: 2018-08-24 12:02:41
 update: 2018-08-24 12:02:41
-categories: MxNet
+categories: DeepLearning
 tags: [深度学习, MXNet, Python, pretrained]
 ---
 

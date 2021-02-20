@@ -2,7 +2,7 @@
 title: ROI Align和图像的双线性内插法
 date: 2018-06-07 09:19:44
 update: 2018-06-07 09:19:44
-categories: 深度学习
+categories: DeepLearning
 tags: [mask r-cnn, RoiAlign, 线性插值]
 ---
 

@@ -2,7 +2,7 @@
 title: 深度学习中的动量(momentum)
 date: 2018-12-17 12:02:41
 update: 2018-12-17 12:02:41
-categories: 深度学习
+categories: DeepLearning
 tags: [深度学习, 训练参数, 动量, momentum]
 ---
 

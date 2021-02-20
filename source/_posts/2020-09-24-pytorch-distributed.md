@@ -2,7 +2,7 @@
 title: PyTorch 多进程分布式训练实战
 date: 2020-09-24 16:02:34
 update: 2020-09-24 16:02:34
-categories: PyTorch
+categories: DeepLearning
 tags: [PyTorch, distributed, multiprocessing]
 ---
 

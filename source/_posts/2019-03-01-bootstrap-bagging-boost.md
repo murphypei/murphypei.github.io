@@ -2,7 +2,7 @@
 title: 集成学习方法小结
 date: 2019-03-01 07:50:05
 update: 2019-03-01 07:50:05
-categories: 机器学习
+categories: MachineLearning
 tags: [机器学习, 分类算法, Bootstrap, Bagging, Boosting]
 mathjax: true
 ---

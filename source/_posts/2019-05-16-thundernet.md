@@ -2,7 +2,7 @@
 title: 目标检测之 ThunderNet
 date: 2019-05-16 10:45:52
 update: 2019-05-16 10:45:52
-categories: 深度学习
+categories: DeepLearning
 tags: [thundernet, 目标检测, shufflenet, FPN, spatial attention]
 mathjax: true
 ---

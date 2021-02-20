@@ -2,7 +2,7 @@
 title: 机器学习中熵、交叉熵和 KL 散度的介绍
 date: 2020-09-15 10:38:59
 update: 2020-09-15 10:38:59
-categories: 机器学习
+categories: MachineLearning
 tags: [熵, KLD, 交叉熵, KL 散度]
 mathjax: true
 ---

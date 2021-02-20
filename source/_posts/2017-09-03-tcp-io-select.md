@@ -3,7 +3,7 @@ layout: post
 title: 如何判断TCP连接是否可用？
 date: 2017-09-03
 update: 2018-04-12
-categories: 网络编程
+categories: ComputerNetwork
 tags: [TCP, 心跳检测, KeepAlive, select]
 ---
 
