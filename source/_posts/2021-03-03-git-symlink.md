@@ -1,5 +1,5 @@
 ---
-title: git 不同平台下软链接问题
+title: Git 不同平台下软链接问题
 date: 2021-03-03 15:05:06
 update: 2021-03-03 15:05:06
 categories: Git
