@@ -7,12 +7,12 @@
 `git clone --recursive https://github.com/murphypei/hexo-blog` 
 
 * 安装 Nodejs
-    * 下载(Nodejs)[https://nodejs.org/en/download/]库包并解压缩
-    * 然后添加`${node-path}/bin`到`$PATH`中
+    * `sudo apt install nodejs npm`
 * 配置 npm 淘宝库
     * `npm config set registry https://registry.npm.taobao.org`
     * 验证: `npm config get registry`
 * 安装插件
+    * `sudo npm install hexo-cli -g`
     * `npm install`
 
 ### 运行
