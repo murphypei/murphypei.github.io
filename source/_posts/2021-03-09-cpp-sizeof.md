@@ -2,7 +2,7 @@
 title: C++ sizeof 总结
 date: 2021-03-09 17:02:13
 update: 2021-03-09 17:02:13
-categories: C++
+categories: C/C++
 tags: [C++, sizeof]
 ---
 

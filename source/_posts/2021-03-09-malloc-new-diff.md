@@ -2,7 +2,7 @@
 title: C++ 中 malloc 和 new 的区别
 date: 2021-03-09 16:58:07
 update: 2021-03-09 16:58:07
-categories: C++
+categories: C/C++
 tags: [C++, malloc, new, operator new, delete, free]
 ---
 
