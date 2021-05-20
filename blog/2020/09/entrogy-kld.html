@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/title_favicon_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/title_favicon_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/title_favicon_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="我在之前的文章：机器学习中关于熵的一些概念 已经记录了机器学习中一些常见的关于熵的概念，最近看到一篇关于交叉熵和 KL 散度的英文文章，觉得不错，就大概翻译记录一下。">
+<meta name="keywords" content="熵,KLD,交叉熵,KL 散度">
+<meta property="og:type" content="article">
+<meta property="og:title" content="机器学习中熵、交叉熵和 KL 散度的介绍">
+<meta property="og:url" content="https://murphypei.github.io/blog/2020/09/entrogy-kld.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="我在之前的文章：机器学习中关于熵的一些概念 已经记录了机器学习中一些常见的关于熵的概念，最近看到一篇关于交叉熵和 KL 散度的英文文章，觉得不错，就大概翻译记录一下。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-04-07T06:54:43.080Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="机器学习中熵、交叉熵和 KL 散度的介绍">
+<meta name="twitter:description" content="我在之前的文章：机器学习中关于熵的一些概念 已经记录了机器学习中一些常见的关于熵的概念，最近看到一篇关于交叉熵和 KL 散度的英文文章，觉得不错，就大概翻译记录一下。">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2020/09/entrogy-kld">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>机器学习中熵、交叉熵和 KL 散度的介绍 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2020/09/entrogy-kld.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="murphypei">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/avatar_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">机器学习中熵、交叉熵和 KL 散度的介绍
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-09-15 10:38:59" itemprop="dateCreated datePublished" datetime="2020-09-15T10:38:59+08:00">2020-09-15</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-04-07 14:54:43" itemprop="dateModified" datetime="2021-04-07T14:54:43+08:00">2021-04-07</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/MachineLearning/" itemprop="url" rel="index"><span itemprop="name">MachineLearning</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>4.3k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>7 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>我在之前的文章：<a href="https://murphypei.github.io/blog/2019/12/entropy.html">机器学习中关于熵的一些概念</a> 已经记录了机器学习中一些常见的关于熵的概念，最近看到一篇关于交叉熵和 KL 散度的英文文章，觉得不错，就大概翻译记录一下。</p>
+<a id="more"></a>
+<p>熵这一术语起源于统计热力学，是物理学的一个子领域。然而对于机器学习，我们更感兴趣的是信息论或香农熵定义的熵。这种熵的表述与信息的相关概念密切相关。熵是从某个随机过程产生的信息的平均速率。因此，我们首先需要解释“信息”一词在信息理论上下文中的含义。</p>
+<h3 id="信息和概率"><a href="#信息和概率" class="headerlink" title="信息和概率"></a>信息和概率</h3><p>信息论中的信息通常是以比特为单位来衡量的，它可以被宽泛地定义为从一个给定事件中产生的“惊奇”的数量。举一个简单的例子——想象一下，我们有一个极其不公平的硬币，当抛出时，它有 99% 的机会正面着陆，而反面着陆的机会只有 1% 。我们可以使用集合符号 ${0.99, 0.01}$ 来表示。</p>
+<p>如果我们掷硬币一次，硬币正面朝上落地，我们不会感到很惊讶，因此这种事件“传递”的信息很低。或者，如果它落在反面，我们会非常惊讶（考虑到我们对硬币的了解），因此这样一个事件的信息会很高。这在数学上可以用以下公式表示:</p>
+<script type="math/tex; mode=display">
+I(E) = -log[Pr(E)] = -log(P)</script><p>这个方程给出了随机事件 E 中包含的信息：由<strong>事件概率的负对数</strong>给出的。这可以更简单地表示为 $-log(p)$。需要注意的一点是，如果我们处理的是以比特表示的信息，即每个比特不是 0 就是 1，对数的底是 2，所以 $I(E) = -log_{2}(p)$。机器学习中经常使用的一个替代单元是 <strong>nats</strong>，它适用于使用自然对数的地方。</p>
+<p>对于我们不公平硬币的掷硬币事件，正面所包含的信息为 $-log_{2}(0.99) = 0.0144$ 位，这个值相当低，负面的信息等于 6.64 位。因此，这与上面讨论过的对信息的解释很好地吻合。</p>
+<p>现在，回想一下熵被定义为从一个随机过程中产生的平均信息率。抛硬币过程中产生的平均或预期信息率是多少？</p>
+<h3 id="熵和信息"><a href="#熵和信息" class="headerlink" title="熵和信息"></a>熵和信息</h3><p>我们如何计算事物的期望值或平均值？回想一下，变量 $x$ 的期望值是:</p>
+<script type="math/tex; mode=display">
+E[X] = \sum_{i=1}^{n} x_{i}p_{i}</script><p>其中 $x<em>{i}$ 是 $x$ 的某个可能值，$p</em>{i}$ 是该可能值出现的概率。<strong>熵是信息的期望</strong>，因此定义为：</p>
+<script type="math/tex; mode=display">
+H(X) = E[I(X)] = E[-log(P(X))] = -\sum_{i=1}^{n}P(x_{i})logP(x_{i})</script><p>同样是上述的抛硬币问题，可以很容易求解抛硬币这件事的熵：</p>
+<script type="math/tex; mode=display">
+H(X) = -(0.99log(0.99) + 0.01log(0.01)) = 0.08bit</script><p>可以说，不公平硬币是一个平均信息传递率为 0.08bit 的随机信息发生器。这是相当小的，因为它被正面结果的高概率所支配。然而，应该指出的是，一枚公平的硬币会产生 1bit 的熵。以上这个例子应该能让你清楚地知道熵是什么，它测量的是什么，以及如何计算它。</p>
+<h3 id="机器学习和熵"><a href="#机器学习和熵" class="headerlink" title="机器学习和熵"></a>机器学习和熵</h3><p>你可能想知道熵在机器学习中的应用，比如交叉熵的核心概念，你们可能已经很熟悉了，我稍后也将详细介绍。然而，熵本身也被用于机器学习。一个值得注意的和有指导意义的例子是它在强化学习的政策梯度优化中的应用。在这种情况下，训练一个神经网络来控制某个 agent，其输出由一个 softmax 层组成。这个 softmax 层是 agent 的 action 的一个概率分布，根据这个概率分布可以选择最佳 action。</p>
+<p>比如对于一个 action 空间为 4 的强化网络，其输出结果可能为：${0.9, 0.05, 0.025, 0.025}$。在这个例子中，代理最有可能选择第一个操作（即概率为 0.9）。但熵是怎么产生的呢？强化学习中需要解决的一个关键问题是确保 agent 不会过快地学会在一组行动或策略上收敛，也就是所谓的鼓励性探索。在强化学习的政策梯度版本中，可以通过将输出层熵的负值放入损失函数来鼓励探索。因此，随着损失最小化，行为概率趋于缩小和稳定，以抵消负熵的增加。</p>
+<blockquote>
+<p>这一段比较难翻译，大概意思就是如果 softmax 收敛到某个结果（概率很大），则熵比较小（事件很确定，参考上述 0.99 的硬币）。而强化学习中鼓励探索性搜索，所以希望熵大一点，也就是概率分布在每个 action 上都比较平均。所以将熵的负值加入到损失函数中。这样相当于最小化损失函数时，鼓励熵增。</p>
+</blockquote>
+<p>比如上述的例子，如果 softmax 输出是 ${0.9, 0.05, 0.025, 0.025}$，则其在损失函数中的负熵为：-0.61。如果输出是 ${0.3, 0.2, 0.25, 0.25}$，则其在损失函数中的负熵为：-1.98，损失函数的值也因此变小，因此这也是损失函数优化的一种方向趋势。</p>
+<p>在机器学习的某些贝叶斯方法中也使用了熵，但这里不讨论熵。现在是考虑常用交叉熵损失函数的时候了。</p>
+<h3 id="交叉熵和-KL-散度"><a href="#交叉熵和-KL-散度" class="headerlink" title="交叉熵和 KL 散度"></a>交叉熵和 KL 散度</h3><p>交叉熵的核心是测量两个概率分布 P 和 Q 之间的“距离”。正如你所观察到的，<strong>熵本身只是一个概率分布的度量</strong>。因此如果我们试图找到一种方法来建模一个真正的概率分布 P，比如说使用一个神经网络产生一个近似的概率分布 Q，那么就需要某种可以最小化的距离或差异度量。交叉熵的差异度量来源于 Kullback-Leibler(KL) 散度。这可以从交叉熵函数的定义中看出:</p>
+<script type="math/tex; mode=display">
+H(p, q) = H(p) + D_{KL}(p \parallel q)</script><p>第一个项，在优化过程中，<strong>真实概率分布 P 的熵是固定的</strong>，因此它在优化过程中是一个附加常数。在优化过程中，只有第二种近似分布的参数 Q 可以改变，因此度量两种分布距离的交叉熵的核心就是 KL 散度函数。</p>
+<blockquote>
+<p>这个是转换的核心，特别是对于机器学习来说，训练集的数据和标签集合就是真实概率分布，对于确定的训练集，这个概率分布是确定的，也就是在训练过程中是一个常数。所以多分类训练的时候，交叉熵损失可以用 KL 散度代替。</p>
+</blockquote>
+<p>从信息论的角度来看，两个分布之间的 KL 散度有许多不同的解释。简而言之，这也是一种“惊讶”的表达方式。假设 P 和 Q 很接近，如果事实证明它们并非如此，那就令人惊讶了，因此在这些情况下，KL 散度将会很大。如果它们靠得很近，那么 KL 散度就会很低。</p>
+<blockquote>
+<p>惊讶本质就是描述事件包含的信息。散度本质就是距离。</p>
+</blockquote>
+<p>从贝叶斯观点来看，KL 散度的另一种解释也是非常直观的。这种解释认为 KL 分歧是当我们从先验概率分布 Q 到后验概率分布 P 时所获得的信息。KL 散度的表达式也可以用似然比的方法推导出来。</p>
+<blockquote>
+<p>关于先验概率和后验概率，以及最大后验概率估计，可以参考<a href="https://murphypei.github.io/blog/2020/03/mle-map.html">最大似然估计和最大后验概率估计</a>。</p>
+</blockquote>
+<h4 id="贝叶斯方法推导-KL-散度"><a href="#贝叶斯方法推导-KL-散度" class="headerlink" title="贝叶斯方法推导 KL 散度"></a>贝叶斯方法推导 KL 散度</h4><p>似然比函数定义：</p>
+<script type="math/tex; mode=display">
+LR = \frac{p(x)}{q(x)}</script><p>这可以解释为：如果一个值 $x$ 是从某个未知的分布中取样，似然比表示样本来自分布 P 的可能性比来自分布 Q 的可能性大多少。如果它更有可能来自 P，LR &gt; 1，否则如果它更有可能来自 Q，LR &lt; 1。</p>
+<p>假设我们有很多独立的样本，我们想要在考虑到所有这些证据的情况下，估计出可能性函数，然后变成：</p>
+<script type="math/tex; mode=display">
+LR = \prod_{i=0}^{n}\frac{p(x_{i})}{q(x_{i})}</script><p>如果我们把这个比率转换成对数，就可以把上面定义中的乘积变成一个总和：</p>
+<script type="math/tex; mode=display">
+LR = \sum_{i=0}^{n}log\left(\frac{p(x_{i})}{q(x_{i})}\right)</script><p>现在我们把似然比作为总和。假设我们想要回答这样一个问题: 平均每个样本可能性, $p(x)$ 比 $q(x)$ 大多少？要做到这一点，我们可以采取的期望值的似然比，并得到：</p>
+<script type="math/tex; mode=display">
+D_{KL}(P\parallel Q) = \sum_{i=0}^{n}p(x_{i})log\left(\frac{p(x_{i})}{q(x_{i})}\right)</script><p>上面的表达式就是 KL 散度的定义。它基本上是似然比的期望值。其中似然比表示的是样本数据来自分布 P 而不是分布 Q 的可能性有多大。另一种表示上述定义的方法如下(使用对数规则) :</p>
+<script type="math/tex; mode=display">
+D_{KL}(P\parallel Q) = \sum_{i=0}^{n}p(x_{i})log (p(x_{i})) – \sum_{i=0}^{n}p(x_{i})log (q(x_{i}))</script><p>上述方程中的第一项是分布 P 的熵。正如你所记得的，它是 P 的信息含量的期望值。第二项是 Q 的信息量，但是通过 P 的分布加权的（而不是 Q 的分布）。如果 P 是“真实”分布，那么 KL 散度就是该分布通过 Q 表达（或称为<strong>编码</strong>）时“丢失”的信息量。</p>
+<p>不管你怎么解释 KL 散度，它显然是概率分布 P 和 Q 之间的差值。然而它只是一个“准”距离测度，因为 $D<em>{KL}(P \parallel Q) \neq D</em>{KL}(Q \parallel P)$。</p>
+<p>现在我们需要说明 KL 散度是如何产生交叉熵函数的。</p>
+<h3 id="交叉熵"><a href="#交叉熵" class="headerlink" title="交叉熵"></a>交叉熵</h3><p>如前所述，交叉熵是“真实”分布 P 的熵和 P 与 Q 之间 KL 散度的组合：</p>
+<script type="math/tex; mode=display">
+H(p, q) = H(p) + D_{KL}(p \parallel q)</script><p>利用熵和 KL 散度的定义，以及对数规则，我们可以得到以下交叉熵的定义:</p>
+<script type="math/tex; mode=display">
+H(p, q) = – \sum_{i=0}^{n}p(x_{i})log (q(x_{i}))</script><p>在神经网络的分类任务中使用这个函数看起来像什么？在这样的任务中，我们通常要处理的真实分布 P 是一个 one-hot 编码。例如在 MNIST 手写数字分类任务中，如果图像表示手写数字“2” ，P 就是：${0, 0, 1, 0, 0, 0, 0, 0, 0, 0}$。</p>
+<p>我们的神经网络在这样一个任务的输出层将是一个 softmax层，其中所有的输出已被规范化，所以他们的和为 1，代表一个准概率分布。这张图片的输出层 Q 可以是：${0.01, 0.02, 0.75, 0.05, 0.02, 0.1, 0.001, 0.02, 0.009, 0.02}$。</p>
+<p>为了得到预测的类，我们将在输出上运行 $argmax$，在这个例子中，我们将得到正确的预测。然而，观察交叉熵损失函数在这种情况下是如何工作的。对于除 $i=2$ 以外的所有值，$p(x_{i})=0$，因此这些索引的总和中的值为 0。唯一没有零值的索引是 $i=2$。因此，对于 one-hot 编码向量，交叉熵折叠为:</p>
+<script type="math/tex; mode=display">
+H(p,q) = -log(q(x_{i}))</script><p>在本例中，交叉熵损失为 $-log(0.75)=0.287$（使用 nats 作为信息单位）。对于 $i=2$ 指数，Q 值越接近 1，损失就越小。这是因为对于这个指标，P 和 Q 之间的 KL 散度减小了。</p>
+<p>有人可能会问，如果交叉熵损失的分类任务降低到一个单一的输出节点计算，神经网络如何学习既增加真实索引的值，并减少所有其他节点的值？它通过节点之间通过权重进行交叉相互作用来实现这一点，通过 softmax 激活函数指数本身的性质（各项相加等于 1），如果一个单一的指数被鼓励增加，那么所有其他的指数/输出类别将被鼓励在 softmax 激活函数中减少。</p>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>murphypei</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2020/09/entrogy-kld.html" title="机器学习中熵、交叉熵和 KL 散度的介绍">https://murphypei.github.io/blog/2020/09/entrogy-kld.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/熵/" rel="tag"># 熵</a>
+            
+              <a href="/tags/KLD/" rel="tag"># KLD</a>
+            
+              <a href="/tags/交叉熵/" rel="tag"># 交叉熵</a>
+            
+              <a href="/tags/KL-散度/" rel="tag"># KL 散度</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2020/07/win10-ssh.html" rel="next" title="win10 上使用 SSH 实践">
+                  <i class="fa fa-chevron-left"></i> win10 上使用 SSH 实践
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2020/09/pytorch-distributed.html" rel="prev" title="PyTorch 多进程分布式训练实战">
+                  PyTorch 多进程分布式训练实战 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#信息和概率"><span class="nav-number">1.</span> <span class="nav-text">信息和概率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#熵和信息"><span class="nav-number">2.</span> <span class="nav-text">熵和信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#机器学习和熵"><span class="nav-number">3.</span> <span class="nav-text">机器学习和熵</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#交叉熵和-KL-散度"><span class="nav-number">4.</span> <span class="nav-text">交叉熵和 KL 散度</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#贝叶斯方法推导-KL-散度"><span class="nav-number">4.1.</span> <span class="nav-text">贝叶斯方法推导 KL 散度</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#交叉熵"><span class="nav-number">5.</span> <span class="nav-text">交叉熵</span></a></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar_128.ico"
+      alt="murphypei">
+  <p class="site-author-name" itemprop="name">murphypei</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">159</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">400</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">murphypei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">570k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">15:51</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '4577ff843f77e311bdbcb54e3b863fde',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

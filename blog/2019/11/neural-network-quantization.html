@@ -1,0 +1,1737 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/title_favicon_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/title_favicon_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/title_favicon_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="神经网络虽然在多个领域取得了非常巨大的成就，但是其本质是大量参数的拟合和泛化，如果想处理更加复杂的任务，在没有过拟合的情况下，增加训练数据和加大网络规模无疑是简单有效的手段。现实情况就是这么做的，但是巨大的参数量和复杂的网络结构造成了两个主要的问题：模型体积和运算速度。这两个问题会带来诸如内存容量，内存存取带宽，移动端还有电量消耗等一系列问题，大大限制了神经网络的应用场景。">
+<meta name="keywords" content="深度学习,TensorRT,神经网络,量化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="神经网络量化方法">
+<meta property="og:url" content="https://murphypei.github.io/blog/2019/11/neural-network-quantization.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="神经网络虽然在多个领域取得了非常巨大的成就，但是其本质是大量参数的拟合和泛化，如果想处理更加复杂的任务，在没有过拟合的情况下，增加训练数据和加大网络规模无疑是简单有效的手段。现实情况就是这么做的，但是巨大的参数量和复杂的网络结构造成了两个主要的问题：模型体积和运算速度。这两个问题会带来诸如内存容量，内存存取带宽，移动端还有电量消耗等一系列问题，大大限制了神经网络的应用场景。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/dl/quantization/map.jpg">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/dl/quantization/fp32_number_count.jpg">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/dl/quantization/ncnn_conv_quantization.jpg">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/dl/quantization/ncnn_conv_quantization.jpg">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/dl/quantization/iao_relu_layer.jpg">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/dl/quantization/iao_fusion.png">
+<meta property="og:updated_time" content="2021-04-07T06:54:43.080Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="神经网络量化方法">
+<meta name="twitter:description" content="神经网络虽然在多个领域取得了非常巨大的成就，但是其本质是大量参数的拟合和泛化，如果想处理更加复杂的任务，在没有过拟合的情况下，增加训练数据和加大网络规模无疑是简单有效的手段。现实情况就是这么做的，但是巨大的参数量和复杂的网络结构造成了两个主要的问题：模型体积和运算速度。这两个问题会带来诸如内存容量，内存存取带宽，移动端还有电量消耗等一系列问题，大大限制了神经网络的应用场景。">
+<meta name="twitter:image" content="https://murphypei.github.io/images/posts/dl/quantization/map.jpg">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2019/11/neural-network-quantization">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>神经网络量化方法 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/11/neural-network-quantization.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="murphypei">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/avatar_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">神经网络量化方法
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-11-18 10:53:26" itemprop="dateCreated datePublished" datetime="2019-11-18T10:53:26+08:00">2019-11-18</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-04-07 14:54:43" itemprop="dateModified" datetime="2021-04-07T14:54:43+08:00">2021-04-07</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/DeepLearning/" itemprop="url" rel="index"><span itemprop="name">DeepLearning</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>9.7k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>16 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>神经网络虽然在多个领域取得了非常巨大的成就，但是其本质是大量参数的拟合和泛化，如果想处理更加复杂的任务，在没有过拟合的情况下，增加训练数据和加大网络规模无疑是简单有效的手段。现实情况就是这么做的，但是巨大的参数量和复杂的网络结构造成了两个主要的问题：模型体积和运算速度。这两个问题会带来诸如内存容量，内存存取带宽，移动端还有电量消耗等一系列问题，大大限制了神经网络的应用场景。</p>
+ <a id="more"></a>
+<h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>为了解决这些问题，目前的研究方向主要就是两方面：一是精心设计小巧而有效的网络结构取代大网络模型，二是通过压缩和编码的方式直接减小现有网络的规模。量化就是一种很好的压缩和编码方式，量化的目的很简单，就是减小存储体积和加速运算，有效解决神经网络的根本问题，并且在实际的一些应用中表现出色，也是目前采用最广泛的压缩和编码方式。如果在一些小巧的网络中再使用量化，就可以进一步压缩和加速网络，使其能够移植到移动端，例如，TensorFlow 量化的 MobileNetV1  仅为 4.8 MB，这甚至比大多数 GIF 动图还要小，从而可以轻松地部署在任何移动平台上。</p>
+<p>量化简单来说就是使用一种低精度的方式来作为存储和计算的数值表示方式。一般而言，在神经网络构建和训练时使用 float，也就是 FP32 作为一种通用的数据表示方式。量化使用 FP16（半精度浮点），INT8/UINT8（8 位的定点整数）等低精度数值格式来存储以及计算，目前低精度往往都是指 INT8/UINT8。当然，存储和计算并不是严格要保持一致的，有些参数或操作符必须采用 FP32 格式才能保持准确度，因此还有一种混合精度的表示方式，<a href="https://devblogs.Nvidia.com/mixed-precision-training-deep-neural-networks/" target="_blank" rel="noopener">TensorRT 中就使用了这种计算方式</a>。也有一些更加特殊的量化方式，二进制（0，1）、三元量化（-1，0，+1）、4 位整数等等，这些特殊的方式可以在一些特殊的网络中应用，用于进一步压缩，不过本文不对这些方法进行表述，有兴趣可以查阅这篇关于<a href="https://arxiv.org/abs/1710.09282" target="_blank" rel="noopener">模型压缩和加速的综述</a>。因为不同精度数值表示的范围和单位数值都不一样（如下表所示），因此我们必须做点什么来减少这种精度损失。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:center">Dynamic Range</th>
+<th style="text-align:center">Min Positive Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">FP32</td>
+<td style="text-align:center">-3.4x10^38 ~ +3.4x10^38</td>
+<td style="text-align:center">1.4x10^-45</td>
+</tr>
+<tr>
+<td style="text-align:center">FP16</td>
+<td style="text-align:center">-65504 ~ +65504</td>
+<td style="text-align:center">5.95x10^-8</td>
+</tr>
+<tr>
+<td style="text-align:center">INT8</td>
+<td style="text-align:center">-128 ~ +127</td>
+<td style="text-align:center">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>本文将简要介绍目前应用最为广泛的 NVIDIA 的 TensorRT 和 Google 的 IAO 量化方法，这两个量化方法都属于 8-bit 量化，其本质原理是类似的，只不过在一些实际应用操作上面，各有自己的理解和不同。</p>
+<h2 id="TensorRT-量化方法"><a href="#TensorRT-量化方法" class="headerlink" title="TensorRT 量化方法"></a>TensorRT 量化方法</h2><p>神经网络的计算主要集中在<strong>卷积层和全连接层</strong>，量化也是针对这两个层做的。这两个层的计算都是可以表示为：output = input * weights + bias。因为现在的深度学习框架会将卷积和全连接层的计算都打包成矩阵相乘的形式，因此大量的计算都集中在矩阵相乘上了。TensorRT 的量化思路就是用 INT8 代替 FP32 进行两个矩阵相乘计算。</p>
+<h3 id="TensorRT-量化原理"><a href="#TensorRT-量化原理" class="headerlink" title="TensorRT 量化原理"></a>TensorRT 量化原理</h3><p>TensorRT 的线性量化公式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Tensor Values = FP32 scale factor * INT8 array + FP32 bias</span><br></pre></td></tr></table></figure>
+<p>在这个量化公式中，FP32 数值（Tensor Values）被表示成 INT8 数值（INT8 array）乘以量化因子加上一个量化偏，两个参数均为 FP32 类型。因此，利用上述的公式可以表示神经网络中两个矩阵相乘：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">A = scale_A * QA + bias_A</span><br><span class="line">B = scale_B * QB + bias_B</span><br><span class="line">A * B = scale_A * scale_B * QA * QB + scale_A * QA * bias_B + scale_B * QB * bias_A + bias_A * bias_B</span><br></pre></td></tr></table></figure>
+<p>NVIDIA 研究人员通过实现发现，其实我们并不需要在量化的时候加上偏置。我理解主要是因为偏置对于一组数值而言，其改变的是数值的分布位置，但是当前神经网络的归一化操作很多，因此可以去掉偏置。当然了，实验出的结果更有说服力。因此两个矩阵相乘的量化表示可以简化为：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A * B = scale_A * scale_B * QA * QB</span><br></pre></td></tr></table></figure>
+<p>这样就很明显了，只要我们有两个矩阵的 scale 以及量化后的矩阵，我们就可以表示其 FP32 的相乘结果。而量化后的矩阵就是 FP32 除以 scale 得到的，FP32 的数值是已知的（训练好的参数或者输入），因此量化的问题就变成了如何得到量化参数 scale factor。</p>
+<p>既然是相乘，我们首先想大了线性映射，线性映射就是找一个值除以 INT8 的最大值，就可以求得 scale factor。TensorRT 介绍关于这个线性映射倍数的求解方法，有两种不同的方式：</p>
+<p><img src="/images/posts/dl/quantization/map.jpg" alt></p>
+<ul>
+<li>非饱和映射：找到这组 FP32 数值的绝对值最大值 |max| 作为 FP32 的映射最大值</li>
+<li>饱和映射：通过其他方法找到一个更加合适的阈值 T&lt;=|max| 作为 FP32 的映射最大值</li>
+</ul>
+<p>很明显，如果数值分布不够集中，比如有一些奇异点（很大或者很小），非饱和映射导致 scale factor 偏大，因为 INT8 单位精度远小于 FP32，就会让 FP32 中很多数集中在 INT8 的某几个数字上，带来了严重的精度影响。因此 TensorRT 采用了饱和映射，并且使用 KLD（KL 散度）方法寻找阈值 T。下图是 NVIDIA 官方 PPT 中对一些网络的激活值的分布的统计：</p>
+<p><img src="/images/posts/dl/quantization/fp32_number_count.jpg" alt></p>
+<h3 id="KLD"><a href="#KLD" class="headerlink" title="KLD"></a>KLD</h3><p>FP32 用 INT8 表示，本质就是一种再编码，这个学过通信技术的同学可能会容易理解。对于两种不同的编码方式，可以采用一种称为交叉熵的方式计算二者的差异性，本文并不想过多的着墨于信息论中关于信息熵的这些知识，这些知识通过搜索引擎可以获取，只介绍相关知识。</p>
+<p>首先是信息熵，对于一种编码，其是符号的集合，每种符号都有其出现的概率，<strong>信息熵</strong>的大小可以表示为：</p>
+<script type="math/tex; mode=display">
+H(X,p) = -\sum_{x \in X}p(x)\log p(x)</script><p>其中 $p(x)$ 是符号出现的概率，$-\log p(x)$ 就是这个符号的信息，这就是信息论的核心和理论基础，信息的表示。$-\log p(x)$ 也可以看作是每个符号的编码长度，因此信息熵也可以表示编码长度的期望。</p>
+<p>当我们使用另一种编码 $q(x)$ 方式去表示这个信息，求得编码长度的期望称之为<strong>交叉熵</strong>：</p>
+<script type="math/tex; mode=display">
+H(X,p,q) = -\sum_{x \in X}p(x)\log q(x)</script><p>一般而言，信息熵是最优编码，因此其编码期望就是最小编码长度，因此交叉熵必然是大于等于信息熵，我们可以计算两种不同编码表示的长度期望的差异，也是两个信息熵的差值：</p>
+<script type="math/tex; mode=display">
+D(p||q) = H(X,p,q) - H(X,p) = -\sum_{x \in X}p(x)(\log q(x)- \log p(x))</script><p>上述两个信息熵的差值称之为<strong>相对熵</strong>，KLD 就是使用相对熵来描述两个不同数值分布的差异性。如果想要量化某一组数值，其具体做法如下：</p>
+<ol>
+<li>准备一个校准数据集，覆盖模型的使用场景即可，数量不需要很多。</li>
+<li>将数据集的每张图片都通过模型做一次预测，在这个过程中，对所有要量化的层的 FP32 数值分布进行统计，得到 |max|。<ul>
+<li>量化是针对每个 channel 单独做的，因此<strong>卷积层的每个 channel 都是单独统计、计算和量化的</strong>，后续操作也是。</li>
+</ul>
+</li>
+<li>将 0~|max| 分成 n 个 bin，然后再次遍历所有图片，让每个量化层中的数值落到其属于的 bin 中，统计每个 bin 的数目。<ul>
+<li>|max| / n 就可以得到每个 bin 的宽度 w，因此  就分为了 0~w, w~2*w…(n-1)*w~|max| 总共 n 个 bin。</li>
+<li>对每个数值按照其绝对值分到不同 bin 中。</li>
+<li>TensorRT 官方使用的 n 是 2048，mxnet 是 4096，n 越大越好，但是计算量会上升。</li>
+</ul>
+</li>
+<li>遍历第 128~n 个 bin：<ul>
+<li>以当前 bin 的中值作为阈值 T，在其上做截断，将大于当前 bin 以外的 bin 的统计数目加到当前 bin 上，这一步是为了减少直接抹去这些数值带来的影响；</li>
+<li>计算此时的概率分布 P，每个 bin 的概率就是其统计数目除以数值的总数；</li>
+<li>创建一个新的编码 Q，其长度是128，其元素的值就是 P 量化后的 INT8 数值（正数是0~+127，负数是-128~-1)；</li>
+<li>因为 Q 分布只有 128 个编码，为了计算交叉熵，将其扩展到和 P 同样的长度；</li>
+<li>计算 P 和 Q 的相对熵，记录当前相对熵和阈值 T</li>
+</ul>
+</li>
+<li>选择最小的相对熵和其对应阈值 T，计算 scale factor = T / 127<ul>
+<li>实际代码中使用的是 scale factor = 127 / T，这样 FP32 到 INT8 量化的时候可以使用乘法而不是除法。</li>
+</ul>
+</li>
+<li>对每个 bin，取其中值作为这个 bin 当前的 FP32 表示，然后除以 scale factor，然后四舍五入，就得到了其量化后的 INT8 数值，将这个 bin 中所有的 FP32 数值都映射为这个 INT8 表示的数。多个 bin 可能映射为同一个 INT8 数字。</li>
+</ol>
+<p>上述流程就是 TensorRT 中寻找阈值和计算 scale factor 的流程，有几个点还需要注意：首先为什么阈值遍历要从 128 开始呢？因为 INT8 可以表示的整数个数（正值）有128个，小于这个数值则直接一一对应即可。其次如果扩展 q 分布呢？TensorRT 官方 PPT 的例子，据说是这样的：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">P=[1 0 2 3 5 3 1 7]     // fp32 的统计直方图，T=8</span><br><span class="line">// 假设只量化到两个 bins，即量化后的值只有 -1/0/+1 三种</span><br><span class="line">Q=[1+0+2+3, 5+3+1+7] = [6, 16]</span><br><span class="line">// P 和 Q 现在没法做 KL 散度，所以要将 Q 扩展到和 P 一样的长度</span><br><span class="line">Q_expand = [6/3, 0, 6/3, 6/3, 16/4, 16/4, 16/4, 16/4] = [2 0 2 2 4 4 4 4]  // P 中有 0 时，不算在内</span><br><span class="line">D = KL(P||Q_expand)  // 这样就可以做 KL 散度计算了</span><br></pre></td></tr></table></figure>
+<p>这个扩展的操作，就像图像的上采样一样，将低精度的统计直方图(Q)，上采样的高精度的统计直方图上去(Q_expand)。由于 Q 中一个 bin 对应 P 中的 4 个bin，因此在 Q 上采样的 Q_expand 的过程中，所有的数据要除以 4。但若分布P 中有 bin 值为 0 时，是不算在内的，所以 6 只需要除以 3。</p>
+<p>以上内容很多细节都来自 NCNN，其使用了和 TensorRT 一样的量化机制，因为 TensorRT 不开源，细节不得知，因此只有通过 NCNN 代码来了解一些细节的实现。下面具体讲讲 NCNN 中量化的一些实现。</p>
+<h3 id="NCNN-量化实现"><a href="#NCNN-量化实现" class="headerlink" title="NCNN 量化实现"></a>NCNN 量化实现</h3><p>NCNN 主要对 conv 和 fc 的计算进行量化，具体就是对输入数据 input_data 和 模型权重 weights 进行量化，实现的量化机制就是 TensorRT 的量化方法。我主要讲解 conv 层的量化实现。</p>
+<p>首先是通过校准数据集生成量化表，这个量化表主要存放的就是量化的 scale factor，这个表的生成是离线的，量化表的实现在 <a href="https://github.com/Tencent/ncnn/blob/master/tools/quantize/ncnn2table.cpp" target="_blank" rel="noopener">ncnn2table.cpp</a> 中。NCNN 将 weights 和 input_data 分开计算的 scale factor。</p>
+<h4 id="量化权重"><a href="#量化权重" class="headerlink" title="量化权重"></a>量化权重</h4><p>对于 weights，NCNN 并没有通过 KLD 来寻找阈值，而是<strong>直接利用最大值来计算 scale factor</strong>，这个做法和 NVIDIA 官方 PPT 中的做法是一致的，其中也提到了 <strong>weights 不需要饱和量化，只需要非饱和量化</strong>。我猜测其原因是 weights 的数值分布比较集中。关于 weights 的 scale factor 计算可以查看 <a href="https://github.com/Tencent/ncnn/blob/master/tools/quantize/ncnn2table.cpp#L142" target="_blank" rel="noopener">QuantNet::get_conv_weight_blob_scales</a> 这个函数。这里贴出其核心逻辑：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> n=<span class="number">0</span>; n&lt;((ncnn::Convolution*)layer)-&gt;num_output; n++)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">const</span> ncnn::Mat weight_data_n = ((ncnn::Convolution*)layer)-&gt;weight_data.range(weight_data_size_output * n, weight_data_size_output);</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">float</span> *data_n = weight_data_n;</span><br><span class="line">    <span class="keyword">float</span> max_value = <span class="built_in">std</span>::numeric_limits&lt;<span class="keyword">float</span>&gt;::min();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; weight_data_size_output; i++)</span><br><span class="line">        max_value = <span class="built_in">std</span>::max(max_value, <span class="built_in">std</span>::<span class="built_in">fabs</span>(data_n[i]));</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (quant_6bit)</span><br><span class="line">        scales.push_back(<span class="number">31</span> / max_value);</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        scales.push_back(<span class="number">127</span> / max_value);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="量化输入数据"><a href="#量化输入数据" class="headerlink" title="量化输入数据"></a>量化输入数据</h4><p>可以看出，NCNN 居然还有 6-bit 量化。还有补充一点就是 weights 是固定的，因此 weights 的量化是可以离线做的，而且可以看出，对于卷积层，其按照 channel 数目（<code>weight_data_size_output</code>），每个 channel 分别量化。</p>
+<p>weights 的量化比较简单，麻烦的是输入数据的量化。NCNN 是按需量化，也就是如果这一层需要量化，才会将输入的数据进行量化，这个输入的数据因为是在 inference 的时候才能拿到，所以不可能离线量化，只能在线。而且因为输入数据分布不规律（conv 和 fc 的输入来自上一层的激活值），因此需要用饱和量化，也就是 KLD 寻找最佳阈值，这一步如果放到 inference 在线操作，太耗时了，因此使用校准数据集去模拟 inference 行为，然后在这个过程中寻找最佳阈值，计算 scale factor，作为输入数据的量化尺度。每一层都只有一个输入数据的 scale factor，并且将其也保存在量化表中。这部分代码实现在 <a href="https://github.com/Tencent/ncnn/blob/master/tools/quantize/ncnn2table.cpp#L514" target="_blank" rel="noopener">post_training_quantize</a> 函数中。核心逻辑如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">float</span> QuantizeData::get_data_blob_scale()</span><br><span class="line">&#123;   </span><br><span class="line">    normalize_histogram();</span><br><span class="line">    threshold_bin = threshold_distribution(histogram);</span><br><span class="line">    threshold = (threshold_bin + <span class="number">0.5</span>) * histogram_interval;</span><br><span class="line">    scale = <span class="number">127</span> / threshold;</span><br><span class="line">    <span class="keyword">return</span> scale;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="使用量化计算"><a href="#使用量化计算" class="headerlink" title="使用量化计算"></a>使用量化计算</h4><p>有了量化参数 scale factor，就可以使用它将 FP32 数值转换到 INT8了。权重是已经离线量化好的，因此只需要将输入按照量化表中那个已经计算好的 scale factor 进行量化就可以了。<strong>NCNN 并不量化卷积层和全连接层的偏置项</strong>，因此需要将矩阵乘法得到的结果（INT32）<strong>反量化</strong>到 FP32，然后和 bias 做加法，输出到下一层。其中反量化也很简单，只需要使用权重和输入数据量化的 scale factor 乘积的倒数作为反量化的 scale factor 即可。计算流程图如下：</p>
+<p><img src="/images/posts/dl/quantization/ncnn_conv_quantization.jpg" alt></p>
+<p>NCNN 中还有一些针对多个量化层的融合机制，简单来说就是当一个 Conv1 后面紧跟着另一个 Conv2 时，NCNN 会进行 requantize 的操作。大致意思就是在得到 Conv1 的 INT32 输出后，会顺手帮 Conv2 做量化，得到 Conv2 的 INT8 输入。这中间不会输出 FP32 的结果，节省一次内存读写。</p>
+<p><img src="/images/posts/dl/quantization/ncnn_conv_quantization.jpg" alt></p>
+<p>针对具体的操作过程以及上图，都引自<a href="https://zhuanlan.zhihu.com/p/71881443" target="_blank" rel="noopener">这篇文章</a>，有兴趣可以查看。</p>
+<h2 id="IAO-量化方法"><a href="#IAO-量化方法" class="headerlink" title="IAO 量化方法"></a>IAO 量化方法</h2><p>IAO 是 Google 提出的量化方法，主要应用在 TensorFlow Lite 中，有了 TensorRT 的知识铺垫，讲 IAO 就比较简单了。</p>
+<h3 id="IAO-量化原理"><a href="#IAO-量化原理" class="headerlink" title="IAO 量化原理"></a>IAO 量化原理</h3><p>首先是量化公式：</p>
+<script type="math/tex; mode=display">
+Q = \frac{R}{S} + Z</script><p>其中，$R$ 表示真实的浮点值，$Q$ 表示量化后的定点值，$Z$ 表示 0 浮点值对应的量化定点值，也称<strong>零点漂移</strong>，$S$ 则为量化的 scale factor，$S$ 和 $Z$ 的求值公式如下：</p>
+<script type="math/tex; mode=display">
+S = \frac{R_{max} - R_{min}}{Q_{max} - Q_{min}}</script><script type="math/tex; mode=display">
+Z = Q_{max} - \frac{R_{max}}{S}</script><p><strong>这里的 $S$ 和 $Z$ 均是量化参数，$S$ 是 FP32 类型，而 $Z$ 是 INT8 类型</strong>。 $Q$ 和 $R$ 均可由公式进行求值，不管是量化后的 $Q$ 还是反推求得的浮点值 $R$，如果它们超出各自可表示的最大范围，那么均需要进行截断处理。</p>
+<p>文章中指出 0 值对于神经网络具有重大意义，需要小心的处理，因此引入了零点偏移的概念。在我个人看来，我觉得<strong>这个量化公式和 TensorRT 中权重量化的区别就在于加入了 TensorRT 去掉的偏置项</strong>。虽然 NVIDIA 研究人员用实验说明了这个偏置项不重要，但是 Google 也有自己的理由和考虑，我觉得求同存异，看个人的理解吧。下面以一组例子说明这个公式的用法：</p>
+<p>假设训练后的权重或者激活值的分布范围是[-3.0, 7.0]，INT8 量化后表示的范围[-128，127]，$S$ 和 $Z$ 可以计算如下：</p>
+<script type="math/tex; mode=display">
+S=\frac{7.0-(-3.0)}{127-(-128)}=\frac{10}{255} \approx 0.039216</script><script type="math/tex; mode=display">
+Z=127- \frac{7.0}{0.039216} \approx -51.498572 \approx -51</script><p>假设我们有一个激活值 0.78，即 $R=0.78$，则对应定点值求解如下：</p>
+<script type="math/tex; mode=display">
+Q=\frac{0.78}{0.039216} + (-51) \approx -31.11016 \approx -31</script><p>可以看出，只要确定了浮点数的边界（定点数的边界时已知的），计算量化参数以及量化浮点数这些都和 TensorRT 以及 NCNN 非常的像，<strong>只不过 IAO 没有使用 KLD 那种方式寻找最佳阈值，而是直接使用要量化的数值集合的浮点数边界，和 NCNN 中 weights 的量化类似</strong>。</p>
+<h3 id="IAO-量化计算"><a href="#IAO-量化计算" class="headerlink" title="IAO 量化计算"></a>IAO 量化计算</h3><p>和 TensorRT，我们根据量化公式也可以直接表示矩阵相乘：</p>
+<script type="math/tex; mode=display">
+S_3(q_3^{(i,k)}-Z_3)=\sum_{j=1}^N{S_1(q_1^{(i,j)}-Z_1)S_2(q_2^{(j,k)}-Z_2)}</script><script type="math/tex; mode=display">
+q_3^{(i,k)}=Z_3 + M \sum_{j=1}^N{(q_1^{(i,j)}-Z_1)(q_2^{(j,k)}-Z_2)}</script><p>其中 $M=\frac{S_1S_2}{S_3}$，可以看到，整个式子中只有 $M$ 是浮点数，其余都是整型（INT8 或者 INT32）。实验经验表明 $M$ 的范围是 (0, 1)，因此想办法将其也用整数表示，做法如下：</p>
+<script type="math/tex; mode=display">
+M_0=2^nM</script><p>$M_0$ 是一个 (0.5, 1] 的数，记录 $M$ 到 $M_0$ 的扩大（缩小）幅度 $n$（在计算机中可以用右移位数表示），然后将 $M_0$ 乘以 $2^{31}$，截断，得到一个 INT32 整形数 $M_q$。这里还有一个特别处理，如果 $M_0$ 接近 1，上述乘积结果 $M_q$ 等于 $2^{31}$，超过 INT32 表示的最大值（$2^{31}$-1），因此将结果除以 2，相应的将记录的倍数 n 也减小 1。这样我们就可以用一个 INT32 整型数 $M_q$ 和 一个变化因子 $n$ 来表示浮点数 $M$，从 $M_q$ 恢复 $M$ 就是上述过程的逆向操作。</p>
+<h3 id="IAO-量化训练"><a href="#IAO-量化训练" class="headerlink" title="IAO 量化训练"></a>IAO 量化训练</h3><p>IAO 方法将权重、激活值及输入值均全部做 INT8 量化，并且将所有模型运算操作置于 INT8 下进行执行，以达到最好的量化效果。为了达到此目的，需要实施量化精度补偿训练。下面还是以一个卷积层计算的具体例子说明 IAO 量化训练：</p>
+<ol>
+<li>输入 量化的特征图 lhs_quantized_val，INT8 类型，偏移量 lhs_zero_point，INT32 类型；</li>
+<li>输入 量化的卷积核 rhs_quantized_val，INT8 类型，偏移量 rhs_zero_point，INT32 类型；</li>
+<li>转换 INT8 到 INT32类型；</li>
+<li>每一块卷积求和（INT32 乘法求和有溢出风险，可换成固定点小数树乘法）；<ul>
+<li><code>int32_accumulator += (lhs_quantized_val(i, j) - lhs_zero_point) * (rhs_quantized_val(j, k) - rhs_zero_point)</code></li>
+</ul>
+</li>
+<li>输入 量化的乘子 quantized_multiplier（$M_q$，INT32 类型 ）和右移次数记录 right_shift（$n$)，INT 类型；<ul>
+<li><code>real_multiplier = (S_in * S_W / S_out) * (2^n)</code></li>
+<li><code>quantized_multiplier = round(real_multiplier * (1 &lt;&lt; 31))</code></li>
+</ul>
+</li>
+<li>计算乘法，得到 INT32 类型的结果 (INT32乘法有溢出风险，可换成固定点小数树乘法);<ul>
+<li><code>int32_result = quantized_multiplier * int32_accumulator</code></li>
+</ul>
+</li>
+<li>再左移动 right_shift 位还原，得到 INT32 的结果；</li>
+<li>最后再加上结果的偏移量 result_zero_point；</li>
+<li>将 INT32 类型结果强制转换到 INT8 类型，就得到了量化后的矩阵计算结果；</li>
+<li>之后再反量化到浮点数，更新统计输出值分布信息 $R<em>{max}$, $R</em>{min}$；</li>
+<li>再量化回 INT8；</li>
+<li>之后经过量化激活层；</li>
+<li>最后反量化到浮点数，本层网络输出；</li>
+<li>进入下一层，循环执行 1~12 步骤</li>
+</ol>
+<p>可以看出，上述的操作就是在传统神经网络的前向传播过程中加入量化和反量化的操作，这其中无疑引入了量化带来的精度误差，我个人理解量化训练的目的就是为了让参数分布适应这种误差。Relu层的流程可以表示如下：</p>
+<p><img src="/images/posts/dl/quantization/iao_relu_layer.jpg" alt></p>
+<p>量化精度补偿训练需要一个具有代表性的小数据集，用于统计激活值和输入值等非确定性值的浮点型范围，以便进行精准量化，而输出值的 scale 计算则更加有意思，在训练最开始的时候将输出的值看作量化好的 INT8 类型，然后通过训练，不同搜集值得范围、计算 scale、调整，最后收敛。总体而言，其思想是和 TensorRT 中的校准数据集类似，只不过 IAO 方法直接收集的数值集合的最大最小值。全整型量化的输入输出依然是浮点型的，但如果某些 Op 未实现该方法，则转化是没问题的且其依然会自动保存为浮点型。</p>
+<p>虽然是直接收集，但是针对卷积层和全连接层以及激活层的处理方式还是不同的。卷积层和全连接层处理方式类似都是直接统计最大值最小值，而激活层的值变化较大，因此使用一种称为 EMA 的方法来统计最大最小值。量化精度补偿训练一般是浮点模型训练的比较好的时候再进行，并且模拟量化的时候，反向传播仍然使用 FP32 类型，这是为了保证反向传播的精度。</p>
+<p>TensorFlow 中使用 IAO 方法也将卷积和结果和偏置项相加，激活层等操作进行了融合，还有一些实现细节，包括 BN 的更新等我就不展开叙述了。融合的计算流程如下：</p>
+<p><img src="/images/posts/dl/quantization/iao_fusion.png" alt></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>最后想说说量化适合的应用场景，由于量化是牺牲了部分精度（虽然比较小）来压缩和加速网络，因此不适合精度非常敏感的任务。量化目前最适合的领域就是图像处理，因为图片的信息冗余是非常大的，比如相邻一块的像素几乎都一模一样，因此用量化处理一些图像任务，比如目标检测、分类等对于精度不是非常敏感的 CV 任务而言是很适合的。</p>
+<p>需要说明的是，量化只是深度神经网络压缩和加速的一种方法，还有包括蒸馏、矩阵秩分解、网络剪枝等多种方法。但是量化是一种已经获得了工业界认可和使用的方法，在训练（training）中使用 FP32，在推理（inference）期间使用 INT8 这套量化体系已经被包括 TensorRT，TensorFlow，PyTorch，MxNet 等众多深度学习框架启用。</p>
+<p>就这两套方案而言，TensorRT 更加简单，实现起来也比较方便，IAO 方法在理论上精度更高，但是实际我自身只使用过前者，并没有验证过。后者如果使用 TensorFlow 的接口，使用也不难。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><ul>
+<li><a href="https://zhuanlan.zhihu.com/p/71881443" target="_blank" rel="noopener">https://zhuanlan.zhihu.com/p/71881443</a></li>
+<li><a href="http://on-demand.gputechconf.com/gtc/2017/presentation/s7310-8-bit-inference-with-tensorrt.pdf" target="_blank" rel="noopener">http://on-demand.gputechconf.com/gtc/2017/presentation/s7310-8-bit-inference-with-tensorrt.pdf</a></li>
+<li><a href="http://openaccess.thecvf.com/content_cvpr_2018/papers/Jacob_Quantization_and_Training_CVPR_2018_paper.pdf" target="_blank" rel="noopener">http://openaccess.thecvf.com/content_cvpr_2018/papers/Jacob_Quantization_and_Training_CVPR_2018_paper.pdf</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>murphypei</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2019/11/neural-network-quantization.html" title="神经网络量化方法">https://murphypei.github.io/blog/2019/11/neural-network-quantization.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/深度学习/" rel="tag"># 深度学习</a>
+            
+              <a href="/tags/TensorRT/" rel="tag"># TensorRT</a>
+            
+              <a href="/tags/神经网络/" rel="tag"># 神经网络</a>
+            
+              <a href="/tags/量化/" rel="tag"># 量化</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2019/10/cuda-parallel.html" rel="next" title="CUDA 多线程并行">
+                  <i class="fa fa-chevron-left"></i> CUDA 多线程并行
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2019/11/stl-binary.html" rel="prev" title="STL 中的二分查找">
+                  STL 中的二分查找 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景介绍"><span class="nav-number">1.</span> <span class="nav-text">背景介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TensorRT-量化方法"><span class="nav-number">2.</span> <span class="nav-text">TensorRT 量化方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#TensorRT-量化原理"><span class="nav-number">2.1.</span> <span class="nav-text">TensorRT 量化原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#KLD"><span class="nav-number">2.2.</span> <span class="nav-text">KLD</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NCNN-量化实现"><span class="nav-number">2.3.</span> <span class="nav-text">NCNN 量化实现</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#量化权重"><span class="nav-number">2.3.1.</span> <span class="nav-text">量化权重</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#量化输入数据"><span class="nav-number">2.3.2.</span> <span class="nav-text">量化输入数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#使用量化计算"><span class="nav-number">2.3.3.</span> <span class="nav-text">使用量化计算</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IAO-量化方法"><span class="nav-number">3.</span> <span class="nav-text">IAO 量化方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#IAO-量化原理"><span class="nav-number">3.1.</span> <span class="nav-text">IAO 量化原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IAO-量化计算"><span class="nav-number">3.2.</span> <span class="nav-text">IAO 量化计算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#IAO-量化训练"><span class="nav-number">3.3.</span> <span class="nav-text">IAO 量化训练</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">4.0.1.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/avatar_128.ico"
+      alt="murphypei">
+  <p class="site-author-name" itemprop="name">murphypei</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">159</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">400</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">murphypei</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">570k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">15:51</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '04491d33edd31e3d5ab6b41cdb6e4857',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>
