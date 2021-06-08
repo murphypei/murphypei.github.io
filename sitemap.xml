@@ -4,7 +4,7 @@
   <url>
     <loc>https://murphypei.github.io/blog/2021/06/go-context.html</loc>
     
-    <lastmod>2021-06-08T04:11:04.540Z</lastmod>
+    <lastmod>2021-06-08T04:15:21.350Z</lastmod>
     
   </url>
   
@@ -65,7 +65,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/06/link-sort.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/06/cpp-inl.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
@@ -184,13 +184,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2021/03/git-symlink.html</loc>
-    
-    <lastmod>2021-04-07T06:54:43.080Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2020/02/right-reference.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
@@ -212,14 +205,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2020/12/apt-error.html</loc>
+    <loc>https://murphypei.github.io/blog/2021/03/git-symlink.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2020/09/relu-dying.html</loc>
+    <loc>https://murphypei.github.io/blog/2020/12/apt-error.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
@@ -233,7 +226,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2020/03/mle-map.html</loc>
+    <loc>https://murphypei.github.io/blog/2020/09/relu-dying.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
@@ -254,7 +247,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2020/03/call-derived-function.html</loc>
+    <loc>https://murphypei.github.io/blog/2020/03/mle-map.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
@@ -262,6 +255,13 @@
   
   <url>
     <loc>https://murphypei.github.io/blog/2020/03/bayes-theorem.html</loc>
+    
+    <lastmod>2021-04-07T06:54:43.080Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2020/03/call-derived-function.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
@@ -282,21 +282,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/12/git-lfs.html</loc>
-    
-    <lastmod>2021-04-07T06:54:43.080Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2020/01/assert-debug-release.html</loc>
-    
-    <lastmod>2021-04-07T06:54:43.080Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2019/11/stl-binary.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
@@ -310,7 +296,21 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2019/12/git-lfs.html</loc>
+    
+    <lastmod>2021-04-07T06:54:43.080Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2019/12/entropy.html</loc>
+    
+    <lastmod>2021-04-07T06:54:43.080Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2019/11/stl-binary.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
@@ -394,14 +394,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/06/cpp-inl.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/07/longest-unrepeat-substring.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/07/longest-unrepeat-substring.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/06/link-sort.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
@@ -415,14 +415,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/06/vps.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/06/struct-bit-field.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/06/struct-bit-field.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/06/vps.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
@@ -443,13 +443,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/dp-calculate-turns.html</loc>
-    
-    <lastmod>2021-04-07T06:54:43.080Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-3.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
@@ -457,7 +450,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/03/prune-net.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/04/dp-calculate-turns.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
@@ -465,6 +458,13 @@
   
   <url>
     <loc>https://murphypei.github.io/blog/2019/03/pca-math.html</loc>
+    
+    <lastmod>2021-04-07T06:54:43.080Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2019/03/prune-net.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
@@ -492,14 +492,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/cpp-bfs-dfs.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/04/cpp-std-ref.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/cpp-std-ref.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/04/cpp-bfs-dfs.html</loc>
     
     <lastmod>2021-04-07T06:54:43.080Z</lastmod>
     
@@ -548,14 +548,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/12/jupyter-remote-ip.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/12/cpp-macros-uitls.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/12/dl-momentum.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/12/jupyter-remote-ip.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
     
@@ -576,7 +576,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/12/cpp-macros-uitls.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/12/dl-momentum.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
     
@@ -611,13 +611,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/10/compile-fpic.html</loc>
-    
-    <lastmod>2021-04-07T06:54:43.070Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2018/10/cmake-variable.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
@@ -632,6 +625,13 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2018/10/compile-fpic.html</loc>
+    
+    <lastmod>2021-04-07T06:54:43.070Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2018/09/git-push-fail.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
@@ -639,14 +639,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/09/get-pid.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/09/git-delete-submodule.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/09/git-delete-submodule.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/09/get-pid.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
     
@@ -674,13 +674,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/08/python-type-classobj.html</loc>
-    
-    <lastmod>2021-04-07T06:54:43.070Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2018/08/mxnet-install-ndarray.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
@@ -695,7 +688,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/08/cpp-inline-define.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/08/python-type-classobj.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
     
@@ -710,6 +703,13 @@
   
   <url>
     <loc>https://murphypei.github.io/blog/2018/08/python-max-index.html</loc>
+    
+    <lastmod>2021-04-07T06:54:43.070Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2018/08/cpp-inline-define.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
     
@@ -744,14 +744,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/05/io-block-sync.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/05/ftok.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/05/ftok.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/05/io-block-sync.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
     
@@ -835,14 +835,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/12/python-multiprocess.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/06/python-distributed-spider.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/06/python-distributed-spider.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/12/python-multiprocess.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
     
@@ -1031,14 +1031,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/05/qt-opencv-vs.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/05/vs-link-error1107.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/05/vs-link-error1107.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/05/qt-opencv-vs.html</loc>
     
     <lastmod>2021-04-07T06:54:43.070Z</lastmod>
     
