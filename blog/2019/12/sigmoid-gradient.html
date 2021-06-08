@@ -66,7 +66,7 @@
 <meta property="og:site_name" content="拾荒志">
 <meta property="og:description" content="周末刷知乎看到一个问题，关于如何理解梯度消失和梯度爆炸的。有个回答讲的比较好，就和 sigmoid 函数一起总结一下吧。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2021-04-07T06:54:43.080Z">
+<meta property="og:updated_time" content="2021-05-29T09:45:08.430Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="梯度消失和梯度爆炸">
 <meta name="twitter:description" content="周末刷知乎看到一个问题，关于如何理解梯度消失和梯度爆炸的。有个回答讲的比较好，就和 sigmoid 函数一起总结一下吧。">
@@ -275,7 +275,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-04-07 14:54:43" itemprop="dateModified" datetime="2021-04-07T14:54:43+08:00">2021-04-07</time>
+                <time title="修改时间：2021-05-29 17:45:08" itemprop="dateModified" datetime="2021-05-29T17:45:08+08:00">2021-05-29</time>
               </span>
             
           
@@ -336,7 +336,7 @@
         <p>周末刷知乎看到一个问题，关于如何理解梯度消失和梯度爆炸的。有个回答讲的比较好，就和 sigmoid 函数一起总结一下吧。</p>
 <a id="more"></a>
 <h3 id="梯度消失和爆炸"><a href="#梯度消失和爆炸" class="headerlink" title="梯度消失和爆炸"></a>梯度消失和爆炸</h3><p>梯度消失和梯度爆炸本质就是<strong>激活函数（的导数）和权重相互作用产生的联合效果</strong>，这个很重要，因为很多人以为梯度消失和爆炸是只存在某些激活函数中，其实不然。梯度消失和爆炸不单单是激活函数的问题， 不管你用 sigmoid/tanh 还是 ReLU 都有可能发生梯度消失/爆炸，只是发生的频繁程度不同。</p>
-<p>我们知道，神经网络的每层计算可以看重矩阵相乘之后接一个非线性映射也就是激活函数，可以表示为：</p>
+<p>我们知道，神经网络的每层计算可以看做矩阵相乘之后接一个非线性映射也就是激活函数，可以表示为：</p>
 <script type="math/tex; mode=display">
 h_{t+1}= \sigma (Wh_t)</script><p>求导以后就是：</p>
 <script type="math/tex; mode=display">
@@ -486,7 +486,7 @@ f'(x) &= (-1) (1 + e^{-x})^{-2}e^{-x}(-1) \\
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">159</span>
+          <span class="site-state-item-count">160</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1350,7 +1350,11 @@ f'(x) &= (-1) (1 + e^{-x})^{-2}e^{-x}(-1) \\
         
           
         
-        <span class="site-state-item-count">400</span>
+          
+        
+          
+        
+        <span class="site-state-item-count">402</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>
@@ -1421,12 +1425,12 @@ f'(x) &= (-1) (1 + e^{-x})^{-2}e^{-x}(-1) \\
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">570k</span>
+    <span title="站点总字数">577k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">15:51</span>
+    <span title="站点阅读时长">16:02</span>
 </div>
 
         
