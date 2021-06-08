@@ -1,18 +1,18 @@
 ---
-title: Go中使用jsonrpc进行远程调用
+title: Go 中使用 jsonrpc 进行远程调用
 date: 2017-07-03
 update: 2018-04-12
 categories: Go
 tags: [go, json, rpc]
 ---
 
-利用json和RPC可以很方便的进行远程数据交换和程序调用，本文根据自身的经历对Go中使用jsonrpc库进行远程调用进行总结。
+利用 json 和 RPC 可以很方便的进行远程数据交换和程序调用，本文根据自身的经历对 Go 中使用 jsonrpc 库进行远程调用进行总结。
 
 <!--more-->
 
-## JSON-RPC
+## json-rpc
 
-JSON-RPC就是使用JSON的数据格式来进行RPC的调用，远程连接可以使用TCP或者HTTP，简单易用。
+json-rpc 就是使用 json 的数据格式来进行 RPC 的调用，远程连接可以使用 TCP 或者 HTTP，简单易用。
 
 **请求数据结构：**
 
@@ -45,27 +45,27 @@ JSON-RPC就是使用JSON的数据格式来进行RPC的调用，远程连接可�
 
 * error: 错误信息
 
-* id: 调用时所传来的id
+* id: 调用时所传来的 id
 
-## Go中的JSON-RPC使用
+## Go 中的 json-rpc 使用
 
-在Go中使用JSON-RPC非常简单，只需要几个常见的包就可以了：
+在 Go 中使用 json-rpc 非常简单，只需要几个常见的包就可以了：
 
 * net/rpc
 
-net/rpc包实现了最基本的rpc调用，它默认通过HTTP协议传输gob数据来实现远程调用。
+net/rpc 包实现了最基本的 rpc 调用，它默认通过 HTTP 协议传输 gob 数据来实现远程调用。
 
-服务端实现了一个HTTP server,接收客户端的请求，在收到调用请求后，会反序列化客户端传来的gob数据，获取要调用的方法名，并通过反射来调用我们自己实现的处理方法，这个处理方法传入固定的两个参数，并返回一个error对象，参数分别为客户端的请求内容以及要返回给客户端的数据体的指针。
+服务端实现了一个 HTTP server，接收客户端的请求，在收到调用请求后，会反序列化客户端传来的 gob 数据，获取要调用的方法名，并通过反射来调用我们自己实现的处理方法，这个处理方法传入固定的两个参数，并返回一个 error 对象，参数分别为客户端的请求内容以及要返回给客户端的数据体的指针。
 
 * net/rpc/jsonrpc
 
-net/rpc/jsonrpc包实现了JSON-RPC协议，即实现了net/rpc包的ClientCodec接口与ServerCodec，增加了对json数据的序列化与反序列化来取代gob格式的数据，使得调用更加具有通用性，可以使用Python等利用http请求，直接发送json字符串来调用服务器上的应用程序。
+net/rpc/jsonrpc 包实现了 json-rpc 协议，即实现了 net/rpc 包的 ClientCodec 接口与 ServerCodec，增加了对 json 数据的序列化与反序列化来取代 gob 格式的数据，使得调用更加具有通用性，可以使用 Python 等利用 http 请求，直接发送 json 字符串来调用服务器上的应用程序。
 
-## Go中的JSON-RPC示例
+## Go 中的 json-rpc 示例
 
-### 1. 定义用于传输的数据结构
+### 定义用于传输的数据结构
 
-客户端与服务端双方传输数据，其中数据结构必须得让双方都能处理。首先定义rpc所传输的数据的结构，client端与server端都得用到。
+客户端与服务端双方传输数据，其中数据结构必须得让双方都能处理。首先定义 rpc 所传输的数据的结构，client 端与 server 端都得用到。
 
 ```go
 // 需要传输的对象
@@ -82,7 +82,7 @@ type ReplyObj struct {
 }
 ```
 
-### 2. 定义服务端的处理器及其处理方法
+### 定义服务端的处理器及其处理方法
 
 ```go
 // 服务器RPC处理器
@@ -106,17 +106,17 @@ func (sh *ServerHandler) SaveName(rpcObj RpcObj, returnObj *ReplyObj) error {
 }
 ```
 
-* ServerHandler结构可以不需要什么字段，只需要有符合net/rpcserver端处理器约定的方法即可。
+* ServerHandler 结构可以不需要什么字段，只需要有符合 net/rpcserver 端处理器约定的方法即可。
 
-* **符合约定的方法必须具备两个参数和一个error类型的返回值**
+* **符合约定的方法必须具备两个参数和一个 error 类型的返回值**
 
-    * 第一个参数 为client端调用rpc时交给服务器的数据，可以是指针也可以是实体。net/rpc/jsonrpc的json处理器会将客户端传递的json数据解析为正确的struct对象。
+    * 第一个参数 为 client 端调用 rpc 时交给服务器的数据，可以是指针也可以是实体。net/rpc/jsonrpc 的 json 处理器会将客户端传递的 json 数据解析为正确的 struct 对象。
 
-    * 第二个参数 为server端返回给client端的数据,必须为指针类型。net/rpc/jsonrpc的json处理器会将这个对象正确序列化为json字符串，最终返回给client端。
+    * 第二个参数 为 server 端返回给 client 端的数据,必须为指针类型。net/rpc/jsonrpc 的 json 处理器会将这个对象正确序列化为 json 字符串，最终返回给 client 端。
 
-* ServerHandler结构需要注册给net/rpc的HTTP处理器，HTTP处理器绑定后，会通过反射得到其暴露的方法，在处理请求时，根据JSON-RPC协议中的method字段动态的调用其指定的方法。
+* ServerHandler 结构需要注册给 net/rpc 的 HTTP 处理器，HTTP 处理器绑定后，会通过反射得到其暴露的方法，在处理请求时，根据 json-rpc 协议中的 method 字段动态的调用其指定的方法。
 
-### 3. 设置开启服务器上的监听服务并处理相应调用请求
+### 设置开启服务器上的监听服务并处理相应调用请求
 
 ```go
 // 开启RPC服务器
@@ -151,7 +151,7 @@ func startServer() {
 }
 ```
 
-### 4. 客户端调用请求
+### 客户端调用请求
 
 客户端可以采用同步或者异步的方法来进行RPC的调用请求，一般步骤都是建立连接，调用请求，处理结果。
 
@@ -236,7 +236,7 @@ func callRpcByAsynchronous() {
 
 ### 综合示例：
 
-将上述代码放置在go文件中，运行即可
+将上述代码放置在 go 文件中，运行即可
 
 ```go
 package main
@@ -295,7 +295,7 @@ func main() {
 2017/07/03 11:55:00 Exit...
 ```
 
-### Go中JSON-RPC的Server和Client处理示意图
+### Go 中 json-rpc 的 Server 和 Client 处理示意图
 
 * **Server示意图**
 

@@ -1,8 +1,8 @@
 ---
-title: Pytorch distributed barrier 引发的陷阱
+title: PyTorch distributed barrier 引发的陷阱
 date: 2021-05-20 15:17:19
 update: 2021-05-20 15:17:19
-categories: [Pytorch]
+categories: [PyTorch]
 tags: [pytorch, distribute, barrier, DDP]
 ---
 
