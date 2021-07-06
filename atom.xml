@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://murphypei.github.io/"/>
-  <updated>2021-07-06T03:24:05.180Z</updated>
+  <updated>2021-07-06T03:28:11.450Z</updated>
   <id>https://murphypei.github.io/</id>
   
   <author>
@@ -21,7 +21,7 @@
     <link href="https://murphypei.github.io//blog/2021/07/floyd-circle.html"/>
     <id>https://murphypei.github.io//blog/2021/07/floyd-circle.html</id>
     <published>2021-07-06T03:01:04.000Z</published>
-    <updated>2021-07-06T03:24:05.180Z</updated>
+    <updated>2021-07-06T03:28:11.450Z</updated>
     
     <content type="html"><![CDATA[<p>题目来自 leetcode 142. 环形链表 II，判断一个链表是否有环，如果有，找到环形起点。</p><a id="more"></a><p>首先是链表判断是否有环，刷过题的都知道快慢指针，快指针一次移动两步，慢指针一次移动一步，如果两个指针最终相遇则有环，如果快指针到达终点，则无环。</p><p>计算环形起点一般使用 Floyld 算法。接上面，两指针相遇之后，将慢指针移动到链表头部，然后两个指针每次移动一步，再次相遇就是环形起点。这个算法简洁明了，非常简单，但是需要思考一下证明方法。</p><p>假设链表头到环形起点的距离是 $m$，也就是非环部分；链表环长度为 $n$；相遇的时候距离环形起点的位置为 $k$。</p><p>慢指针相遇的时候移动距离：$m + A \cdot n + k$，快指针相遇的时候移动距离：$m + B \cdot n + k$。</p><p>因为快指针是慢指针的二倍，因此：</p><script type="math/tex; mode=display">S = (B - A) \cdot n = m + B \cdot n + k</script><p>$B$ 和 $A$ 都是正整数，因此<strong>相遇时慢指针移动的总长度是环形的整倍数</strong>，快指针是慢指针的 2 倍，因此快指针走过的总长度也是环形的整倍数。</p><p>现在把慢指针移动到链表头部，然后移动 $m$ 步，到达了环形的起点，慢指针移动 $S + m$，快指针移动 $2 \cdot S + m$，$S$ 是环形长度的整倍数，因此快指针此时也一定是到达了环形的起点，两个指针相遇。</p>]]></content>
     
@@ -482,11 +482,11 @@
     
       <category term="机器学习" scheme="https://murphypei.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
+      <category term="概率论" scheme="https://murphypei.github.io/tags/%E6%A6%82%E7%8E%87%E8%AE%BA/"/>
+    
       <category term="最大似然" scheme="https://murphypei.github.io/tags/%E6%9C%80%E5%A4%A7%E4%BC%BC%E7%84%B6/"/>
     
       <category term="最大后验概率" scheme="https://murphypei.github.io/tags/%E6%9C%80%E5%A4%A7%E5%90%8E%E9%AA%8C%E6%A6%82%E7%8E%87/"/>
-    
-      <category term="概率论" scheme="https://murphypei.github.io/tags/%E6%A6%82%E7%8E%87%E8%AE%BA/"/>
     
   </entry>
   
@@ -510,9 +510,9 @@
     
       <category term="机器学习" scheme="https://murphypei.github.io/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/"/>
     
-      <category term="概率论" scheme="https://murphypei.github.io/tags/%E6%A6%82%E7%8E%87%E8%AE%BA/"/>
-    
       <category term="贝叶斯定理" scheme="https://murphypei.github.io/tags/%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%AE%9A%E7%90%86/"/>
+    
+      <category term="概率论" scheme="https://murphypei.github.io/tags/%E6%A6%82%E7%8E%87%E8%AE%BA/"/>
     
   </entry>
   
