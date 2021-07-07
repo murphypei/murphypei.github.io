@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://murphypei.github.io//blog/2021/07/lru.html</loc>
+    <lastmod>2021-07-07</lastmod>
+  </url>  <url>
     <loc>https://murphypei.github.io//blog/2021/07/floyd-circle.html</loc>
     <lastmod>2021-07-06</lastmod>
   </url>  <url>
@@ -27,9 +30,6 @@
   </url>  <url>
     <loc>https://murphypei.github.io//blog/2018/01/batch-normalization.html</loc>
     <lastmod>2021-04-26</lastmod>
-  </url>  <url>
-    <loc>https://murphypei.github.io//blog/2020/10/anchor-loss.html</loc>
-    <lastmod>2021-04-07</lastmod>
   </url>  <url>
     <loc>https://murphypei.github.io//blog/2020/09/entrogy-kld.html</loc>
     <lastmod>2021-04-07</lastmod>
@@ -82,6 +82,9 @@
     <loc>https://murphypei.github.io//blog/2019/05/xgboost.html</loc>
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
+    <loc>https://murphypei.github.io//blog/2019/06/link-sort.html</loc>
+    <lastmod>2021-04-07</lastmod>
+  </url>  <url>
     <loc>https://murphypei.github.io//blog/2021/03/git-symlink.html</loc>
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
@@ -118,7 +121,7 @@
     <loc>https://murphypei.github.io//blog/2020/01/assert-debug-release.html</loc>
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
-    <loc>https://murphypei.github.io//blog/2019/06/link-sort.html</loc>
+    <loc>https://murphypei.github.io//blog/2020/10/anchor-loss.html</loc>
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
     <loc>https://murphypei.github.io//blog/2019/12/git-lfs.html</loc>
@@ -166,10 +169,10 @@
     <loc>https://murphypei.github.io//blog/2019/07/longest-unrepeat-substring.html</loc>
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
-    <loc>https://murphypei.github.io//blog/2019/06/cpp-inl.html</loc>
+    <loc>https://murphypei.github.io//blog/2019/06/winograd.html</loc>
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
-    <loc>https://murphypei.github.io//blog/2019/06/winograd.html</loc>
+    <loc>https://murphypei.github.io//blog/2019/06/cpp-inl.html</loc>
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
     <loc>https://murphypei.github.io//blog/2019/06/struct-bit-field.html</loc>
@@ -182,9 +185,6 @@
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
     <loc>https://murphypei.github.io//blog/2019/05/epoll.html</loc>
-    <lastmod>2021-04-07</lastmod>
-  </url>  <url>
-    <loc>https://murphypei.github.io//blog/2019/04/dp-calculate-turns.html</loc>
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
     <loc>https://murphypei.github.io//blog/2019/03/pca-math.html</loc>
@@ -217,6 +217,9 @@
     <loc>https://murphypei.github.io//blog/2019/04/valgrind-memory-leaky.html</loc>
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
+    <loc>https://murphypei.github.io//blog/2019/04/dp-calculate-turns.html</loc>
+    <lastmod>2021-04-07</lastmod>
+  </url>  <url>
     <loc>https://murphypei.github.io//blog/2017/05/python-GIL.html</loc>
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
@@ -235,10 +238,10 @@
     <loc>https://murphypei.github.io//blog/2018/12/jupyter-remote-ip.html</loc>
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
-    <loc>https://murphypei.github.io//blog/2018/12/cpp-cow.html</loc>
+    <loc>https://murphypei.github.io//blog/2017/02/sensetime-interview.html</loc>
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
-    <loc>https://murphypei.github.io//blog/2017/02/sensetime-interview.html</loc>
+    <loc>https://murphypei.github.io//blog/2018/12/cpp-cow.html</loc>
     <lastmod>2021-04-07</lastmod>
   </url>  <url>
     <loc>https://murphypei.github.io//blog/2018/12/dl-momentum.html</loc>
