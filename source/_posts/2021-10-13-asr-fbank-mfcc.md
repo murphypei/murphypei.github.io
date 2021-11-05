@@ -112,3 +112,8 @@ w_i=\frac{D}{2}sin(\frac{\pi * i}{D})
 $$
 
 从公式看，猜测原因可能是对频谱做一个平滑，如果 $D$ 取值较大时，会加重高频部分，使得噪声被弱化。
+
+
+### python 实现
+
+https://gist.github.com/murphypei/dcae63c9de780586a70a89603bd0f2c2
