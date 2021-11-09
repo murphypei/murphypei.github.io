@@ -20,27 +20,40 @@ Docker守候进程绑定的是一个unix socket，而不是TCP端口。这个套
 
 1. 首先查看是否已经存在docker分组
 
-    `sudo cat /etc/group | grep docker`
+```sh
+sudo cat /etc/group | grep docker
+```
 
 2. 如果没有docker分组，创建docker分组
 
-    `sudo groupadd -g 999 docker`
-        * `-g 999`为组ID，也可以不指定
+```sh
+sudo groupadd -g 999 docker
+```
+
+`-g 999` 为组ID，也可以不指定
 
 3. 将用户添加到docker分组
 
-    `sudo usermod -aG docker <username>`
+```sh
+sudo usermod -aG docker <username>
+```
 
 4. 修改守护进程绑定的套接字的权限，能够被docker分组访问
 
-    `sudo chmod a+rw /var/run/docker.sock`
+```sh
+sudo chmod a+rw /var/run/docker.sock
+```
 
 5. 退出当前用户登陆状态，然后重新登录，以便让权限生效，或重启docker-daemon
 
-    `sudo systemctl restart docker`
+```
+sudo systemctl restart docker
+```
 
 6. 确认你可以直接运行docker命令，执行docker命令
 
-    `docker  info`
+```
+docker  info
+```
 
-**注意**：该docker分组等同于root帐号，具体的详情可以参考这篇文章：Docker Daemon Attack Surface.
+**注意**：该docker分组等同于root帐号，具体的详情可以参考这篇文章：Docker Daemon Attack Surface。
