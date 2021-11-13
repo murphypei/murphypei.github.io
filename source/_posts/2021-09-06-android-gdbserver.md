@@ -14,7 +14,7 @@ tags: [C++, gdbserver, gdb remote, android, native]
 
 1. 首先，把 `$NDK/prebuilt/android-arm64/gdbserver/gdbserver` 以及要调试的程序 push 到手机上（任意文件夹）。
 2. 在手机上启动 gdbserver。`gdbserver :9090 <exec>`。其中 `:9090` 表示 gdbserver 监听手机的 9090 端口。会显示 `Listening on port 9090` 类似信息。如果有本地 lib，记得设置 `LD_LIBRARY_PATH` 环境变量。
-3. 设置端口转发。`adb shell tcp:9090 tcp:9090`，表示将本地 9090 端口转发到手机的 9090 端口。
+3. 设置端口转发。`adb forward tcp:9090 tcp:9090`，表示将本地 9090 端口转发到手机的 9090 端口。
 4. 本地启动 gdb。`$NDK/prebuilt/linux-x86_64/bin/gdb`。进入 gdb 调试页面。
 5. 设置调试对象。`target remote :9090`。调试本地的 9090 端口，同时也是手机的 9090 端口，也就是 gdbserver，连接成功之后， gdbserver 那边会显示 `Remote debugging from host 127.0.0.1` 字样。
 
