@@ -1,5 +1,5 @@
 ---
-title: ssh穿越多个跳板机的连接方法
+title: SSH 穿越多个跳板机的连接方法
 date: 2021-12-27 10:40:42
 update: 2021-12-27 10:40:42
 categories: Linux
@@ -10,7 +10,7 @@ tags: [linux, ssh, proxy, proxyjump, jump]
 
 <!-- more -->
 
-## ssh 公钥和私钥
+## SSH 公钥和私钥
 
 * 首先搞清楚一些基本关系，一般使用密钥登录，`ssh-keygen -t rsa` 运行此命令产生公钥私钥（id\_rsa 和 id\_rsa.pub），一路回车可以不设置保护密码，假设要登录的机器是 server，登录的终端是 client，那么将公钥 id\_rsa.pub 的内容记录在 server 的 authorized_keys 中，然后 client 使用私钥 id\_rsa 登录。
 * 每一个被登录的机器都开启的 ssh 服务，并配置了 ssh 密钥登录功能。对于我的需求来说，公司的跳板机和服务器一定是已经配置的，否则无法登录服务器，因此我还需要在 docker 中配置 ssh 密钥登录服务。
@@ -20,7 +20,7 @@ tags: [linux, ssh, proxy, proxyjump, jump]
 
 ## openssh 的 ProxyJump
 
-在 openssh7.5 之后（ubuntu18.04），支持 ProxyJump 语句，非常方便。
+在 openssh7.5 之后（ubuntu18.04），支持 ProxyJump 语句，非常方便。windows 不支持。
 
 假设我们登录路径是这样的：
 
