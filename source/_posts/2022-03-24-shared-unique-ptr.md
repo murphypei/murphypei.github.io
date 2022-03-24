@@ -1,9 +1,9 @@
 ---
-title: shared-unique-ptr
+title: C++ shared_ptr unique_ptr 删除器和封装探秘
 date: 2022-03-24 10:52:47
 update: 2022-03-24 10:52:47
-categories:
-tags:
+categories: C/C++
+tags: [c++, shared_ptr, unique_ptr, delete, template]
 ---
 
 C++ 中 `shared_ptr` 和 `unique_ptr` 是 C++11 之后被广泛使用的两个智能指针，但是其实他们在使用上还是有一些“秘密”的，我根据平时遇到的两个问题，总结记录一些知识。
