@@ -8,13 +8,15 @@ tags: [C++, thread, 多线程, condition_variable]
 
 并发编程作为 C++11 系列的一个重大更新部分，值得我们去探究，并应用其提升程序的性能。本系列参考了其他一些文章，对 C++11 并发编程的一些要点进行了总结，并给出一些示例。
 
+感谢评论区 @InnerPeaceSwordsMan 对本文的指正！
+
 <!-- more -->
 
 ### condition_variable 类介绍
 
 `std::condition_variable` 是 C++11 多线程编程中的条件变量。
 
-当 `std::condition_variable` 对象的某个 `wait` 类函数被调用的时候，它使用 `std::unique_lock`（通过 `std::mutex`）来锁住当前的线程，当前的线程会一直被阻塞（进入睡眠等待状态），直到有**其他的线程在同一个 `std::condition_variable` 对象上调用 `notify` 类函数来唤醒它。
+当 `std::condition_variable` 对象的某个 `wait` 类函数被调用的时候，~~它使用 `std::unique_lock`（通过 `std::mutex`）来锁住当前的线程~~，当前的线程会被系统调入 blocking thread 队列，一直被阻塞（进入睡眠等待状态），直到有其他的线程在同一个 `std::condition_variable` 对象上调用 `notify` 等相关函数来唤醒它。**在此阻塞过程中，wait 会释放所在线程持有的 mutex 锁**。
 
 `std::condition_variable` 对象通常使用 `std::unique_lock<std::mutex>` 来等待，如果需要使用另外的 lockable 类型，可以使用 `std::condition_variable_any` 类，本文后面会讲到 `std::condition_variable_any` 的用法。
 
@@ -36,7 +38,7 @@ void printId(int id)
   // 如果标志位不为true，则等待
   while(!ready)
   {
-    // 线程被阻塞，直到标志位变为true
+    // 线程被阻塞，直到标志位变为true，此时 mtx 被释放，go 线程能够获取到锁。
     cv.wait(lck);
   }
   std::cout << "thread: " << std::this_thread::get_id() << " id: " << id << "\n";
@@ -100,7 +102,7 @@ process done.
 
 * 无条件等待
 
-```
+```c++
 void wait (unique_lock<mutex>& lck);
 ```
 
@@ -108,14 +110,14 @@ void wait (unique_lock<mutex>& lck);
 
 * 有条件等待
 
-```
+```c++
 template <class Predicate>
 void wait (unique_lock<mutex>& lck, Predicate pred);
 ```
 
 第二种情况设置了 `Predicate`，只有当 `pred` 条件为 `false` 时调用 `wait()` 才会阻塞当前线程，并且在收到其他线程的通知后只有当 `pred` 为 `true` 时才会被解除阻塞。因此第二种情况类似以下代码：
 
-```
+```c++
 while (!pred()) 
 {
     wait(lck);
@@ -136,7 +138,7 @@ while (!pred())
 
 ### condition_variable_any 介绍
 
-与 `std::condition_variable` 类似，只不过 **`std::condition_variable_any` 的 `wait` 函数可以接受任何 `lockable` 参数，而 `std::condition_variable` 只能接受 `std::unique_lock<std::mutex>` 类型的参数，除此以外，和 `std::condition_variable` 几乎完全一样**。
+与 `std::condition_variable` 类似，只不过 `std::condition_variable_any` 的 `wait` 函数可以接受任何 `lockable` 参数，而 `std::condition_variable` 只能接受 `std::unique_lock<std::mutex>` 类型的参数，除此以外，和 `std::condition_variable` 几乎完全一样。
 
 ### cv_status 介绍
 
@@ -154,7 +156,7 @@ while (!pred())
 void std::notify_all_at_thread_exit (condition_variable& cond, unique_lock<mutex> lck);
 ```
 
-当调用该函数的线程退出时，所有在 `cond` 条件变量上等待的线程都会收到通知。**一般为了防止误唤醒，我们和之前一样，通过一个全局标志位进行判断操作。
+当调用该函数的线程退出时，所有在 `cond` 条件变量上等待的线程都会收到通知，一般为了防止误唤醒，我们和之前一样，通过一个全局标志位进行判断操作。
 
 ### 生产中消费者模型
 
