@@ -1,5 +1,5 @@
 ---
-title: C++ shared_ptr unique_ptr 删除器和封装探秘
+title: shared_ptr 和 unique_ptr 深入探秘
 date: 2022-03-24 10:52:47
 update: 2022-03-24 10:52:47
 categories: C/C++
