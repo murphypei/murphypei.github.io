@@ -1,9 +1,9 @@
 ---
-title: Go 中使用 jsonrpc 进行远程调用
+title: Golang 中使用 jsonrpc 进行远程调用
 date: 2017-07-03
 update: 2018-04-12
-categories: Go
-tags: [go, json, rpc]
+categories: Golang
+tags: [golang, json, rpc]
 ---
 
 利用 json 和 RPC 可以很方便的进行远程数据交换和程序调用，本文根据自身的经历对 Go 中使用 jsonrpc 库进行远程调用进行总结。

@@ -1,9 +1,9 @@
 ---
-title: Go 中 context 的使用方式
+title: Golang 中 context 的使用方式
 date: 2021-06-07 02:45:28
 update: 2021-06-07 02:45:28
-categories: Go
-tags: [go, context, goroutine, goroutine]
+categories: Golang
+tags: [golang, context, goroutine, goroutine]
 ---
 
 context 是 go 中控制协程的一种比较方便的方式。

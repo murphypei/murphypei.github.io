@@ -1,9 +1,9 @@
 ---
-title: Go在函数中进行指针传递遇到的小问题
+title: Golang 在函数中进行指针传递遇到的小问题
 date: 2017-06-29
 update: 2018-04-12
-categories: Go
-tags: [go, 指针, 参数传递]
+categories: Golang
+tags: [golang, 指针, 参数传递]
 ---
 
 刚开始学Go，所以还不太熟悉。但是遇到了一个指针的问题，我觉得和C/C++中的很相似，所以记录一下。
