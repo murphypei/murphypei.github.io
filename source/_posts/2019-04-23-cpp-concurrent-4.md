@@ -18,7 +18,7 @@ tags: [C++, thread, 多线程, 同步, promise]
 
 很明显，当在一个线程（creator）中创建（通过`std::async`，`std::packaged_task` 或者 `std::promise`）了一个异步操作（asynchronous operations，通常就是创建了一个新的线程，执行操作）的时候，这个异步操作会返回一个 `future` 对象给当前的线程，供其访问异步操作的状态，结果等等。
 
-`future` 某种意义上表示的是一个异步操作，通过其成员函数我们能够获悉异步操作处于什么样的情况。可以通过 `get` 来等待异步操作结束并返回结果，是一个阻塞过程。`wait` 等待异步操作结束结束，也是一个阻塞过程。`wait_for` 是超时等待返回结果，`wait_util` 类似。
+`future` 某种意义上表示的是一个异步操作，通过其成员函数我们能够获悉异步操作处于什么样的情况。可以通过 `get` 来等待异步操作结束并返回结果，是一个阻塞过程。`wait` 等待异步操作结束，也是一个阻塞过程。`wait_for` 是超时等待返回结果，`wait_util` 类似。
 
 ```c++
 std::future_status status;
@@ -206,6 +206,8 @@ int main()
 ```
 
 `async` 返回一个与函数返回值相对应类型的 `future`，通过它我们可以在其他任何地方获取异步结果。由于我们给 `async` 提供了 `std::launch::async` 策略，所以生产过程将被异步执行，具体执行的时间取决于各种因素，最终输出的时间为 2000ms < t < 3000ms ，可见生产过程和主线程是并发执行的。除了 `std::launch::async`，还有一个 `std::launch::deferred` 策略，它会延迟线程地创造，也就是说**只有当我们调用 `future.get()` 时子线程才会被创建以执行任务**，这样输出时间应该是 t > 3000 ms 的。
+
+**注意：**在 GCC 和 CLANG 编译器的实现中，`std::async` 直接创建一个新的线程来运行，而 MSVC（PPL）提供的则是线程池的实现。因为线程创建是非常耗时的，所以如果是频繁的使用异步任务，应该谨慎使用 `std::async`，可以自己采用线程池的实现。附一个很小的 C++11 线程池实现：[thread-pool](https://github.com/mtrebi/thread-pool)
 
 ### 总结
 
