@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="anchor 是一类目标检测方法种的一个核心概念，其本质是一个预设的框，但是这个框也为 loss 计算带来一些麻烦。">
+<meta name="keywords" content="梯度消失,ReLU,LeakyReLU,激活函数">
+<meta property="og:type" content="article">
+<meta property="og:title" content="目标检测中 Anchor 与 Loss 计算的梳理">
+<meta property="og:url" content="https://murphypei.github.io/blog/2020/10/anchor-loss.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="anchor 是一类目标检测方法种的一个核心概念，其本质是一个预设的框，但是这个框也为 loss 计算带来一些麻烦。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/dl/anchor/yolov2_loss.jpg">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/dl/anchor/yolov5_near_cell.jpg">
+<meta property="og:updated_time" content="2021-10-13T04:13:08.217Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="目标检测中 Anchor 与 Loss 计算的梳理">
+<meta name="twitter:description" content="anchor 是一类目标检测方法种的一个核心概念，其本质是一个预设的框，但是这个框也为 loss 计算带来一些麻烦。">
+<meta name="twitter:image" content="https://murphypei.github.io/images/posts/dl/anchor/yolov2_loss.jpg">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2020/10/anchor-loss">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>目标检测中 Anchor 与 Loss 计算的梳理 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2020/10/anchor-loss.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="anonymous">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">目标检测中 Anchor 与 Loss 计算的梳理
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-10-19 16:59:34" itemprop="dateCreated datePublished" datetime="2020-10-19T16:59:34+08:00">2020-10-19</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-10-13 12:13:08" itemprop="dateModified" datetime="2021-10-13T12:13:08+08:00">2021-10-13</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/DeepLearning/" itemprop="url" rel="index"><span itemprop="name">DeepLearning</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>3.8k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>6 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>anchor 是一类目标检测方法种的一个核心概念，其本质是一个预设的框，但是这个框也为 loss 计算带来一些麻烦。</p>
+<span id="more"></span>
+<p>对于一般的目标检测 loss 计算，通常分为几部分。比如 yolo 系列分为 objectness（是否包含目标）、classification（目标分类）、boundingbox-regression（目标位置）。其中，每个样本都需要计算 objectness 得分的损失，正样本需要计算 classification 和 bbox-regression 损失，其中每种损失又有不同的计算方式和组合方法，比如 bbox-regression 有 D_IoU、G_IoU、C_IoU 等等，组合方法有 Focal Loss 等等。但是这些不是我们这篇文章关注的重点。</p>
+<p>对于目标检测我们要搞明白一个核心问题：<strong>如何生成参与 loss 计算的样本</strong>？anchor 和 ground-truth 的纠缠不休就是在这个问题上，各种框混杂一起。要搞明白这个问题，我们把带 anchor 的目标检测中出现各种框的核心概念一一剥开。</p>
+<p>一般来说，带 anchor 的目标检测包含以下几种框：</p>
+<ol>
+<li>ground-truth，简称 gt，标注生成的框，包含位置信息和类别信息。</li>
+<li>anchor，也成为先验框，尺寸预先设置好的框，一般在 feature map 上，每个像素点（也称为 cell）有多个，每个大小形状都不一样。可以通过 k-means 等方法生成适合数据集的尺寸，同时大小不同的尺寸也和模型的多个检测分支对应。</li>
+<li>predict，也称为预测框，网络的 detect 层的输出信息，大小通常是 [n, h, w, (nc + 4 + 1)]，n 表示 feature map 上每 cell 的 anchor 数量，h 和 w 是 feature map 的大小，nc 表示类别得分，4 表示位置信息，1 表示 objectness 得分。</li>
+</ol>
+<p>写的越多越杂乱，所以不写太多计算，只要记住这些核心概念，下面来说明每种框之间的关联：</p>
+<ol>
+<li>anchor 和 gt 相互作用，通过筛选手段，确定哪个 anchor 负责预测哪个 gt，不同检测方法中筛选手段不同，并且有的规定一个 gt 必须有一个 anchor 负责预测，有的则选择忽略某些 gt，有的一个 gt 可以有多个 anchor 对应。</li>
+<li>predict 和 anchor 一一对应。首先可以明确，每个 predict 都是对应一个 anchor 的（其实现在大部分检测方法比如 yolo，predict 输出的并不是实际坐标，需要通过 anchor 解码）。当 1 中确定某个 anchor 有负责预测 gt 之后，这个 anchor 对应的 predicts 就是正样本，其余就是负样本。predicts 的输出结果和 gt 相互作用，计算 loss。</li>
+</ol>
+<p>总结以上核心：<strong>正负样本通常由 gt 和先验框 anchor 匹配生成，参与计算的是 anchor 的和 gt（只有尺寸，没有类别），而计算 loss 则是其对应的 predict 和 gt（包含类别信息）</strong>。这句话就点明了 3 种框的关系，可以看出 anchor 是桥梁，非常重要。</p>
+<p>有了以上概念，我们来实际操作解读以下经典的目标检测中一些具体实际操作。</p>
+<h3 id="Faster-RCNN"><a href="#Faster-RCNN" class="headerlink" title="Faster-RCNN"></a>Faster-RCNN</h3><p>我的老朋友，最爱。faster-rcnn 属于 two-stage，anchor 主要是在第一层 RPN 中用到。我们知道 RPN 用于生成 RoI。我们把 RPN 网络输出的就是 predicts，那么如何计算 Loss 呢？</p>
+<p>依据上述步骤，首先就是 anchor 和 gt 的匹配。在 faster-rcnn 中分为：</p>
+<ol>
+<li>初始化每个 anchor 的 mask  为 -1，-1 表示这个 anchor 被忽略，不参与 loss 计算。</li>
+<li>计算每个 gt 和 每个 anchor 的 iou。</li>
+<li>对于一个 anchor，如果其和所有 gt 的 iou 都小于阈值 neg_iou_thr，则标记为负样本，mask 设为 0；如果最大 iou 大于阈值 pos_iou_thr，则标记为正样本。此时有一些 gt 是没有 anchor 负责预测的，这一步的意思是挑选优质的正样本和负样本。</li>
+<li>对于所有 gt，如果其和某个 anchor 的 iou 大于阈值 min_pos_iou，则也将这些 anchor 标记为正样本，min_pos_ios &lt;= pos_iou_thr。这一步是为了增加正样本的数量（如果不需要增加正样本数量，则可以设置只和最大 iou 的 anchor 匹配），一个 gt 可能会由多个 anchor 负责预测。通过本步骤，可以最大程度保证每个 gt 都有 anchor 负责预测，<strong>如果还是小于 min_pos_iou，那就没办法了，这个 gt 被忽略了</strong>。这一步引入的 anchor 因为 iou 较少，质量较低。</li>
+</ol>
+<p>上述规则将 anchor 标记分类（anchor_target_layer 实现），正样本都有对应的 gt 用于计算 bbox-regression 损失，同时正负样本本身又可以用于计算 objectness loss，直接将每个 anchor 对应的 predict 带入计算即可。没有用到的 anchor（标记为 -1），计算 loss 的时候被忽略。另外，RPN 没有 classification 损失。</p>
+<h3 id="YOLO-V2-V3"><a href="#YOLO-V2-V3" class="headerlink" title="YOLO V2/V3"></a>YOLO V2/V3</h3><p>one-stage 最爱。废话少说，yolo v2 步骤如下：</p>
+<ol>
+<li>初始化，标记所有 anchor 为负样本。</li>
+<li>对于一个 gt，确定其中心落在哪个 cell，计算该 cell 的所有 anchor 与这个 gt 的 iou，取最大值，这个 anchor 标记为正样本，负责预测该 gt。<strong>这一步计算 iou 时只考虑形状，不考虑框的位置</strong>。具体做法就是将 anchor 和 gt 这两个框的左上角对齐，然后计算 iou。这一步还隐含一个假设，多个 gt 不会落到同一个 cell 中。</li>
+<li>如果一个 anchor 经过 1 被标记为负样本，但是其与某个 gt 的 iou 大于某个阈值（0.6），则将其标记为忽略（低质量的负样本）。这里需要注意，<strong>yolo v2/v3 中这一步计算使用的是 anchor 预测值，而不是预设的 anchor</strong>。</li>
+</ol>
+<p>区分了正负样本之后就可以用于计算 loss 了，类似 faster-rcnn。</p>
+<p>我参考了这篇<a href="https://zhuanlan.zhihu.com/p/35325884">YOLOv2原理与实现</a>，上述原理在代码中实现是倒过来的，同时在开始时还有计算 predict 和 anchor  的位置偏移，这个能够加快 predict 的形状向 anchor 的形状收敛。因为 yolo 中的 anchor 是聚合而来，本身就比较合理。仔细看下面的 loss 计算公式：</p>
+<p><img src="/images/posts/dl/anchor/yolov2_loss.jpg" alt=""></p>
+<ol>
+<li>求和公式中 W H A 分别表示 feature map 的长、宽以及每个 cell 的 anchor 数量。</li>
+<li>第一项是负样本，只计算 objectness 的置信度误差。</li>
+<li>第二项是 anchor 先验框和预测框的坐标误差，只计算前 12800 个迭代，加速预测框向先验框的收敛。</li>
+<li>第三项是正样本，其中又包含三项：<ol>
+<li>第一项是预测框与 gt 的坐标误差（coord）；</li>
+<li>第二项是是 objectness 置信度误差（obj）；</li>
+<li>第三项是分类误差。</li>
+</ol>
+</li>
+</ol>
+<p>上述公式弄明白了，也就基本理解了各种框的用途和意义了。v3 和 v2 一样是基于 max iou 的匹配规则，只不过有多个检测分支，其规定一个 gt 不可能出现在多个检测分支上，也就是每个 gt 取三个检测分支上 anchor 匹配最大的那个。</p>
+<h3 id="YOLO-V5"><a href="#YOLO-V5" class="headerlink" title="YOLO V5"></a>YOLO V5</h3><p>yolo v5 相对 v2/v3 变动很大，主要是匹配规则变了，首先明确一点，v5 和 v3 一样，同样有 3 个检测分支，但是v5 中的匹配是逐层进行的，每一层互不影响，也就是说一个 gt 可以与多个检测层的 anchor 匹配。具体规则如下（以下规则是逐层进行的）：</p>
+<ol>
+<li>对于一个 gt，计算其与当前层的 anchor 是否匹配，匹配是通过 shape 而不是 iou。以 h 为例，就是 gt_h/anchor_h 要大于一个 1/anchor_t，小于 anchor_t，anchor_t 默认设置为 4.0。w 同理。如果不匹配，则说明该 gt 和 anchor 匹配度不够，<strong>在当前层的检测中舍弃掉这个 gt</strong>。因此在检测小目标的 detect 层，比如下采样为 8 的 P3 层，一个大目标 gt 可能会被舍弃，认为是背景。</li>
+<li>对于剩余 gt，计算其中心落在哪个 cell 中，同时利用四舍五入方法，找出最近的两个 cell，认为这 3 个 cell 都负责预测这个 gt。很明显，通过这种方法，正样本的数量将明显增多。<ol>
+<li>一个 cell 相邻的有上下左右 4 个cell，根据中心点在当前 cell 中的偏移来找出和中心点比较近的两个相邻 cell。</li>
+</ol>
+</li>
+</ol>
+<p><img src="/images/posts/dl/anchor/yolov5_near_cell.jpg" alt=""></p>
+<p>代码中的具体做法是：在任何一预测层，将每个 gt 复制和 anchor 个数一样多的数目（3个），然后将 gt 和 anchor 一一对应计算，去除本层不匹配的 gt，然后对 gt 原始中心点网格坐标扩展两个邻居像素，因此每个 gt 总共有 3 个 cell 上的若干个 anchor 负责预测。有个细节需要注意，前面 shape 过滤时候是不考虑 xy 坐标的，也就是说 gt 的 wh 是和所有 anchor 匹配的，会导致找到的邻居也相当于进行了 shape 过滤规则。详见 <code>build_targets</code> 函数，可以参考解析：<a href="https://zhuanlan.zhihu.com/p/183838757">yolov5深度可视化解析</a> 。</p>
+<p>yolo v5 的改动造成的变化主要如下：</p>
+<ol>
+<li>不同于 yolov3 和 v4，其 gt 可以跨层预测，即有些 gt 在多个预测层都算正样本。</li>
+<li>不同于 yolov3 和 v4，其 gt 匹配数范围扩大，明显增加了很多正样本。（但是引入了很多低质量的负样本）</li>
+<li>不同于 yolov3 和 v4，有些 gt 由于和 anchor 匹配度不高，而变成背景。</li>
+</ol>
+<p>有了正负样本，v5 的 loss 计算也很简单，classification 和 objectness confidence 分支都是 bce loss，bbox regression 直接采用 giou loss。</p>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>anonymous</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2020/10/anchor-loss.html" title="目标检测中 Anchor 与 Loss 计算的梳理">https://murphypei.github.io/blog/2020/10/anchor-loss.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/梯度消失/" rel="tag"># 梯度消失</a>
+            
+              <a href="/tags/ReLU/" rel="tag"># ReLU</a>
+            
+              <a href="/tags/LeakyReLU/" rel="tag"># LeakyReLU</a>
+            
+              <a href="/tags/激活函数/" rel="tag"># 激活函数</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2020/09/relu-dying.html" rel="next" title="ReLU 激活函数中神经元死亡问题">
+                  <i class="fa fa-chevron-left"></i> ReLU 激活函数中神经元死亡问题
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2020/12/apt-error.html" rel="prev" title="Python.h: No such file or directory">
+                  Python.h: No such file or directory <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#Faster-RCNN"><span class="nav-number">1.</span> <span class="nav-text">Faster-RCNN</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#YOLO-V2-V3"><span class="nav-number">2.</span> <span class="nav-text">YOLO V2/V3</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#YOLO-V5"><span class="nav-number">3.</span> <span class="nav-text">YOLO V5</span></a></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="anonymous">
+  <p class="site-author-name" itemprop="name">anonymous</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">173</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">444</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">anonymous</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">618k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:10</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '02d735f4dfd7cf87a762f4993078a10d',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

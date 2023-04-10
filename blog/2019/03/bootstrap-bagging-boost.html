@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="Bootstrap、Bagging以及Boosting都是机器学习中一些常见的概念，而且很相似同时又有一些关联。">
+<meta name="keywords" content="机器学习,分类算法,Bootstrap,Bagging,Boosting">
+<meta property="og:type" content="article">
+<meta property="og:title" content="集成学习方法小结">
+<meta property="og:url" content="https://murphypei.github.io/blog/2019/03/bootstrap-bagging-boost.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="Bootstrap、Bagging以及Boosting都是机器学习中一些常见的概念，而且很相似同时又有一些关联。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/ml/cluster_learning/bagging.png">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/ml/cluster_learning/boosting.png">
+<meta property="og:updated_time" content="2021-10-13T04:13:08.213Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="集成学习方法小结">
+<meta name="twitter:description" content="Bootstrap、Bagging以及Boosting都是机器学习中一些常见的概念，而且很相似同时又有一些关联。">
+<meta name="twitter:image" content="https://murphypei.github.io/images/posts/ml/cluster_learning/bagging.png">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2019/03/bootstrap-bagging-boost">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>集成学习方法小结 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/03/bootstrap-bagging-boost.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="anonymous">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">集成学习方法小结
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-03-01 07:50:05" itemprop="dateCreated datePublished" datetime="2019-03-01T07:50:05+08:00">2019-03-01</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-10-13 12:13:08" itemprop="dateModified" datetime="2021-10-13T12:13:08+08:00">2021-10-13</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/MachineLearning/" itemprop="url" rel="index"><span itemprop="name">MachineLearning</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>5.6k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>9 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Bootstrap、Bagging以及Boosting都是机器学习中一些常见的概念，而且很相似同时又有一些关联。</p>
+<span id="more"></span>
+<h2 id="Bootstrap"><a href="#Bootstrap" class="headerlink" title="Bootstrap"></a>Bootstrap</h2><p><strong>Bootstrap是统计学习中一种抽样方法</strong></p>
+<p>机器学习本质是利用有限的训练数据集（样本）来学习客观的数据分布规律（总体），因此是一种利用样本评估总体的方法。在此基础上，Bootstrap进一步<strong>用样本的样本来评估</strong>，也就是从训练数据集中再次采样。<strong>Bootstrap的采样是有放回的重采样</strong>，对于小样本的表现效果很好，通过方差的估计来构造置信度区间等等，可使得其运用范围。特别是当我们不知道训练样本的数据分布的时候，Bootstrap 非常有用。</p>
+<p>Bootstrap的工作原理可以用网上的一个例子来说明：</p>
+<p>问题：我要统计鱼塘里面的鱼的条数，怎么统计呢？假设鱼塘总共有鱼1000条。</p>
+<p>步骤：</p>
+<ol>
+<li>承包鱼塘，不让别人捞鱼(规定总体分布不变)。</li>
+<li>自己捞鱼，捞100条，都打上标签(构造样本)</li>
+<li>把鱼放回鱼塘，休息一晚(使之混入整个鱼群，确保之后抽样随机)</li>
+<li>开始捞鱼，每次捞100条，数一下，自己昨天标记的鱼有多少条，占比多少(一次重采样取分布)，然后将鱼放回去（有放回）。</li>
+<li>重复3，4步骤n次。建立分布。</li>
+</ol>
+<p>假设一下，第一次重新捕鱼100条，发现里面有标记的鱼12条，记下为12%，放回去，再捕鱼100条，发现标记的为9条，记下9%，重复重复好多次之后，假设取置信区间95%，你会发现，每次捕鱼平均在10条左右有标记，所以，我们可以大致推测出鱼塘有1000条左右。其实是一个很简单的类似于一个比例问题。</p>
+<p>为什么只在小样本的时候Bootstrap效果较好？你这样想，如果我想统计大海里有多少鱼，你标记100000条也没用啊，因为实际数量太过庞大，你取的样本相比于太过渺小，最实际的就是，你下次再捕100000的时候，发现一条都没有标记…</p>
+<blockquote>
+<p>Bootstrap方法最初由美国斯坦福大学统计学教授Efron在1977年提出。作为一种崭新的增广样本统计方法，Bootstrap方法为解决小规模子样试验评估问题提供了很好的思路。当初，Efron教授将他的论文投给了统计学领域的一流刊物《The Annals of Statistics》，但在被该刊接受之前，这篇后来被奉为扛鼎之作的文章曾经被杂志编辑毫不客气地拒绝过，理由是“太简单”。从某种角度来讲，这也是有道理的，Bootstrap的思想的确再简单不过，但后来大量的事实证明，这样一种简单的思想却给很多统计学理论带来了深远的影响，并为一些传统难题提供了有效的解决办法。Bootstrap方法提出之后的10年间，统计学家对它在各个领域的扩展和应用做了大量研究，到了20世纪90年代，这些成果被陆续呈现出来，而且论述更加全面、系统。</p>
+</blockquote>
+<h2 id="Bagging"><a href="#Bagging" class="headerlink" title="Bagging"></a>Bagging</h2><p>Bagging是一种集成学习方法，其思想是通过样本的重采样构造不同的数据集来训练不同的基模型而其采样的方法就是使用Bootstrap，而且一般Bagging方法中采样的数量和原样本的数量，具体采样步骤如下：</p>
+<ol>
+<li>从所有样本中随机抽取一个样本</li>
+<li>将1中样本放回到样本集中，充分混合。</li>
+<li>重复步骤1和2，直到满足采样数目要求。</li>
+</ol>
+<p>正式因为这种采样的方式，因此Bagging又被称为<strong>Bootstrap aggregation</strong>。对于一个样本，它在一个包含 $n$ 个样本的训练集中随机采样，则每次被采到的概率是 $1/n$ ，则不被抽取的概率是 $1-1/n$ 。若抽取次数和数据集相同，则抽取完毕，一个样本不被抽取的概率是 $(1-\frac{1}{n})^n$ ，当 $m \to \infty$ ， $(1-\frac{1}{m})^m \to \frac{1}{e} \simeq 0.368$ 。也就是说在bagging的每轮随机抽取中，训练集中大约有36.8%的数据没有被采样集采集中。对于这部分大约36.8%的没有被采样到的数据，我们常常称之为袋外数据(Out Of Bag, 简称OOB)。这些数据没有参与训练集模型的拟合，因此可以用来检测模型的泛化能力。</p>
+<p>Bagging方法的示意图如下：</p>
+<p><img src="/images/posts/ml/cluster_learning/bagging.png" alt="Bagging"></p>
+<ol>
+<li>从样本集中用Bootstrap采样选出n个训练样本(放回，因为别的分类器抽训练样本的时候也要用)</li>
+<li>在所有属性上，用这n个样本训练分类器（CART or SVM or …）</li>
+<li>重复以上两步m次，就可以得到m个分类器（CART or SVM or …）</li>
+<li>将数据放在这m个分类器上跑，最后投票机制(多数服从少数)看到底分到哪一类(分类问题)</li>
+</ol>
+<p>Bagging方法的代表性算法就是随机森林(Random Forest, RF)。</p>
+<h3 id="随机森林"><a href="#随机森林" class="headerlink" title="随机森林"></a>随机森林</h3><p>首先，RF使用了<strong>CART决策树</strong>作为弱学习器；第二，在使用决策树的基础上，RF对决策树的建立做了改进，对于普通的决策树，我们会在节点上所有的 $n$ 个样本特征中选择一个最优的特征来做决策树的左右子树划分，但是RF通过随机选择节点上的一部分样本特征，这个数字小于 $n$ ，假设为 $n<em>{sub}$ ，然后在这些随机选择的 $n</em>{sub}$ 个样本特征中，选择一个最优的特征来做决策树的左右子树划分。这样进一步增强了模型的泛化能力。</p>
+<p>如果 $n<em>{sub}=n$ ，则此时RF的决策树和普通的CART决策树没有区别， $n</em>{sub}$ 越小，则模型越健壮，当然也就越难拟合。也就是说模型的方差会减小，但是偏差变大。在实际案例中，一般会通过交叉验证调参获取一个合适的 $n_{sub}$ 。</p>
+<p>简单总结一下RF的算法：</p>
+<p>输入：样本集 $D={(x_,y_1), (x_2,y_2), …(x_m,y_m)}$ ，弱分类器迭代次数 $T$ 。<br>输出：最终的强分类器 $f(x)$ 。</p>
+<ol>
+<li>对于训练阶段 $t=1, 2, …T$ :<br> (1) 对训练集进行 $m$ 次有放回的随机重采样，得到包含 $m$ 个训练样本的 $D<em>{t}$ ；<br> (2）构建第 $t$ 个决策树模型 $G</em>{t}(x)$ ，在训练决策树模型的节点的时候，在节点上所有的样本特征中随机选择一部分样本特征；<br> (3) 在这些随机选择的部分样本特征中随机选择一个最优的特征来做决策树的左右子树划分；<br> (4) 重复步骤3，直到构建完成决策树。</li>
+<li>如果是分类算法预测，则 $T$ 个弱学习器投票最多的类别作为最终结果；若是回归算法，则使用T个弱学习器的算术平均作为最终模型的输出结果。</li>
+</ol>
+<p><strong>RF的主要优点有：</strong></p>
+<ul>
+<li>各个弱分类器之间没有关联，训练可以高度并行化，对于大数据时代的大样本训练速度有优势。</li>
+<li>由于可以随机选择决策树节点划分特征，这样在样本特征维度很高的时候，仍然能高效的训练模型。</li>
+<li>在训练后，可以给出各个特征对于输出的重要性。</li>
+<li>由于采用了随机采样，训练出的模型的方差小，泛化能力强。</li>
+<li>相对于Boosting系列的Adaboost和GBDT， RF实现比较简单。</li>
+<li>对部分特征缺失不敏感。</li>
+</ul>
+<p><strong>RF的主要缺点有：</strong></p>
+<ul>
+<li>在某些噪音比较大的样本集上，RF模型容易陷入过拟合。</li>
+<li>取值划分比较多的特征容易对RF的决策产生更大的影响，从而影响拟合的模型的效果。</li>
+</ul>
+<h2 id="Boosting"><a href="#Boosting" class="headerlink" title="Boosting"></a>Boosting</h2><p>Boosting是一种框架算法，用来提高弱分类器准确度的方法，这种方法通过构造一个预测函数序列，然后以一定的方式将他们组合成为一个准确度较高的预测函数。Boosting算法更加关注错分的样本，这点和Active Learning的寻找最有价值的训练样本有点遥相呼应的感觉。</p>
+<p>通俗一点来说：Boosting是一种迭代算法，针对同一个训练集训练不同的分类器(弱分类器)，然后进行分类，对于分类正确的样本权值低，分类错误的样本权值高（通常是边界附近的样本），最后的强分类器是很多弱分类器的线性叠加（加权组合，权重和分类器精度有关）。实际上就是一个简单的弱分类算法提升(boost)的过程。</p>
+<p>Boosting与Baggin方法不同之处在于不同的分类器之间是有关联的，Boosting方法示意图如下：</p>
+<p><img src="/images/posts/ml/cluster_learning/boosting.png" alt="Boosting"></p>
+<p>从图中可以看出，Boosting算法的工作机制是首先从训练集用初始权重训练出一个弱分类器Classifier1，根据弱学习的学习结果Result1表现来更新训练样本的权重，使得之前Classifier1学习误差率高的训练样本点的权重变高，使得这些误差率高的点在后面的Classifier2中得到更多的重视。然后基于调整权重后的训练集来训练Classifier2，如此重复进行，直到弱学习器数达到事先指定的数目L，最终将这L个弱学习器通过集合策略进行整合，得到最终的强学习器。　　</p>
+<p>Boosting算法中存在几个如下的细节还需要弄明白：</p>
+<ol>
+<li>如何计算学习误差率 $e$ ？</li>
+<li>如何得到弱分类器的权重系数 $\alpha$ ？</li>
+<li>如何更新样本的权重？</li>
+<li>如何将各个弱分类器结合起来？</li>
+</ol>
+<p>这4个问题对于Boosting家族算法都是需要解决的问题，下面结合AdaBoost算法来探究一下。</p>
+<h3 id="AdaBoost"><a href="#AdaBoost" class="headerlink" title="AdaBoost"></a>AdaBoost</h3><p>对于AdaBoost学习器，可以解决分类问题和回归问题，不同问题，上述4个方面的细节实现也不一样。</p>
+<h4 id="分类问题"><a href="#分类问题" class="headerlink" title="分类问题"></a>分类问题</h4><p>对于分类问题，假设我们的训练集样本是：</p>
+<script type="math/tex; mode=display">T=\{(x_,y_1),(x_2,y_2), ...(x_m,y_m)\}</script><p>训练集在第 $k$ 个弱分类器的输出权重为：</p>
+<script type="math/tex; mode=display">D(k) = (w_{k1}, w_{k2}, ...w_{km}) ;\;\; w_{1i}=\frac{1}{m};\;\; i =1,2...m</script><p>下面针对上述4个方面分别进行讨论：</p>
+<p><strong>误差率</strong></p>
+<p>首先来看看分类问题的误差率。由于多元分类是二元分类的推广，这里假设我们是二元分类问题，输出为 ${-1, 1}$ ，则第 $k$ 个弱分类器 $G_{k}(x)$ 在训练集上的加权误差率为：</p>
+<script type="math/tex; mode=display">e_k = P(G_k(x_i) \neq y_i) = \sum\limits_{i=1}^{m}w_{ki}I(G_k(x_i) \neq y_i)</script><p>其中 $I(G_k(x_i) \neq y_i)$ 表示预测结果和标签的对比结果。</p>
+<p><strong>分类器权重系数更新</strong></p>
+<p>接下来看看弱分类器的权重系数。对于二分类问题，第 $k$ 个弱分类器 $G_{k}(x)$ 的权重系数为：</p>
+<script type="math/tex; mode=display">\alpha_k = \frac{1}{2}log\frac{1-e_k}{e_k}</script><p>从式子可以看出，如果分类误差率 $e_k$ 越大，则其权重系数 $\alpha_k$ 越小。</p>
+<p><strong>样本权重更新</strong></p>
+<script type="math/tex; mode=display">w_{k+1,i} = \frac{w_{ki}}{Z_K}exp(-\alpha_ky_iG_k(x_i))</script><p>这里 $Z_k$ 是规范化因子：</p>
+<script type="math/tex; mode=display">Z_k = \sum\limits_{i=1}^{m}w_{ki}exp(-\alpha_ky_iG_k(x_i))</script><p>从 $w_{k+1,i}$ 计算公式可以看出，如果第 $i$ 个样本分类错误，则 $y_iG_k(x_i) &lt; 0$ ，导致样本的权重在第 $k+1$ 个弱分类器中增大，反之亦然。</p>
+<p><strong>分类器结合策略</strong></p>
+<p>AdaBoost采用的是加权表决法，最终的强分类器为：</p>
+<script type="math/tex; mode=display">f(x) = sign(\sum\limits_{k=1}^{K}\alpha_kG_k(x))</script><h4 id="回归问题"><a href="#回归问题" class="headerlink" title="回归问题"></a>回归问题</h4><p>由于Adaboost的回归问题有很多变种，这里我们以Adaboost R2算法为准。</p>
+<p><strong>误差率</strong></p>
+<p>首先计算训练上的最大误差</p>
+<script type="math/tex; mode=display">E_k = max|y_i - G_k(x_i)|\; i=1,2...m</script><p>然后计算每个样本的相对误差：</p>
+<script type="math/tex; mode=display">e_{ki}= \frac{|y_i - G_k(x_i)|}{E_k}</script><p>这里是误差损失为线性时的情况，也可以用平方误差：</p>
+<script type="math/tex; mode=display">e_{ki}= \frac{(y_i - G_k(x_i))^2}{E_k^2}</script><p>或者指数误差：</p>
+<script type="math/tex; mode=display">e_{ki}= 1 - exp(\frac{-y_i + G_k(x_i))}{E_k})</script><p>最终得到第 $k$ 个弱学习器的误差率：</p>
+<script type="math/tex; mode=display">e_k = \sum\limits_{i=1}^{m}w_{ki}e_{ki}</script><p><strong>弱学习器权重系数更新</strong></p>
+<script type="math/tex; mode=display">\alpha_k =\frac{e_k}{1-e_k}</script><p><strong>样本权重更新</strong></p>
+<script type="math/tex; mode=display">w_{k+1,i} = \frac{w_{ki}}{Z_k}\alpha_k^{1-e_{ki}}</script><p>这里 $Z_k$ 是规范化因子：</p>
+<script type="math/tex; mode=display">Z_k = \sum\limits_{i=1}^{m}w_{ki}\alpha_k^{1-e_{ki}}</script><p><strong>结合策略</strong></p>
+<p>和分类问题稍有不同，采用的是对加权的弱学习器取权重中位数对应的弱学习器作为强学习器的方法，最终的强回归器为：</p>
+<script type="math/tex; mode=display">f(x) = G_{k^*}(x)</script><p>其中， $G_{k^*}(x)$ 是所有 $ln\frac{1}{\alpha_k}, k=1,2,….K$ 的中位数值对应序号 $k^*$ 对应的弱学习器。</p>
+<h4 id="AdaBoost损失函数"><a href="#AdaBoost损失函数" class="headerlink" title="AdaBoost损失函数"></a>AdaBoost损失函数</h4><p>AdaBoost上述的学习器的权重系数以及样本权重的更新公式并不是凭空出现的，都是从Adaboost的损失函数推导出来。</p>
+<p>具体可见<a href="http://www.cnblogs.com/pinard/p/6133937.html">AdaBoost损失函数优化</a>，本文就不具体展开了。</p>
+<h4 id="AdaBoost算法流程"><a href="#AdaBoost算法流程" class="headerlink" title="AdaBoost算法流程"></a>AdaBoost算法流程</h4><p>上面4个问题解决了，AdaBoost的流程也就弄明白了：</p>
+<ol>
+<li>初始化样本权重</li>
+<li>使用有权重的样本集训练弱学习器（包括分类和回归）</li>
+<li>计算弱学习器的误差</li>
+<li>更新弱学习器的系数</li>
+<li>更新样本权重分布</li>
+<li>重复2~5来构建多个弱学习器</li>
+<li>根据结合策略，利用多个弱学习器构建最终的强学习器。</li>
+</ol>
+<h2 id="Bagging，Boosting二者之间的区别"><a href="#Bagging，Boosting二者之间的区别" class="headerlink" title="Bagging，Boosting二者之间的区别"></a>Bagging，Boosting二者之间的区别</h2><p>Bagging和Boosting的区别：</p>
+<p><strong>样本选择上：</strong></p>
+<ul>
+<li>Bagging：训练集是在原始集中有放回选取的，从原始集中选出的各轮训练集之间是独立的。</li>
+<li>Boosting：每一轮的训练集不变，只是训练集中每个样例在分类器中的权重发生变化。而权值是根据上一轮的分类结果进行调整。</li>
+</ul>
+<p><strong>样例权重：</strong></p>
+<ul>
+<li>Bagging：使用均匀取样，每个样例的权重相等</li>
+<li>Boosting：根据错误率不断调整样例的权值，错误率越大则权重越大。</li>
+</ul>
+<p><strong>预测函数：</strong></p>
+<ul>
+<li>Bagging：所有预测函数的权重相等。</li>
+<li>Boosting：每个弱分类器都有相应的权重，对于分类误差小的分类器会有更大的权重。</li>
+</ul>
+<p><strong>并行计算：</strong></p>
+<ul>
+<li>Bagging：各个预测函数可以并行生成</li>
+<li>Boosting：各个预测函数只能顺序生成，因为后一个模型参数需要前一轮模型的结果。</li>
+</ul>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><ul>
+<li><a href="https://www.jianshu.com/p/708dff71df3a">https://www.jianshu.com/p/708dff71df3a</a></li>
+<li><a href="http://www.cnblogs.com/pinard/p/6156009.html">http://www.cnblogs.com/pinard/p/6156009.html</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>anonymous</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2019/03/bootstrap-bagging-boost.html" title="集成学习方法小结">https://murphypei.github.io/blog/2019/03/bootstrap-bagging-boost.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/机器学习/" rel="tag"># 机器学习</a>
+            
+              <a href="/tags/分类算法/" rel="tag"># 分类算法</a>
+            
+              <a href="/tags/Bootstrap/" rel="tag"># Bootstrap</a>
+            
+              <a href="/tags/Bagging/" rel="tag"># Bagging</a>
+            
+              <a href="/tags/Boosting/" rel="tag"># Boosting</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2019/02/svm-kernel.html" rel="next" title="SVM 核函数数学原理深入理解">
+                  <i class="fa fa-chevron-left"></i> SVM 核函数数学原理深入理解
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2019/03/pca-math.html" rel="prev" title="PCA数学理解">
+                  PCA数学理解 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Bootstrap"><span class="nav-number">1.</span> <span class="nav-text">Bootstrap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Bagging"><span class="nav-number">2.</span> <span class="nav-text">Bagging</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#随机森林"><span class="nav-number">2.1.</span> <span class="nav-text">随机森林</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Boosting"><span class="nav-number">3.</span> <span class="nav-text">Boosting</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#AdaBoost"><span class="nav-number">3.1.</span> <span class="nav-text">AdaBoost</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#分类问题"><span class="nav-number">3.1.1.</span> <span class="nav-text">分类问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#回归问题"><span class="nav-number">3.1.2.</span> <span class="nav-text">回归问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AdaBoost损失函数"><span class="nav-number">3.1.3.</span> <span class="nav-text">AdaBoost损失函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#AdaBoost算法流程"><span class="nav-number">3.1.4.</span> <span class="nav-text">AdaBoost算法流程</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Bagging，Boosting二者之间的区别"><span class="nav-number">4.</span> <span class="nav-text">Bagging，Boosting二者之间的区别</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">4.0.1.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="anonymous">
+  <p class="site-author-name" itemprop="name">anonymous</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">173</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">444</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">anonymous</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">618k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:10</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: 'b9f2209d647fae2ddc4c5edb7310fa4c',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

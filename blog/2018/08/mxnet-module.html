@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="在MXNet框架学习（2）中，我们介绍了如何使用Symbols定义计算中使用的Graph，并处理存储在NDArray（在第一篇文章中有介绍）中的数据。本文将介绍如何使用Symbol和NDArray准备所需数据并构建神经网络。随后将使用Module API训练该网络并预测结果。">
+<meta name="keywords" content="Python,深度学习,MXNet,module">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MXNet框架学习（3）：数据处理和Module">
+<meta property="og:url" content="https://murphypei.github.io/blog/2018/08/mxnet-module.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="在MXNet框架学习（2）中，我们介绍了如何使用Symbols定义计算中使用的Graph，并处理存储在NDArray（在第一篇文章中有介绍）中的数据。本文将介绍如何使用Symbol和NDArray准备所需数据并构建神经网络。随后将使用Module API训练该网络并预测结果。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-10-13T04:13:08.213Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MXNet框架学习（3）：数据处理和Module">
+<meta name="twitter:description" content="在MXNet框架学习（2）中，我们介绍了如何使用Symbols定义计算中使用的Graph，并处理存储在NDArray（在第一篇文章中有介绍）中的数据。本文将介绍如何使用Symbol和NDArray准备所需数据并构建神经网络。随后将使用Module API训练该网络并预测结果。">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2018/08/mxnet-module">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>MXNet框架学习（3）：数据处理和Module | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/08/mxnet-module.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="anonymous">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">MXNet框架学习（3）：数据处理和Module
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2018-08-23 12:02:41" itemprop="dateCreated datePublished" datetime="2018-08-23T12:02:41+08:00">2018-08-23</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-10-13 12:13:08" itemprop="dateModified" datetime="2021-10-13T12:13:08+08:00">2021-10-13</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/DeepLearning/" itemprop="url" rel="index"><span itemprop="name">DeepLearning</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>6.1k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>10 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>在<a href="https://murphypei.github.io/blog/2018/08/mxnet-symbol.html">MXNet框架学习（2）</a>中，我们介绍了如何使用Symbols定义计算中使用的Graph，并处理存储在NDArray（在第一篇文章中有介绍）中的数据。本文将介绍如何使用Symbol和NDArray准备所需数据并构建神经网络。随后将使用Module API训练该网络并预测结果。</p>
+<span id="more"></span>
+<h2 id="1-数据处理"><a href="#1-数据处理" class="headerlink" title="1. 数据处理"></a>1. 数据处理</h2><h3 id="1-1-定义数据集"><a href="#1-1-定义数据集" class="headerlink" title="1.1 定义数据集"></a>1.1 定义数据集</h3><p>我们（设想中的）数据集包含1000个数据样本：</p>
+<ul>
+<li>每个样本有100个特征</li>
+<li>每个特征体现为一个介于0和1之间的浮点值</li>
+<li>样本被分为10个类别，我们将使用神经网络预测特定样本的恰当类别</li>
+<li>我们将使用800个样本进行训练，使用200个样本进行验证</li>
+<li>训练和验证过程的批大小为10</li>
+</ul>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> mxnet <span class="keyword">as</span> mx</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> logging</span><br><span class="line">logging.basicConfig(level=logging.INFO)</span><br><span class="line">sample_count = <span class="number">1000</span></span><br><span class="line">train_count = <span class="number">800</span></span><br><span class="line">valid_count = sample_count - train_count</span><br><span class="line">feature_count = <span class="number">100</span></span><br><span class="line">category_count = <span class="number">10</span></span><br><span class="line">batch=<span class="number">10</span></span><br></pre></td></tr></table></figure>
+<h3 id="1-2-生成数据集"><a href="#1-2-生成数据集" class="headerlink" title="1.2 生成数据集"></a>1.2 生成数据集</h3><p>我们将通过均匀分布的方式生成这1000个样本，将其存储在一个名为“X”的NDArray中：1000行，100列。<br><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">X = mx.nd.uniform(low=<span class="number">0</span>, high=<span class="number">1</span>, shape=(sample_count,feature_count))</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>X.shape</span><br><span class="line">(<span class="number">1000L</span>, <span class="number">100L</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>X.asnumpy()</span><br><span class="line">array([[ <span class="number">0.70029777</span>,  <span class="number">0.28444085</span>,  <span class="number">0.46263582</span>, ...,  <span class="number">0.73365158</span>,</span><br><span class="line">         <span class="number">0.99670047</span>,  <span class="number">0.5961988</span> ],</span><br><span class="line">       [ <span class="number">0.34659418</span>,  <span class="number">0.82824177</span>,  <span class="number">0.72929877</span>, ...,  <span class="number">0.56012964</span>,</span><br><span class="line">         <span class="number">0.32261589</span>,  <span class="number">0.35627609</span>],</span><br><span class="line">       [ <span class="number">0.10939316</span>,  <span class="number">0.02995235</span>,  <span class="number">0.97597599</span>, ...,  <span class="number">0.20194994</span>,</span><br><span class="line">         <span class="number">0.9266268</span> ,  <span class="number">0.25102937</span>],</span><br><span class="line">       ...,</span><br><span class="line">       [ <span class="number">0.69691515</span>,  <span class="number">0.52568913</span>,  <span class="number">0.21130568</span>, ...,  <span class="number">0.42498392</span>,</span><br><span class="line">         <span class="number">0.80869114</span>,  <span class="number">0.23635457</span>],</span><br><span class="line">       [ <span class="number">0.3562004</span> ,  <span class="number">0.5794751</span> ,  <span class="number">0.38135922</span>, ...,  <span class="number">0.6336484</span> ,</span><br><span class="line">         <span class="number">0.26392782</span>,  <span class="number">0.30010447</span>],</span><br><span class="line">       [ <span class="number">0.40369365</span>,  <span class="number">0.89351988</span>,  <span class="number">0.88817406</span>, ...,  <span class="number">0.13799617</span>,</span><br><span class="line">         <span class="number">0.40905532</span>,  <span class="number">0.05180593</span>]], dtype=float32)</span><br></pre></td></tr></table></figure></p>
+<p>这1000个样本的类别用介于0-9的整数来代表，类别是随机生成的，存储在一个名为“Y”的NDArray中。<br><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Y = mx.nd.empty((sample_count,))</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,sample_count-<span class="number">1</span>):</span><br><span class="line">  Y[i] = np.random.randint(<span class="number">0</span>,category_count)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>Y.shape</span><br><span class="line">(<span class="number">1000L</span>,)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>Y[<span class="number">0</span>:<span class="number">10</span>].asnumpy()</span><br><span class="line">array([ <span class="number">3.</span>,  <span class="number">3.</span>,  <span class="number">1.</span>,  <span class="number">9.</span>,  <span class="number">4.</span>,  <span class="number">7.</span>,  <span class="number">3.</span>,  <span class="number">5.</span>,  <span class="number">2.</span>,  <span class="number">2.</span>], dtype=float32)</span><br></pre></td></tr></table></figure></p>
+<h3 id="1-3-拆分数据集"><a href="#1-3-拆分数据集" class="headerlink" title="1.3 拆分数据集"></a>1.3 拆分数据集</h3><p>随后我们将针对训练和验证两个用途对数据集进行80/20拆分。为此需要使用NDArray.crop函数。在这里，数据集是完全随机的，因此可以使用前80%的数据进行训练，用后20%的数据进行验证。实际运用中，我们可能需要首先搅乱数据集，这样才能避免按顺序生成的数据可能造成的偏差。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">X_train = mx.nd.crop(X, begin=(<span class="number">0</span>,<span class="number">0</span>), end=(train_count,feature_count-<span class="number">1</span>))</span><br><span class="line">X_valid = mx.nd.crop(X, begin=(train_count,<span class="number">0</span>), end=(sample_count,feature_count-<span class="number">1</span>))</span><br><span class="line">Y_train = Y[<span class="number">0</span>:train_count]</span><br><span class="line">Y_valid = Y[train_count:sample_count]</span><br></pre></td></tr></table></figure>
+<p>至此数据已经准备完毕！</p>
+<h2 id="2-Module模块"><a href="#2-Module模块" class="headerlink" title="2. Module模块"></a>2. Module模块</h2><h3 id="2-1-构建网络"><a href="#2-1-构建网络" class="headerlink" title="2.1 构建网络"></a>2.1 构建网络</h3><p>这个网络其实很简单，一起看看其中的每一层：</p>
+<p>输入层是由一个名为“Data”的Symbol代表的，随后会绑定至实际的输入数据。</p>
+<p><code>data = mx.sym.Variable(&#39;data&#39;)</code></p>
+<p>fc1是第一个隐藏层，通过64个相互连接的神经元构建而来，输入层的每个特征都会连接至所有的64个神经元。如你所见，我们使用了高级的Symbol.FullyConnected函数，相比手工建立每个连接，这种做法更方便一些！</p>
+<p><code>fc1 = mx.sym.FullyConnected(data, name=&#39;fc1&#39;, num_hidden=64)</code></p>
+<p>fc1的每个输出会进入到一个激活函数(Activation function)。在这里我们将使用一个线性整流单元(Rectified linear unit)，即“Relu”。之前承诺过尽量少讲理论知识，因此可以这样理解：激活函数将用于决定是否要“启动”某个神经元，例如其输入是否由足够有意义，可以预测出正确的结果。</p>
+<p><code>relu1 = mx.sym.Activation(fc1, name=&#39;relu1&#39;, act_type=&quot;relu&quot;)</code></p>
+<p>fc2是第二个隐藏层，由10个相互连接的神经元构建而来，可映射至我们的10个分类。每个神经元可输出一个任意标度(Arbitrary scale)的浮点值。10个值中最大的那个代表了数据样本最有可能的类别。</p>
+<p><code>fc2 = mx.sym.FullyConnected(relu1, name=&#39;fc2&#39;, num_hidden=category_count)</code></p>
+<p>输出层会将Softmax函数应用给来自fc2层的10个值：这些值会被转换为10个介于0和1之间的值，所有值的总和为1。每个值代表预测出的每个类别的可能性，其中最大的值代表最有可能的类别。</p>
+<p><code>out = mx.sym.SoftmaxOutput(fc2, name=&#39;softmax&#39;)</code></p>
+<p><code>mod = mx.mod.Module(out)</code></p>
+<h3 id="2-2-构建数据迭代器"><a href="#2-2-构建数据迭代器" class="headerlink" title="2.2 构建数据迭代器"></a>2.2 构建数据迭代器</h3><p>在第一篇文章中，我们了解到神经网络并不会一次只训练一个样本，因为这样做从性能的角度来看效率太低。因此我们会使用批，即一批固定数量的样本。</p>
+<p>为了给神经网络提供这样的“批”，我们需要使用NDArrayIter函数构建一个迭代器。其参数包括训练数据、分类（MXNet将其称之为标签(Label)），以及批大小。</p>
+<p>如你所见，我们可以对整个数据集进行迭代，同时对10个样本和10个标签执行该操作。随后即可调用reset()函数将迭代器恢复为初始状态。<br><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">train_iter = mx.io.NDArrayIter(data=X_train,label=Y_train,batch_size=batch)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">for</span> batch <span class="keyword">in</span> train_iter:</span><br><span class="line"><span class="meta">... </span>  <span class="built_in">print</span> batch.data</span><br><span class="line"><span class="meta">... </span>  <span class="built_in">print</span> batch.label</span><br><span class="line">...</span><br><span class="line">[&lt;NDArray 10x99 @cpu(<span class="number">0</span>)&gt;]</span><br><span class="line">[&lt;NDArray <span class="number">10</span> @cpu(<span class="number">0</span>)&gt;]</span><br><span class="line">[&lt;NDArray 10x99 @cpu(<span class="number">0</span>)&gt;]</span><br><span class="line">[&lt;NDArray <span class="number">10</span> @cpu(<span class="number">0</span>)&gt;]</span><br><span class="line">[&lt;NDArray 10x99 @cpu(<span class="number">0</span>)&gt;]</span><br><span class="line">[&lt;NDArray <span class="number">10</span> @cpu(<span class="number">0</span>)&gt;]</span><br><span class="line">&lt;edited <span class="keyword">for</span> brevity&gt;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>train_iter.reset()</span><br></pre></td></tr></table></figure></p>
+<p>网络已经准备完成，开始训练吧！</p>
+<h3 id="2-3-训练模型"><a href="#2-3-训练模型" class="headerlink" title="2.3 训练模型"></a>2.3 训练模型</h3><p>首先将输入Symbol<strong>绑定</strong>至实际的数据集（样本和标签），这时候就会用到迭代器。</p>
+<p><code>mod.bind(data_shapes=train_iter.provide_data, label_shapes=train_iter.provide_label)</code></p>
+<p>随后对网络中的神经元权重进行初始化。这个步骤非常重要：使用“恰当”的技术对齐进行初始化可以帮助网络更快速地学习。此时可用的技术很多，Xavier初始化器（名称源自该技术的发明人Xavier Glorot）就是其中之一。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Allowed, but not efficient</span></span><br><span class="line">mod.init_params()</span><br><span class="line"><span class="comment"># Much better</span></span><br><span class="line">mod.init_params(initializer=mx.init.Xavier(magnitude=<span class="number">2.</span>))</span><br></pre></td></tr></table></figure>
+<p>接着需要定义优化参数：</p>
+<p>我们将使用随机坡降法(Stochastic Gradient Descent)算法（又名SGD），该算法在机器学习和深度学习领域有着广泛的应用。<br>我们会将学习速率设置为0.1，这是SGD算法一个非常普遍的设置。</p>
+<p><code>mod.init_optimizer(optimizer=&#39;sgd&#39;, optimizer_params=((&#39;learning_rate&#39;, 0.1), ))</code></p>
+<p>最后，终于可以开始训练网络了！我们会执行50个回合(Epoch)的训练，也就是说，整个数据集需要在这个网络中（以10个样本为一批）运行50次。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">mod.fit(train_iter, num_epoch=<span class="number">50</span>)</span><br><span class="line">INFO:root:Epoch[<span class="number">0</span>] Train-accuracy=<span class="number">0.097500</span></span><br><span class="line">INFO:root:Epoch[<span class="number">0</span>] Time cost=<span class="number">0.085</span></span><br><span class="line">INFO:root:Epoch[<span class="number">1</span>] Train-accuracy=<span class="number">0.122500</span></span><br><span class="line">INFO:root:Epoch[<span class="number">1</span>] Time cost=<span class="number">0.074</span></span><br><span class="line">INFO:root:Epoch[<span class="number">2</span>] Train-accuracy=<span class="number">0.153750</span></span><br><span class="line">INFO:root:Epoch[<span class="number">2</span>] Time cost=<span class="number">0.087</span></span><br><span class="line">INFO:root:Epoch[<span class="number">3</span>] Train-accuracy=<span class="number">0.162500</span></span><br><span class="line">INFO:root:Epoch[<span class="number">3</span>] Time cost=<span class="number">0.082</span></span><br><span class="line">INFO:root:Epoch[<span class="number">4</span>] Train-accuracy=<span class="number">0.192500</span></span><br><span class="line">INFO:root:Epoch[<span class="number">4</span>] Time cost=<span class="number">0.094</span></span><br><span class="line">INFO:root:Epoch[<span class="number">5</span>] Train-accuracy=<span class="number">0.210000</span></span><br><span class="line">INFO:root:Epoch[<span class="number">5</span>] Time cost=<span class="number">0.108</span></span><br><span class="line">INFO:root:Epoch[<span class="number">6</span>] Train-accuracy=<span class="number">0.222500</span></span><br><span class="line">INFO:root:Epoch[<span class="number">6</span>] Time cost=<span class="number">0.104</span></span><br><span class="line">INFO:root:Epoch[<span class="number">7</span>] Train-accuracy=<span class="number">0.243750</span></span><br><span class="line">INFO:root:Epoch[<span class="number">7</span>] Time cost=<span class="number">0.110</span></span><br><span class="line">INFO:root:Epoch[<span class="number">8</span>] Train-accuracy=<span class="number">0.263750</span></span><br><span class="line">INFO:root:Epoch[<span class="number">8</span>] Time cost=<span class="number">0.101</span></span><br><span class="line">INFO:root:Epoch[<span class="number">9</span>] Train-accuracy=<span class="number">0.286250</span></span><br><span class="line">INFO:root:Epoch[<span class="number">9</span>] Time cost=<span class="number">0.097</span></span><br><span class="line">INFO:root:Epoch[<span class="number">10</span>] Train-accuracy=<span class="number">0.306250</span></span><br><span class="line">INFO:root:Epoch[<span class="number">10</span>] Time cost=<span class="number">0.100</span></span><br><span class="line">...</span><br><span class="line">INFO:root:Epoch[<span class="number">20</span>] Train-accuracy=<span class="number">0.507500</span></span><br><span class="line">...</span><br><span class="line">INFO:root:Epoch[<span class="number">30</span>] Train-accuracy=<span class="number">0.718750</span></span><br><span class="line">...</span><br><span class="line">INFO:root:Epoch[<span class="number">40</span>] Train-accuracy=<span class="number">0.923750</span></span><br><span class="line">...</span><br><span class="line">INFO:root:Epoch[<span class="number">50</span>] Train-accuracy=<span class="number">0.998750</span></span><br><span class="line">INFO:root:Epoch[<span class="number">50</span>] Time cost=<span class="number">0.077</span></span><br></pre></td></tr></table></figure>
+<p>如你所见，训练的准确度有了飞速提升，50个回合后已经接近99%以上。似乎我们的网络已经从训练数据集中学成了。非常惊人！</p>
+<p>但针对验证数据集执行的效果如何呢？</p>
+<h3 id="2-4-验证模型"><a href="#2-4-验证模型" class="headerlink" title="2.4 验证模型"></a>2.4 验证模型</h3><p>随后将新的数据样本放入网络，例如剩下的那20%尚未在训练中使用过的数据。</p>
+<p>首先构建一个迭代器，这一次将使用验证样本和标签。</p>
+<p><code>pred_iter = mx.io.NDArrayIter(data=X_valid,label=Y_valid, batch_size=batch)</code></p>
+<p>随后要使用Module.iter_predict()函数，借此让样本在网络中运行。这样做的同时，还需要对预测的标签和实际标签进行对比。我们需要追踪比分并显示验证准确度，即，网络针对验证数据集的执行效果到底如何。</p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">pred_count = valid_count</span><br><span class="line">correct_preds = total_correct_preds = <span class="number">0</span></span><br><span class="line"><span class="keyword">for</span> preds, i_batch, batch <span class="keyword">in</span> mod.iter_predict(pred_iter):</span><br><span class="line">    label = batch.label[<span class="number">0</span>].asnumpy().astype(<span class="built_in">int</span>)</span><br><span class="line">    pred_label = preds[<span class="number">0</span>].asnumpy().argmax(axis=<span class="number">1</span>)</span><br><span class="line">    correct_preds = np.<span class="built_in">sum</span>(pred_label==label)</span><br><span class="line">    total_correct_preds = total_correct_preds + correct_preds</span><br><span class="line"><span class="built_in">print</span>(<span class="string">&#x27;Validation accuracy: %2.2f&#x27;</span> % (<span class="number">1.0</span>*total_correct_preds/pred_count))</span><br></pre></td></tr></table></figure>
+<p>iter_predict()返回了：</p>
+<ul>
+<li>i_batch：批编号。</li>
+<li>batch：一个NDArray数组。这里它其实保存了一个NDArray，其中存储了当前批的内容。我们将用它找出当前批中10个数据样本的标签，随后将其存储在名为Label的Numpy array中（10个元素）。</li>
+<li>preds：也是一个NDArray数组。这里它保存了一个NDArray，其中存储了当前批预测出的标签：对于每个样本，我们提供了所有10个分类预测出的可能性（10x10矩阵）。因此我们将使用argmax()找出最高值的指数，即最可能的分类。所以* pred_label实际上是一个10元素数组，其中保存了当前批中每个数据样本预测出的分类。</li>
+</ul>
+<p>随后我们需要使用Numpy.sum()将label和pred_label中相等值的数量进行对比。</p>
+<p>最后计算并显示验证准确度。验证准确度：0.09，充分说明我们的数据真是随即的….训练的精度只不过是过拟合而以。</p>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>anonymous</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2018/08/mxnet-module.html" title="MXNet框架学习（3）：数据处理和Module">https://murphypei.github.io/blog/2018/08/mxnet-module.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/Python/" rel="tag"># Python</a>
+            
+              <a href="/tags/深度学习/" rel="tag"># 深度学习</a>
+            
+              <a href="/tags/MXNet/" rel="tag"># MXNet</a>
+            
+              <a href="/tags/module/" rel="tag"># module</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2018/08/mxnet-symbol.html" rel="next" title="MXNet 框架学习（2）：数据流编程和 Symbol">
+                  <i class="fa fa-chevron-left"></i> MXNet 框架学习（2）：数据流编程和 Symbol
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2018/08/mxnet-load-pretrained.html" rel="prev" title="MXNet框架学习（4）：模型加载和使用">
+                  MXNet框架学习（4）：模型加载和使用 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-数据处理"><span class="nav-number">1.</span> <span class="nav-text">1. 数据处理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-定义数据集"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 定义数据集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-生成数据集"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 生成数据集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-拆分数据集"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 拆分数据集</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Module模块"><span class="nav-number">2.</span> <span class="nav-text">2. Module模块</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-构建网络"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 构建网络</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-构建数据迭代器"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 构建数据迭代器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-训练模型"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 训练模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-验证模型"><span class="nav-number">2.4.</span> <span class="nav-text">2.4 验证模型</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="anonymous">
+  <p class="site-author-name" itemprop="name">anonymous</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">173</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">444</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">anonymous</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">618k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:10</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: 'f5992ef00dc41a8254ecd01220a75d18',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

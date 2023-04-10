@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="使用 libtorch 的 C++ 动态链接库遇到了一个非常诡异的问题…">
+<meta name="keywords" content="C++,link,no-as-needed,undef">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ 链接一个不需要的库(--no-as-needed)">
+<meta property="og:url" content="https://murphypei.github.io/blog/2022/04/link-noneed-lib.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="使用 libtorch 的 C++ 动态链接库遇到了一个非常诡异的问题…">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2022-04-18T10:11:11.547Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++ 链接一个不需要的库(--no-as-needed)">
+<meta name="twitter:description" content="使用 libtorch 的 C++ 动态链接库遇到了一个非常诡异的问题…">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2022/04/link-noneed-lib">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>C++ 链接一个不需要的库(--no-as-needed) | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2022/04/link-noneed-lib.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="anonymous">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">C++ 链接一个不需要的库(--no-as-needed)
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2022-04-18 17:16:49 / 修改时间：18:11:11" itemprop="dateCreated datePublished" datetime="2022-04-18T17:16:49+08:00">2022-04-18</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>8.3k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>14 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>使用 libtorch 的 C++ 动态链接库遇到了一个非常诡异的问题…</p>
+<span id="more"></span>
+<p>我使用 libtorch 的库编译了一个语音识别程序，使用 CPU 推理，能够完美运行，然后在 go 中对这个程序封装了一层 GRPC，也都 OK。</p>
+<p>但是当我想用 GPU 推理的时候，我直接下载了 libtorch 的 <a href="https://download.pytorch.org/libtorch/cu113/libtorch-cxx11-abi-shared-with-deps-1.11.0%2Bcu113.zip">GPU 库</a>，然后直接编译语音程序（需要修改 <code>torch::Device</code>），可以直接跑在 GPU 上了，很开心。</p>
+<p>但是我用第二次编译出来的库放到 go 程序中，则出现了诡异的错误，运行加载模型的时候，<code>model-&gt;to_device</code>，而且 <code>device_count</code> 为 0，很明显，程序没找到 GPU。</p>
+<p>利用 ldd 查看 go 编译出来的可执行文件，发现没有链接到 <code>torch_cuda_*</code> 这些库，怎么会这么奇怪呢？我明明把这些库放到编译的 flags 中了。为此我反复调整了链接的 flag，包括库的顺序，库的路径等等，但是都无济于事。</p>
+<p>几经辗转，终于找到一个和我类似的错误了。<a href="https://github.com/pytorch/pytorch/issues/72396">https://github.com/pytorch/pytorch/issues/72396</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br></pre></td><td class="code"><pre><span class="line">Could not run &#x27;aten::empty_strided&#x27; with arguments from the &#x27;CUDA&#x27; backend. This could be because the operator doesn&#x27;t exist for this backend, or was omitted during the selective/custom build process (if using custom build). If you are a Facebook employee using PyTorch on mobile, please visit https://fburl.com/ptmfixes for possible resolutions. &#x27;aten::empty_strided&#x27; is only available for these backends: [CPU, Meta, BackendSelect, Python, Named, Conjugate, Negative, ADInplaceOrView, AutogradOther, AutogradCPU, AutogradCUDA, AutogradXLA, AutogradLazy, AutogradXPU, AutogradMLC, AutogradHPU, AutogradNestedTensor, AutogradPrivateUse1, AutogradPrivateUse2, AutogradPrivateUse3, Tracer, UNKNOWN_TENSOR_TYPE_ID, Autocast, Batched, VmapMode].</span><br><span class="line"></span><br><span class="line">CPU: registered at aten\src\ATen\RegisterCPU.cpp:18433 [kernel]</span><br><span class="line">Meta: registered at aten\src\ATen\RegisterMeta.cpp:12703 [kernel]</span><br><span class="line">BackendSelect: registered at aten\src\ATen\RegisterBackendSelect.cpp:665 [kernel]</span><br><span class="line">Python: registered at ..\..\aten\src\ATen\core\PythonFallbackKernel.cpp:47 [backend fallback]</span><br><span class="line">Named: registered at ..\..\aten\src\ATen\core\NamedRegistrations.cpp:7 [backend fallback]</span><br><span class="line">Conjugate: fallthrough registered at ..\..\aten\src\ATen\ConjugateFallback.cpp:22 [kernel]</span><br><span class="line">Negative: fallthrough registered at ..\..\aten\src\ATen\native\NegateFallback.cpp:22 [kernel]</span><br><span class="line">ADInplaceOrView: fallthrough registered at ..\..\aten\src\ATen\core\VariableFallbackKernel.cpp:64 [backend fallback]</span><br><span class="line">AutogradOther: registered at ..\..\torch\csrc\autograd\generated\VariableType_2.cpp:10483 [autograd kernel]</span><br><span class="line">AutogradCPU: registered at ..\..\torch\csrc\autograd\generated\VariableType_2.cpp:10483 [autograd kernel]</span><br><span class="line">AutogradCUDA: registered at ..\..\torch\csrc\autograd\generated\VariableType_2.cpp:10483 [autograd kernel]</span><br><span class="line">AutogradXLA: registered at ..\..\torch\csrc\autograd\generated\VariableType_2.cpp:10483 [autograd kernel]</span><br><span class="line">AutogradLazy: registered at ..\..\torch\csrc\autograd\generated\VariableType_2.cpp:10483 [autograd kernel]</span><br><span class="line">AutogradXPU: registered at ..\..\torch\csrc\autograd\generated\VariableType_2.cpp:10483 [autograd kernel]</span><br><span class="line">AutogradMLC: registered at ..\..\torch\csrc\autograd\generated\VariableType_2.cpp:10483 [autograd kernel]</span><br><span class="line">AutogradHPU: registered at ..\..\torch\csrc\autograd\generated\VariableType_2.cpp:10483 [autograd kernel]</span><br><span class="line">AutogradNestedTensor: registered at ..\..\torch\csrc\autograd\generated\VariableType_2.cpp:10483 [autograd kernel]</span><br><span class="line">AutogradPrivateUse1: registered at ..\..\torch\csrc\autograd\generated\VariableType_2.cpp:10483 [autograd kernel]</span><br><span class="line">AutogradPrivateUse2: registered at ..\..\torch\csrc\autograd\generated\VariableType_2.cpp:10483 [autograd kernel]</span><br><span class="line">AutogradPrivateUse3: registered at ..\..\torch\csrc\autograd\generated\VariableType_2.cpp:10483 [autograd kernel]</span><br><span class="line">Tracer: registered at ..\..\torch\csrc\autograd\generated\TraceType_2.cpp:11423 [kernel]</span><br><span class="line">UNKNOWN_TENSOR_TYPE_ID: fallthrough registered at ..\..\aten\src\ATen\autocast_mode.cpp:466 [backend fallback]</span><br><span class="line">Autocast: fallthrough registered at ..\..\aten\src\ATen\autocast_mode.cpp:305 [backend fallback]</span><br><span class="line">Batched: registered at ..\..\aten\src\ATen\BatchingRegistrations.cpp:1016 [backend fallback]</span><br><span class="line">VmapMode: fallthrough registered at ..\..\aten\src\ATen\VmapModeRegistrations.cpp:33 [backend fallback]</span><br><span class="line"></span><br><span class="line">Exception raised from reportError at ..\..\aten\src\ATen\core\dispatch\OperatorEntry.cpp:431 (most recent call first):</span><br><span class="line">00007FFEE7CAA29200007FFEE7CAA230 c10.dll!c10::Error::Error [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFEE7C843C500007FFEE7C84350 c10.dll!c10::NotImplementedError::NotImplementedError [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F015C7100007FFD5F015AA0 torch_cpu.dll!c10::impl::OperatorEntry::reportError [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F6C6AF000007FFD5F66DBB0 torch_cpu.dll!at::_ops::xlogy_Tensor::redispatch [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F8E73F100007FFD5F8CF610 torch_cpu.dll!at::_ops::zeros_out::redispatch [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F8E3F7400007FFD5F8CF610 torch_cpu.dll!at::_ops::zeros_out::redispatch [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F6EB6E800007FFD5F6EB520 torch_cpu.dll!at::_ops::empty_strided::call [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5EF259CB00007FFD5EF258D0 torch_cpu.dll!at::empty_strided [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F2C24D100007FFD5F2C2130 torch_cpu.dll!at::native::_to_copy [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5FA7C3D600007FFD5FA7BF10 torch_cpu.dll!at::compositeexplicitautograd::xlogy_ [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5FA5A8FB00007FFD5FA3F310 torch_cpu.dll!at::compositeexplicitautograd::bitwise_xor_outf [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F4EB5AD00007FFD5F45B290 torch_cpu.dll!at::TensorMaker::make_tensor [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F8DED7700007FFD5F8CF610 torch_cpu.dll!at::_ops::zeros_out::redispatch [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F8E36EB00007FFD5F8CF610 torch_cpu.dll!at::_ops::zeros_out::redispatch [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F4EB5AD00007FFD5F45B290 torch_cpu.dll!at::TensorMaker::make_tensor [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F56326800007FFD5F563190 torch_cpu.dll!at::_ops::_to_copy::redispatch [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD60A27F0000007FFD60A27A30 torch_cpu.dll!at::redispatch::_thnn_fused_lstm_cell_backward [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD60A4031D00007FFD60A34930 torch_cpu.dll!torch::jit::Node::c_ [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F50C12B00007FFD5F50BF70 torch_cpu.dll!at::_ops::_to_copy::call [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F2C2E7900007FFD5F2C2BD0 torch_cpu.dll!at::native::to_dense_backward [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F2C2B0C00007FFD5F2C29E0 torch_cpu.dll!at::native::to [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5FB6A66800007FFD5FB63F10 torch_cpu.dll!at::compositeimplicitautograd::where [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5FB4DB5D00007FFD5FB1BE50 torch_cpu.dll!at::compositeimplicitautograd::broadcast_to [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5F7E6F4600007FFD5F7E6D70 torch_cpu.dll!at::_ops::to_dtype_layout::call [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5EF4AA8800007FFD5EF4A970 torch_cpu.dll!at::Tensor::to [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFD5EF9EAE900007FFD5EF9E9F0 torch_cpu.dll!at::tensor [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FF7714295A200007FF7714294B0 SplinterlandsSimulator.exe!main [C:\Users\xargo\source\repos\SplinterlandsSimulator\SplinterlandsSimulator\SplinterlandsSimulator.cpp @ 390]</span><br><span class="line">00007FF77144164C00007FF771441540 SplinterlandsSimulator.exe!__scrt_common_main_seh [d:\a01\_work\20\s\src\vctools\crt\vcstartup\src\startup\exe_common.inl @ 288]</span><br><span class="line">00007FFF47C554E000007FFF47C554D0 KERNEL32.DLL!BaseThreadInitThunk [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br><span class="line">00007FFF48DA485B00007FFF48DA4830 ntdll.dll!RtlUserThreadStart [&lt;unknown file&gt; @ &lt;unknown line number&gt;]</span><br></pre></td></tr></table></figure>
+<p>上述报错跟我的很像，而且从下面的回复来看，也是没能链接到 cuda 相应的库。下面的回复给我了启发：<strong>如果我的 go 程序没用到 libtorch 的 cuda 接口，是不是不会主动链接到 libtorch 相应的 cuda 的库</strong>？</p>
+<p>前面说了，ldd 查看的确实没有，那怎么让编译器强制链接到 libtorch 的 cuda 相应的库呢？显然是的，编译器默认使用了 <code>--as-needed</code> 编译参数，这也是合理的，我们没必要链接所有的动态库，动态库本来就是按需链接，但是在我们的这个使用场景中，会遇到这种特殊情况，使用 <code>--no-as-needed</code> 强制链接到 libtorch cuda 的相应库，结果就没有问题了。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">--as-needed</span><br><span class="line">--no-as-needed</span><br><span class="line">This option affects ELF DT_NEEDED tags for dynamic libraries mentioned on the command line after the --as-needed option. Normally the linker will add a DT_NEEDED tag for each dynamic library mentioned on the command line, regardless of whether the library is actually needed or not. --as-needed causes a DT_NEEDED tag to only be emitted for a library that satisfies an undefined symbol reference from a regular object file or, if the library is not found in the DT_NEEDED lists of other libraries linked up to that point, an undefined symbol reference from another dynamic library. --no-as-needed restores the default behaviour.</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>anonymous</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2022/04/link-noneed-lib.html" title="C++ 链接一个不需要的库(--no-as-needed)">https://murphypei.github.io/blog/2022/04/link-noneed-lib.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/C/" rel="tag"># C++</a>
+            
+              <a href="/tags/link/" rel="tag"># link</a>
+            
+              <a href="/tags/no-as-needed/" rel="tag"># no-as-needed</a>
+            
+              <a href="/tags/undef/" rel="tag"># undef</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2022/03/shared-unique-ptr.html" rel="next" title="shared_ptr 和 unique_ptr 深入探秘">
+                  <i class="fa fa-chevron-left"></i> shared_ptr 和 unique_ptr 深入探秘
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2022/06/go-select-timeout.html" rel="prev" title="golang select 机制和超时">
+                  golang select 机制和超时 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="anonymous">
+  <p class="site-author-name" itemprop="name">anonymous</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">173</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">444</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">anonymous</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">618k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:10</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '68652fef74e3b155215e995a59fa4be2',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

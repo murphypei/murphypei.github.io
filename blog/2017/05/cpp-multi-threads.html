@@ -1,0 +1,1765 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="多线程编程是任何编程语言的一个重要方面，本文对C++11中的多线程编程库以及一些使用方法进行详细介绍。">
+<meta name="keywords" content="并发编程,多线程,C++11,thread,tmux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++11多线程编程介绍">
+<meta property="og:url" content="https://murphypei.github.io/blog/2017/05/cpp-multi-threads.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="多线程编程是任何编程语言的一个重要方面，本文对C++11中的多线程编程库以及一些使用方法进行详细介绍。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2021-10-13T04:13:08.209Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++11多线程编程介绍">
+<meta name="twitter:description" content="多线程编程是任何编程语言的一个重要方面，本文对C++11中的多线程编程库以及一些使用方法进行详细介绍。">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2017/05/cpp-multi-threads">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>C++11多线程编程介绍 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/05/cpp-multi-threads.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="anonymous">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">C++11多线程编程介绍
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2017-05-02 00:00:00" itemprop="dateCreated datePublished" datetime="2017-05-02T00:00:00+08:00">2017-05-02</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-10-13 12:13:08" itemprop="dateModified" datetime="2021-10-13T12:13:08+08:00">2021-10-13</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>8.1k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>13 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>多线程编程是任何编程语言的一个重要方面，本文对C++11中的多线程编程库以及一些使用方法进行详细介绍。</p>
+<span id="more"></span>
+<h2 id="1-与-C-11-多线程相关的头文件"><a href="#1-与-C-11-多线程相关的头文件" class="headerlink" title="1. 与 C++11 多线程相关的头文件"></a>1. 与 C++11 多线程相关的头文件</h2><p>C++11 新标准中引入了四个头文件来支持多线程编程，他们分别是：</p>
+<p><code>&lt;atomic&gt;</code>, <code>&lt;thread&gt;</code>, <code>&lt;mutex&gt;</code>, <code>&lt;condition_variable&gt;</code>, <code>&lt;future&gt;</code></p>
+<ul>
+<li><p><code>&lt;atomic&gt;</code>：该头文主要声明了两个类, <strong>std::atomic</strong> 和 <strong>std::atomic_flag</strong>，另外还声明了一套 C 风格的原子类型和与 C 兼容的原子操作的函数。</p>
+</li>
+<li><p><code>&lt;thread&gt;</code>：该头文件主要声明了 <strong>std::thread</strong> 类，另外 <strong>std::this_thread 命名空间</strong>也在该头文件中。</p>
+</li>
+<li><p><code>&lt;mutex&gt;</code>：该头文件主要声明了与<strong>互斥量(mutex)相关的类</strong>，包括 <strong>std::mutex</strong> 系列类，<strong>std::lock_guard, std::unique_lock</strong>, 以及其他的类型和函数。</p>
+</li>
+<li><p><code>&lt;condition_variable&gt;</code>：该头文件主要声明了与条件变量相关的类，包括 <strong>std::condition_variable</strong> 和 <strong>std::condition_variable_any</strong>。</p>
+</li>
+<li><p><code>&lt;future&gt;</code>：该头文件主要声明了 <strong>std::promise, std::package_task</strong> 两个 Provider 类，以及 <strong>std::future</strong> 和 <strong>std::shared_future</strong> 两个 Future 类，另外还有一些与之相关的类型和函数，<strong>std::async()</strong> 函数就声明在此头文件中。</p>
+</li>
+</ul>
+<p><strong>注意，C++11中没有关于信号量的头文件及相关变量的定义。</strong></p>
+<h2 id="2-thread-的”Hello-world”"><a href="#2-thread-的”Hello-world”" class="headerlink" title="2. thread 的”Hello world”"></a>2. thread 的”Hello world”</h2><p>下面是一个最简单的使用 std::thread 类的例子：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span> <span class="comment">// std::cout</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;thread&gt;</span>   <span class="comment">// std::thread</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread_task</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;hello thread&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">const</span> <span class="type">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function">std::thread <span class="title">t</span><span class="params">(thread_task)</span></span>;</span><br><span class="line">    t.<span class="built_in">join</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> EXIT_SUCCESS;</span><br><span class="line">&#125;  <span class="comment">/* ----------  end of function main  ---------- */</span></span><br></pre></td></tr></table></figure>
+<p>Makefile：（需要连接pthread， GCC4.6）</p>
+<figure class="highlight makefile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">all:Thread</span></span><br><span class="line"></span><br><span class="line">CC=g++</span><br><span class="line">CPPFLAGS=-Wall -std=c++11 -ggdb</span><br><span class="line">LDFLAGS=-pthread			</span><br><span class="line"></span><br><span class="line"><span class="section">Thread:Thread.o</span></span><br><span class="line">    <span class="variable">$(CC)</span> <span class="variable">$(LDFLAGS)</span> -o <span class="variable">$@</span> <span class="variable">$^</span></span><br><span class="line"></span><br><span class="line"><span class="section">Thread.o:Thread.cc</span></span><br><span class="line">    <span class="variable">$(CC)</span> <span class="variable">$(CPPFLAGS)</span> -o <span class="variable">$@</span> -c <span class="variable">$^</span></span><br><span class="line"></span><br><span class="line"><span class="meta"><span class="keyword">.PHONY</span>:</span></span><br><span class="line">    clean</span><br><span class="line"></span><br><span class="line"><span class="section">clean:</span></span><br><span class="line">    rm Thread.o Thread</span><br></pre></td></tr></table></figure>
+<h2 id="3-thread-详解"><a href="#3-thread-详解" class="headerlink" title="3. thread 详解"></a>3. thread 详解</h2><p>std::thread在头文件<code>&lt;thread&gt;</code>中声明，因此使用 std::thread 时需要包含<code>&lt;thread&gt;</code>头文件。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">操作</th>
+<th style="text-align:center"><code>&lt;thread&gt;</code>函数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">default(1)</td>
+<td style="text-align:center"><code>thread() noexcept</code></td>
+</tr>
+<tr>
+<td style="text-align:center">initialization (2)</td>
+<td style="text-align:center"><code>template &lt;class Fn, class... Args&gt;, explicit thread (Fn&amp;&amp; fn, Args&amp;&amp;... args)</code></td>
+</tr>
+<tr>
+<td style="text-align:center">copy [deleted] (3)</td>
+<td style="text-align:center"><code>thread (const thread&amp;) = delete</code></td>
+</tr>
+<tr>
+<td style="text-align:center">move (4)</td>
+<td style="text-align:center"><code>thread (thread&amp;&amp; x) noexcept</code></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>(1). 默认构造函数，创建一个空的 thread 执行对象。</p>
+<p>(2). 初始化构造函数，创建一个 thread对象，该 thread对象可被 <strong>joinable</strong>，<strong>新产生的线程会调用 fn 函数，该函数的参数由 args 给出</strong>。</p>
+<p>(3). <strong>拷贝构造函数(被禁用)</strong>，意味着 <strong>thread 不可被拷贝构造</strong>。</p>
+<p>(4). move 构造函数，move 构造函数，调用成功之后 x 不代表任何 thread 执行对象。</p>
+<p>注意：可被 joinable 的 thread 对象必须在他们销毁之前被主线程 join 或者将其设置为 detached。</p>
+<blockquote>
+<p>*主线程中执行joinable对象的join()，相当于在主线程中添加这些thread，也就是在这些添加的thread执行完毕之后才会继续执行主线程，类似嵌入代码。<br>join进入主线程的thread并不是从头执行，而是继续执行到完毕，或者说主线程等待其执行到完毕。相当于异步执行变为了同步执行。</p>
+</blockquote>
+<h3 id="线程的move操作"><a href="#线程的move操作" class="headerlink" title="线程的move操作"></a>线程的move操作</h3><p><code>move: thread&amp; operator= (thread&amp;&amp; rhs) noexcept;</code></p>
+<ul>
+<li><p>thread类中的operator=是move操作，不是copy操作</p>
+</li>
+<li><p>将rhs这个thread对象的状态赋值到*this中</p>
+<blockquote>
+<p>thread object whose state is moved to *this.</p>
+</blockquote>
+</li>
+<li><p>move 赋值操作，如果当前对象不可 joinable，需要传递一个右值引用(rhs)给 move 赋值操作；</p>
+</li>
+<li><p>如果当前对象可被 joinable，则 terminate() 被调用。</p>
+</li>
+</ul>
+<p>例子如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;chrono&gt;</span>    <span class="comment">// std::chrono::seconds</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span>  <span class="comment">// std::cout</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;thread&gt;</span>    <span class="comment">// std::thread, std::this_thread::sleep_for</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// thread运行函数</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">thread_task</span><span class="params">(<span class="type">int</span> n)</span> </span>&#123;</span><br><span class="line">    std::this_thread::<span class="built_in">sleep_for</span>(std::chrono::<span class="built_in">seconds</span>(n));</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;hello thread &quot;</span></span><br><span class="line">        &lt;&lt; std::this_thread::<span class="built_in">get_id</span>()</span><br><span class="line">        &lt;&lt; <span class="string">&quot; paused &quot;</span> &lt;&lt; n &lt;&lt; <span class="string">&quot; seconds&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">const</span> <span class="type">char</span> *argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::thread threads[<span class="number">5</span>];</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Spawning 5 threads...\n&quot;</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 创建5个线程</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">	    <span class="comment">// move-assign threads</span></span><br><span class="line">        threads[i] = std::<span class="built_in">thread</span>(thread_task, i + <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Done spawning threads! Now wait for them to join\n&quot;</span>;</span><br><span class="line">	</span><br><span class="line">	<span class="comment">// 5个线程依次join()</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; t: threads) &#123;</span><br><span class="line">        t.<span class="built_in">join</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;All threads joined.\n&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<p>还有一些其余的常规函数，可以查阅手册<br><a href="http://www.cplusplus.com/reference/thread/thread/?kw=thread">std::thread</a></p>
+<h2 id="4-mutex-详解"><a href="#4-mutex-详解" class="headerlink" title="4. mutex 详解"></a>4. mutex 详解</h2><p>Mutex 又称互斥量，C++ 11中与 Mutex 相关的类（包括锁类型）和函数都声明在<code>&lt;mutex&gt;</code>头文件中，所以如果你需要使用<code>std::mutex</code>，就必须包含<code>&lt;mutex&gt;</code>头文件。</p>
+<blockquote>
+<p>Linux的pthread下有pthread_mutex</p>
+</blockquote>
+<h3 id="mutex-相关头文件介绍"><a href="#mutex-相关头文件介绍" class="headerlink" title="mutex 相关头文件介绍"></a>mutex 相关头文件介绍</h3><p><strong>Mutex 系列类(四种)</strong></p>
+<ul>
+<li><code>std::mutex</code>，最基本的 Mutex 类。</li>
+<li><code>std::recursive_mutex</code>，递归 Mutex 类。</li>
+<li><code>std::time_mutex</code>，定时 Mutex 类。</li>
+<li><code>std::recursive_timed_mutex</code>，定时递归 Mutex 类。</li>
+</ul>
+<p><strong>Lock 类（两种）</strong></p>
+<ul>
+<li><code>std::lock_guard</code>，与 Mutex RAII 相关，方便线程对互斥量上锁。</li>
+<li><code>std::unique_lock</code>，与 Mutex RAII 相关，方便线程对互斥量上锁，但提供了更好的上锁和解锁控制。</li>
+</ul>
+<p><strong>其他类型</strong></p>
+<ul>
+<li><code>std::once_flag</code></li>
+<li><code>std::adopt_lock_t</code></li>
+<li><code>std::defer_lock_t</code></li>
+<li><code>std::try_to_lock_t</code></li>
+</ul>
+<p><strong>函数</strong></p>
+<ul>
+<li><code>std::try_lock</code>，尝试同时对多个互斥量上锁。</li>
+<li><code>std::lock</code>，可以同时对多个互斥量上锁。</li>
+<li><code>std::call_once</code>，如果多个线程需要同时调用某个函数，<code>call_once</code>可以保证多个线程对该函数只调用一次。</li>
+</ul>
+<h3 id="mutex用法介绍"><a href="#mutex用法介绍" class="headerlink" title="mutex用法介绍"></a>mutex用法介绍</h3><p>下面以<code>std::mutex</code>为例介绍 C++11 中的互斥量用法。</p>
+<p><code>std::mutex</code>是C++11 中最基本的互斥量，<code>std::mutex</code>对象提供了独占所有权的特性——即不支持递归地对<code>std::mutex</code>对象上锁，而<code>std::recursive_lock</code>则可以递归地对互斥量对象上锁。</p>
+<p><strong>std::mutex 成员函数</strong></p>
+<ul>
+<li><p>构造函数，<code>std::mutex</code><strong>不允许拷贝构造，也不允许 move 拷贝</strong>，最初产生的 mutex 对象是处于 unlocked 状态的。</p>
+</li>
+<li><p><code>lock()</code>，<strong>调用线程将锁住该互斥量</strong>。线程调用该函数会发生下面 3 种情况：</p>
+<ul>
+<li>(1). 如果该互斥量当前没有被锁住，则调用线程将该互斥量锁住，直到调用 unlock之前，该线程一直拥有该锁。</li>
+<li>(2). 如果当前互斥量被其他线程锁住，则当前的调用线程被阻塞住。</li>
+<li>(3). 如果当前互斥量被当前调用线程锁住，则会产生死锁(deadlock)。</li>
+</ul>
+</li>
+<li><p><code>unlock()</code>， 解锁，释放对互斥量的所有权。</p>
+</li>
+<li><p><code>try_lock()</code>，尝试锁住互斥量，如果互斥量被其他线程占有，则<strong>当前线程也不会被阻塞</strong>。线程调用该函数也会出现下面 3 种情况，</p>
+<ul>
+<li>(1). 如果当前互斥量没有被其他线程占有，则该线程锁住互斥量，直到该线程调用 unlock 释放互斥量。</li>
+<li>(2). 如果当前互斥量被其他线程锁住，则当前调用线程返回 false，而并不会被阻塞掉。</li>
+<li>(3). 如果当前互斥量被当前调用线程锁住，则会产生死锁(deadlock)。</li>
+</ul>
+</li>
+</ul>
+<p><strong>mutex例子如下：</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span>       <span class="comment">// std::cout</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;thread&gt;</span>         <span class="comment">// std::thread</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;mutex&gt;</span>          <span class="comment">// std::mutex</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">volatile</span> <span class="type">int</span> <span class="title">counter</span><span class="params">(<span class="number">0</span>)</span></span>;  <span class="comment">// non-atomic counter</span></span><br><span class="line">std::mutex mtx;           <span class="comment">// locks access to counter</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">attempt_10k_increases</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i=<span class="number">0</span>; i&lt;<span class="number">10000</span>; ++i) &#123;</span><br><span class="line">        <span class="keyword">if</span> (mtx.<span class="built_in">try_lock</span>()) &#123;   <span class="comment">// only increase if currently not locked:</span></span><br><span class="line">            ++counter;</span><br><span class="line">            mtx.<span class="built_in">unlock</span>();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span> <span class="params">(<span class="type">int</span> argc, <span class="type">const</span> <span class="type">char</span>* argv[])</span> </span>&#123;</span><br><span class="line">    std::thread threads[<span class="number">10</span>];</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i=<span class="number">0</span>; i&lt;<span class="number">10</span>; ++i)</span><br><span class="line">        threads[i] = std::<span class="built_in">thread</span>(attempt_10k_increases);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; th : threads) th.<span class="built_in">join</span>();</span><br><span class="line">    std::cout &lt;&lt; counter &lt;&lt; <span class="string">&quot; successful increases of the counter.\n&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>std::recursive_mutex 介绍</strong></p>
+<ul>
+<li><p><code>std::recursive_mutex</code>与<code>std::mutex</code>一样，也是一种可以被上锁的对象，但是和<code>std::mutex</code>不同的是，<strong><code>std::recursive_mutex</code>允许同一个线程对互斥量多次上锁（即递归上锁），来获得对互斥量对象的多层所有权</strong>，</p>
+</li>
+<li><p><code>std::recursive_mutex</code>释放互斥量时需要<strong>调用与该锁层次深度相同次数的<code>unlock()</code>，可理解为<code>lock()</code>次数和<code>unlock()</code>次数相同</strong>，除此之外，<code>std::recursive_mutex</code>的特性和<code>std::mutex</code>大致相同。</p>
+</li>
+</ul>
+<p><strong>std::time_mutex 介绍</strong></p>
+<p><code>std::time_mutex</code>比<code>std::mutex</code>多了两个成员函数，<code>try_lock_for()</code>，<code>try_lock_until()</code>。</p>
+<ul>
+<li><p><code>try_lock_for</code>函数接受一个时间范围，表示<strong>在这一段时间范围之内线程如果没有获得锁则被阻塞住</strong>（与<code>std::mutex</code>的<code>try_lock()</code>不同，<code>try_lock</code>如果被调用时没有获得锁则直接返回false），如果在此期间其他线程释放了锁，则该线程可以获得对互斥量的锁，如果超时（即在指定时间内还是没有获得锁），则返回 false。</p>
+<ul>
+<li>在指定时间内阻塞，知道获得锁。超时返回false</li>
+</ul>
+</li>
+<li><p><code>try_lock_until</code>函数则接受一个<strong>时间点作为参数</strong>，在指定时间点未到来之前线程如果没有获得锁则被阻塞住，如果在此期间其他线程释放了锁，则该线程可以获得对互斥量的锁，如果超时（即在指定时间内还是没有获得锁），则返回 false。</p>
+</li>
+</ul>
+<p><strong>time_mutext举例如下：</strong></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span>       <span class="comment">// std::cout</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;chrono&gt;</span>         <span class="comment">// std::chrono::milliseconds</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;thread&gt;</span>         <span class="comment">// std::thread</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;mutex&gt;</span>          <span class="comment">// std::timed_mutex</span></span></span><br><span class="line"></span><br><span class="line">std::timed_mutex mtx;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">fireworks</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="comment">// waiting to get a lock: each thread prints &quot;-&quot; every 200ms:</span></span><br><span class="line">  <span class="keyword">while</span> (!mtx.<span class="built_in">try_lock_for</span>(std::chrono::<span class="built_in">milliseconds</span>(<span class="number">200</span>))) &#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;-&quot;</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="comment">// got a lock! - wait for 1s, then this thread prints &quot;*&quot;</span></span><br><span class="line">  std::this_thread::<span class="built_in">sleep_for</span>(std::chrono::<span class="built_in">milliseconds</span>(<span class="number">1000</span>));</span><br><span class="line">  std::cout &lt;&lt; <span class="string">&quot;*\n&quot;</span>;</span><br><span class="line">  mtx.<span class="built_in">unlock</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span> <span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  std::thread threads[<span class="number">10</span>];</span><br><span class="line">  <span class="comment">// spawn 10 threads:</span></span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i=<span class="number">0</span>; i&lt;<span class="number">10</span>; ++i)</span><br><span class="line">    threads[i] = std::<span class="built_in">thread</span>(fireworks);</span><br><span class="line"></span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; th : threads) th.<span class="built_in">join</span>();</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong>std::recursive_timed_mutex 介绍</strong></p>
+<p>和<code>std:recursive_mutex</code>与<code>std::mutex</code>的关系一样，<code>std::recursive_timed_mutex</code>的特性也可以从<code>std::timed_mutex</code>推导出来。</p>
+<h3 id="lock-guard-用法介绍"><a href="#lock-guard-用法介绍" class="headerlink" title="lock_guard 用法介绍"></a>lock_guard 用法介绍</h3><p>与 Mutex RAII 相关，方便线程对互斥量上锁。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span>       <span class="comment">// std::cout</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;thread&gt;</span>         <span class="comment">// std::thread</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;mutex&gt;</span>          <span class="comment">// std::mutex, std::lock_guard</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdexcept&gt;</span>      <span class="comment">// std::logic_error</span></span></span><br><span class="line"></span><br><span class="line">std::mutex mtx;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">print_even</span> <span class="params">(<span class="type">int</span> x)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (x%<span class="number">2</span>==<span class="number">0</span>) std::cout &lt;&lt; x &lt;&lt; <span class="string">&quot; is even\n&quot;</span>;</span><br><span class="line">    <span class="keyword">else</span> <span class="built_in">throw</span> (std::<span class="built_in">logic_error</span>(<span class="string">&quot;not even&quot;</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">print_thread_id</span> <span class="params">(<span class="type">int</span> id)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">// using a local lock_guard to lock mtx guarantees unlocking on destruction / exception:</span></span><br><span class="line">        <span class="function">std::lock_guard&lt;std::mutex&gt; <span class="title">lck</span> <span class="params">(mtx)</span></span>;</span><br><span class="line">        <span class="built_in">print_even</span>(id);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">catch</span> (std::logic_error&amp;) &#123;</span><br><span class="line">        std::cout &lt;&lt; <span class="string">&quot;[exception caught]\n&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span> <span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::thread threads[<span class="number">10</span>];</span><br><span class="line">    <span class="comment">// spawn 10 threads:</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i=<span class="number">0</span>; i&lt;<span class="number">10</span>; ++i)</span><br><span class="line">        threads[i] = std::<span class="built_in">thread</span>(print_thread_id,i+<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; th : threads) th.<span class="built_in">join</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="unique-lock-用法介绍"><a href="#unique-lock-用法介绍" class="headerlink" title="unique_lock 用法介绍"></a>unique_lock 用法介绍</h3><p>与 Mutex RAII 相关，方便线程对互斥量上锁，但提供了更好的上锁和解锁控制。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span>       <span class="comment">// std::cout</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;thread&gt;</span>         <span class="comment">// std::thread</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;mutex&gt;</span>          <span class="comment">// std::mutex, std::unique_lock</span></span></span><br><span class="line"></span><br><span class="line">std::mutex mtx;           <span class="comment">// mutex for critical section</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">print_block</span> <span class="params">(<span class="type">int</span> n, <span class="type">char</span> c)</span> </span>&#123;</span><br><span class="line">    <span class="comment">// critical section (exclusive access to std::cout signaled by lifetime of lck):</span></span><br><span class="line">    <span class="function">std::unique_lock&lt;std::mutex&gt; <span class="title">lck</span> <span class="params">(mtx)</span></span>;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> i=<span class="number">0</span>; i&lt;n; ++i) &#123;</span><br><span class="line">        std::cout &lt;&lt; c;</span><br><span class="line">    &#125;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span> <span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function">std::thread <span class="title">th1</span> <span class="params">(print_block,<span class="number">50</span>,<span class="string">&#x27;*&#x27;</span>)</span></span>;</span><br><span class="line">    <span class="function">std::thread <span class="title">th2</span> <span class="params">(print_block,<span class="number">50</span>,<span class="string">&#x27;$&#x27;</span>)</span></span>;</span><br><span class="line"></span><br><span class="line">    th1.<span class="built_in">join</span>();</span><br><span class="line">    th2.<span class="built_in">join</span>();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>anonymous</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2017/05/cpp-multi-threads.html" title="C++11多线程编程介绍">https://murphypei.github.io/blog/2017/05/cpp-multi-threads.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/并发编程/" rel="tag"># 并发编程</a>
+            
+              <a href="/tags/多线程/" rel="tag"># 多线程</a>
+            
+              <a href="/tags/C-11/" rel="tag"># C++11</a>
+            
+              <a href="/tags/thread/" rel="tag"># thread</a>
+            
+              <a href="/tags/tmux/" rel="tag"># tmux</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2017/05/permucation-algorithm.html" rel="next" title="排列组合算法(C++)">
+                  <i class="fa fa-chevron-left"></i> 排列组合算法(C++)
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2017/05/iterator-effectness.html" rel="prev" title="STL迭代器失效问题">
+                  STL迭代器失效问题 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-与-C-11-多线程相关的头文件"><span class="nav-number">1.</span> <span class="nav-text">1. 与 C++11 多线程相关的头文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-thread-的”Hello-world”"><span class="nav-number">2.</span> <span class="nav-text">2. thread 的”Hello world”</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-thread-详解"><span class="nav-number">3.</span> <span class="nav-text">3. thread 详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#线程的move操作"><span class="nav-number">3.1.</span> <span class="nav-text">线程的move操作</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-mutex-详解"><span class="nav-number">4.</span> <span class="nav-text">4. mutex 详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#mutex-相关头文件介绍"><span class="nav-number">4.1.</span> <span class="nav-text">mutex 相关头文件介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#mutex用法介绍"><span class="nav-number">4.2.</span> <span class="nav-text">mutex用法介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#lock-guard-用法介绍"><span class="nav-number">4.3.</span> <span class="nav-text">lock_guard 用法介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#unique-lock-用法介绍"><span class="nav-number">4.4.</span> <span class="nav-text">unique_lock 用法介绍</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="anonymous">
+  <p class="site-author-name" itemprop="name">anonymous</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">173</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">444</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2023</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">anonymous</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">618k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:10</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: 'fde9699d7f3b01cd0b1cc769682ce22b',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>
