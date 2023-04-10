@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2022/01/pyenv-virtualenv.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -302,7 +302,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>2k</span>
+              <span>1.9k</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -326,7 +326,7 @@
 
       
         <p>开发和部署的过程中，常常遇到 python 版本和环境导致的冲突不兼容问题，pyenv 能够完美解决。</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>virtualenv 可以搭建虚拟且独立的 python 环境，可以使每个项目环境与其他项目独立开来，保持环境的干净，解决包冲突问题。但是这个依赖于已安装的 python 版本，相当于<strong>同一版本的不同环境</strong>。</p>
 <p>pyenv 可以帮助你在一台开发机上建立多个版本的 python 环境，并提供方便的切换方法，可以搭配 virtualenv，完美解决 python 环境冲突，自由搭建任意版本的 python 环境。</p>
 <h3 id="pyenv-安装"><a href="#pyenv-安装" class="headerlink" title="pyenv 安装"></a>pyenv 安装</h3><p><strong>安装 pyenv 之前建议卸载本机的 virtualenv 和 virtualenvwrapper 等相关虚拟环境</strong>，因为我从没用过 conda， 所以不清楚 conda 是否需要卸载。</p>
@@ -337,14 +337,14 @@
 <li><p>配置环境变量</p>
 </li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;export PYENV_ROOT=&quot;$HOME/.pyenv&quot;&#x27; &gt;&gt; ~/.bashrc</span><br><span class="line">echo &#x27;export PATH=&quot;$PYENV_ROOT/bin:$PATH&quot;&#x27; &gt;&gt; ~/.bashrc</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">echo 'export PYENV_ROOT="$HOME/.pyenv"' &gt;&gt; ~/.bashrc</span><br><span class="line">echo 'export PATH="$PYENV_ROOT/bin:$PATH"' &gt;&gt; ~/.bashrc</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>用 zsh 的改为 ~/.zshrc，下同</p>
 </blockquote>
 <ul>
 <li>添加 pyenv 初始化到你的 shell</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &#x27;eval &quot;$(pyenv init -)&quot;&#x27; &gt;&gt; ~/.bashrc</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo 'eval "$(pyenv init -)"' &gt;&gt; ~/.bashrc</span><br></pre></td></tr></table></figure>
 <ul>
 <li>重新启动你的 shell 使更改生效</li>
 </ul>
@@ -359,21 +359,21 @@
 <ul>
 <li>安装完成后可以查看安装情况：</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pyenv versions </span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pyenv versions</span><br></pre></td></tr></table></figure>
 <p>一般输出如下：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">* system (set by ~/.pyenv/version)</span><br><span class="line">3.9.9</span><br></pre></td></tr></table></figure>
 <p>system 代表当前系统的 python 版本, 3.9.9 是我们用pyenv安装的, *表示当前的 python 版本， 可以看到，我们还在使用的是默认的 system 自带的 python 版本。</p>
 <ul>
 <li>切换 python 版本</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pyenv global 3.9.9</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">pyenv <span class="built_in">local</span> 3.9.9</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">pyenv shell 3.9.9</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pyenv global 3.9.9</span><br><span class="line"><span class="meta">#</span><span class="bash"> pyenv <span class="built_in">local</span> 3.9.9</span></span><br><span class="line"><span class="meta">#</span><span class="bash"> pyenv shell 3.9.9</span></span><br></pre></td></tr></table></figure>
 <p>上面三条命令都可以切换 python 版本，区别简单解释如下：</p>
 <ul>
 <li><code>pyenv global</code> 读写 <code>~/.python-version</code> 文件，基本来说你在当前 shell 和今后打开的 shell 中，默认都是用这个版本的 python。</li>
 <li><code>pyenv local</code> 读写<strong>当前目录</strong>的 <code>.python-version</code> 文件，相当于覆盖了 <code>~/.python-version</code> 的版本。</li>
 <li><code>pyenv shell</code> 指定当前 shell 使用的 python 版本，相当于覆盖了前面两个。</li>
 </ul>
-<p>此外设置 <code>PYENV_VERSION</code> 变量也可以修改 python 版本，看上去很杂很乱，但是多用几次就明白了。详细命令文档看这里：<a href="https://github.com/pyenv/pyenv/blob/master/COMMANDS.md">pyenv commands</a></p>
+<p>此外设置 <code>PYENV_VERSION</code> 变量也可以修改 python 版本，看上去很杂很乱，但是多用几次就明白了。详细命令文档看这里：<a href="https://github.com/pyenv/pyenv/blob/master/COMMANDS.md" target="_blank" rel="noopener">pyenv commands</a></p>
 <ul>
 <li>卸载 python 版本</li>
 </ul>
@@ -382,7 +382,7 @@
 <ul>
 <li>安装 pyenv-virtualenv</li>
 </ul>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/yyuu/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv</span><br><span class="line">echo &#x27;eval &quot;$(pyenv virtualenv-init -)&quot;&#x27; &gt;&gt; ~/.bashrc</span><br><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com/yyuu/pyenv-virtualenv.git ~/.pyenv/plugins/pyenv-virtualenv</span><br><span class="line">echo 'eval "$(pyenv virtualenv-init -)"' &gt;&gt; ~/.bashrc</span><br><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
 <ul>
 <li>创建虚拟环境</li>
 </ul>
@@ -425,7 +425,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2022/01/pyenv-virtualenv.html" title="使用 pyenv 搭建任意 python 环境">https://murphypei.github.io/blog/2022/01/pyenv-virtualenv.html</a>
@@ -532,8 +532,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1561,17 +1561,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

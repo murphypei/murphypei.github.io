@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/02/sensetime-interview.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,7 +334,7 @@
 
       
         <p>商汤面试记录和总结</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>前几天在 SenseTime 面试了实习生职位，求职意向主要是算法模块以及工程业务，也就是偏码农一些。之所以不想做纯算法研究，我觉得我是根据自己的兴趣来制定的职业规划，也希望自己能够做相对喜欢的工作。</p>
 <p>技术面试官总共有三个，不过时间都不长，侧重点也不太一样。</p>
 <ul>
@@ -354,9 +354,9 @@
 </ul>
 <p><strong>memcpy 函数实现</strong></p>
 <p>重点就在于，地址重叠情况下，需要分清从前往后拷贝和从后往前拷贝两种情况</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span>* <span class="title">my_memcpy</span><span class="params">(<span class="type">void</span> *dst, <span class="type">const</span> <span class="type">void</span> *src, <span class="type">size_t</span> size)</span> </span>&#123;</span><br><span class="line">    <span class="type">char</span> *psrc;</span><br><span class="line">    <span class="type">char</span> *pdst;</span><br><span class="line">    <span class="keyword">if</span>(<span class="literal">NULL</span> == dst || <span class="literal">NULL</span> == src) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>((src &lt; dst) || ((<span class="type">char</span>*)src + size &gt; (<span class="type">char</span>*)dst) &#123;         <span class="comment">// 从后向前拷贝</span></span><br><span class="line">        psrc = (<span class="type">char</span>*)src + size - <span class="number">1</span>;</span><br><span class="line">        pdst = (<span class="type">char</span>*)dst + size - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span>(size--) &#123;</span><br><span class="line">            *pdst-- = *psrc--;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        psrc = (<span class="type">char</span>*)src;</span><br><span class="line">        pdst = (<span class="type">char</span>*)dst;</span><br><span class="line">        <span class="keyword">while</span>(size--) &#123;</span><br><span class="line">            *pdst++ = *psrc++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> dst;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span>* <span class="title">my_memcpy</span><span class="params">(<span class="keyword">void</span> *dst, <span class="keyword">const</span> <span class="keyword">void</span> *src, <span class="keyword">size_t</span> size)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> *psrc;</span><br><span class="line">    <span class="keyword">char</span> *pdst;</span><br><span class="line">    <span class="keyword">if</span>(<span class="literal">NULL</span> == dst || <span class="literal">NULL</span> == src) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span>((src &lt; dst) || ((<span class="keyword">char</span>*)src + size &gt; (<span class="keyword">char</span>*)dst) &#123;         <span class="comment">// 从后向前拷贝</span></span><br><span class="line">        psrc = (<span class="keyword">char</span>*)src + size - <span class="number">1</span>;</span><br><span class="line">        pdst = (<span class="keyword">char</span>*)dst + size - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">while</span>(size--) &#123;</span><br><span class="line">            *pdst-- = *psrc--;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        psrc = (<span class="keyword">char</span>*)src;</span><br><span class="line">        pdst = (<span class="keyword">char</span>*)dst;</span><br><span class="line">        <span class="keyword">while</span>(size--) &#123;</span><br><span class="line">            *pdst++ = *psrc++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> dst;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p><strong>测试用例</strong></p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="type">char</span> p1[<span class="number">256</span>] = <span class="string">&quot;hello world&quot;</span>;</span><br><span class="line">    <span class="type">char</span> p2[<span class="number">256</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="type">char</span> *ptr;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;destination before memcpy: %s/n&quot;</span>,dst);  </span><br><span class="line">    </span><br><span class="line">    ptr=(<span class="type">char</span>*)<span class="built_in">memcpy</span>(dst, src, <span class="built_in">sizeof</span>(src)/<span class="built_in">sizeof</span>(<span class="type">char</span>));   <span class="comment">// 内存不存在覆盖</span></span><br><span class="line">    ptr=(<span class="type">char</span>*)<span class="built_in">memcpy</span>(dst+<span class="number">1</span>,dst,<span class="number">2</span>);                          <span class="comment">// 内存存在覆盖 </span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (ptr)&#123;   </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;destination after memcpy: %s/n&quot;</span>,ptr);   </span><br><span class="line">    &#125;   </span><br><span class="line">    <span class="keyword">else</span>&#123;   </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;memcpy failed/n&quot;</span>);   </span><br><span class="line">    &#125;   </span><br><span class="line">    </span><br><span class="line">    <span class="built_in">getch</span>();   </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">test</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">char</span> p1[<span class="number">256</span>] = <span class="string">"hello world"</span>;</span><br><span class="line">    <span class="keyword">char</span> p2[<span class="number">256</span>] = &#123;<span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">char</span> *ptr;</span><br><span class="line">    </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"destination before memcpy: %s/n"</span>,dst);  </span><br><span class="line">    </span><br><span class="line">    ptr=(<span class="keyword">char</span>*)<span class="built_in">memcpy</span>(dst, src, <span class="keyword">sizeof</span>(src)/<span class="keyword">sizeof</span>(<span class="keyword">char</span>));   <span class="comment">// 内存不存在覆盖</span></span><br><span class="line">    ptr=(<span class="keyword">char</span>*)<span class="built_in">memcpy</span>(dst+<span class="number">1</span>,dst,<span class="number">2</span>);                          <span class="comment">// 内存存在覆盖 </span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">if</span> (ptr)&#123;   </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"destination after memcpy: %s/n"</span>,ptr);   </span><br><span class="line">    &#125;   </span><br><span class="line">    <span class="keyword">else</span>&#123;   </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"memcpy failed/n"</span>);   </span><br><span class="line">    &#125;   </span><br><span class="line">    </span><br><span class="line">    getch();   </span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
     </div>
 
@@ -370,7 +370,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2017/02/sensetime-interview.html" title="SenseTime 实习生面试">https://murphypei.github.io/blog/2017/02/sensetime-interview.html</a>
@@ -398,14 +398,18 @@
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
               
+                <a href="/blog/2017/02/cpp-inner-class.html" rel="next" title="C++内部类（嵌套类）与外部类和友元">
+                  <i class="fa fa-chevron-left"></i> C++内部类（嵌套类）与外部类和友元
+                </a>
+              
             </div>
 
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
               
-                <a href="/blog/2017/02/cpp-inner-class.html" rel="prev" title="C++内部类（嵌套类）与外部类和友元">
-                  C++内部类（嵌套类）与外部类和友元 <i class="fa fa-chevron-right"></i>
+                <a href="/blog/2017/02/ipc.html" rel="prev" title="Linux 进程间通信">
+                  Linux 进程间通信 <i class="fa fa-chevron-right"></i>
                 </a>
               
             </div>
@@ -465,8 +469,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1494,17 +1498,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

@@ -241,7 +241,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/07/numpy-meshgrid-ravel.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -336,14 +336,14 @@
 
       
         <p>numpy中有一些强大的函数可以很方便的实现日常的数值处理计算。在机器学习的特征处理中，meshgrid使用的很多，我之前对于meshgrid的用法一直是有点茫然记不住，后来看到一个stackoverflow的帖子恍然大悟，所以记录分享一下，有兴趣可以看原帖。</p>
-<span id="more"></span>
-<p><a href="https://stackoverflow.com/questions/36013063/what-is-purpose-of-meshgrid-in-Python-numpy">原帖</a></p>
+<a id="more"></a>
+<p><a href="https://stackoverflow.com/questions/36013063/what-is-purpose-of-meshgrid-in-Python-numpy" target="_blank" rel="noopener">原帖</a></p>
 <p>meshgrid主要是用来很方便的生成坐标对，坐标由给定的x, y两个数组来提供，具体的操作示意图，看下面的图片就一目了然了。</p>
-<p><img src="/images/posts/Python/meshgrid.png" alt=""></p>
+<p><img src="/images/posts/Python/meshgrid.png" alt></p>
 <p>将x和y分别在另一个数组的维度方向上进行扩展，然后就生成了坐标pair，返回的结果就是坐标的x集合和y集合。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>nx, ny = (<span class="number">3</span>, <span class="number">2</span>)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>x = np.linspace(<span class="number">0</span>, <span class="number">1</span>, nx) <span class="comment"># x = array([0, 0.5, 1])</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>y = np.linspace(<span class="number">0</span>, <span class="number">1</span>, ny) <span class="comment"># y = array([0, 1])</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>xv, yv = np.meshgrid(x, y)</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>xv</span><br><span class="line">array([[ <span class="number">0.</span> ,  <span class="number">0.5</span>,  <span class="number">1.</span> ],</span><br><span class="line">       [ <span class="number">0.</span> ,  <span class="number">0.5</span>,  <span class="number">1.</span> ]])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>yv</span><br><span class="line">array([[ <span class="number">0.</span>,  <span class="number">0.</span>,  <span class="number">0.</span>],</span><br><span class="line">       [ <span class="number">1.</span>,  <span class="number">1.</span>,  <span class="number">1.</span>]])</span><br></pre></td></tr></table></figure>
 <p>一个与meshgrid经常一起用的函数是reval，通常用于将meshgrid返回的的坐标集合矩阵拉伸，用于后续处理</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>x = np.array([[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], [<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>]])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">print</span>(np.ravel(x))</span><br><span class="line">[<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span> <span class="number">6</span>]</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span>x = np.array([[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], [<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>]])</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(np.ravel(x))</span><br><span class="line">[<span class="number">1</span> <span class="number">2</span> <span class="number">3</span> <span class="number">4</span> <span class="number">5</span> <span class="number">6</span>]</span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -356,7 +356,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2018/07/numpy-meshgrid-ravel.html" title="numpy meshgrid和reval用法">https://murphypei.github.io/blog/2018/07/numpy-meshgrid-ravel.html</a>
@@ -461,8 +461,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1490,17 +1490,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

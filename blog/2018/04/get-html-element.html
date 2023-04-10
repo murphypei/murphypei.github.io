@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/04/get-html-element.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -310,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>635</span>
+              <span>555</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -334,8 +334,8 @@
 
       
         <p>使用 Python 的 <code>urllib</code> 和 <code>BeautifulSoup</code> 库进行简单的页面元素提取测试</p>
-<span id="more"></span>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> urllib.request</span><br><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">response = urllib.request.urlopen(<span class="string">&#x27;http://www.mmjpg.com/&#x27;</span>)</span><br><span class="line"><span class="keyword">if</span> response:</span><br><span class="line">    <span class="comment"># 获取页面内容</span></span><br><span class="line">    html_content = response.read().decode(<span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line">    <span class="comment"># 将获取到的内容转换成BeautifulSoup格式，并将html.parser作为解析器</span></span><br><span class="line">    soup = BeautifulSoup(html_content, <span class="string">&#x27;html.parser&#x27;</span>)</span><br><span class="line">    <span class="comment"># 格式化打印输出html</span></span><br><span class="line">    <span class="built_in">print</span>(soup.prettify())</span><br><span class="line">    <span class="comment"># 获取元素节点</span></span><br><span class="line">    tag_elements = soup.find(<span class="string">&#x27;div&#x27;</span>, attrs=&#123;<span class="string">&quot;class&quot;</span>: <span class="string">&quot;subnav&quot;</span>&#125;).find_all(<span class="string">&#x27;a&#x27;</span>)</span><br><span class="line">    <span class="comment"># 获取连接</span></span><br><span class="line">    hrefs = [e.get(<span class="string">&#x27;href&#x27;</span>) <span class="keyword">for</span> e <span class="keyword">in</span> tag_elements]</span><br><span class="line">    <span class="comment"># 获取文本内容</span></span><br><span class="line">    tags = [e.string <span class="keyword">for</span> e <span class="keyword">in</span> tag_elements]</span><br><span class="line">    <span class="built_in">print</span>(hrefs)</span><br><span class="line">    <span class="built_in">print</span>(tags)</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> urllib.request</span><br><span class="line"><span class="keyword">from</span> bs4 <span class="keyword">import</span> BeautifulSoup</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">response = urllib.request.urlopen(<span class="string">'http://www.mmjpg.com/'</span>)</span><br><span class="line"><span class="keyword">if</span> response:</span><br><span class="line">    <span class="comment"># 获取页面内容</span></span><br><span class="line">    html_content = response.read().decode(<span class="string">'utf-8'</span>)</span><br><span class="line">    <span class="comment"># 将获取到的内容转换成BeautifulSoup格式，并将html.parser作为解析器</span></span><br><span class="line">    soup = BeautifulSoup(html_content, <span class="string">'html.parser'</span>)</span><br><span class="line">    <span class="comment"># 格式化打印输出html</span></span><br><span class="line">    print(soup.prettify())</span><br><span class="line">    <span class="comment"># 获取元素节点</span></span><br><span class="line">    tag_elements = soup.find(<span class="string">'div'</span>, attrs=&#123;<span class="string">"class"</span>: <span class="string">"subnav"</span>&#125;).find_all(<span class="string">'a'</span>)</span><br><span class="line">    <span class="comment"># 获取连接</span></span><br><span class="line">    hrefs = [e.get(<span class="string">'href'</span>) <span class="keyword">for</span> e <span class="keyword">in</span> tag_elements]</span><br><span class="line">    <span class="comment"># 获取文本内容</span></span><br><span class="line">    tags = [e.string <span class="keyword">for</span> e <span class="keyword">in</span> tag_elements]</span><br><span class="line">    print(hrefs)</span><br><span class="line">    print(tags)</span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -348,7 +348,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2018/04/get-html-element.html" title="Python简单方法获取网页页面元素内容">https://murphypei.github.io/blog/2018/04/get-html-element.html</a>
@@ -453,8 +453,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1482,17 +1482,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

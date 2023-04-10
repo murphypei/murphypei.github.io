@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/03/python-env-manage.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,11 +334,11 @@
 
       
         <p>Python由于2.x和3.x版本不兼容的问题，出现了虚拟环境管理的方式，这也算是日常比较常见的Python环境配置的一种方式。此外，由于Python丰富的库依赖，对于库的管理又出现了不同。本文将总结日常使用virtualenv、pip、anaconda等Python配置的经验。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="库管理"><a href="#库管理" class="headerlink" title="库管理"></a>库管理</h2><p>说到Python的库管理，首先想到的就是pip了。这是Python官方自带的管理依赖库的软件，对于不同版本的Python，pip 也是不一样的，或者简单的可以理解为，你安装了一个Python，就安装了一个pip，二者绑定。比如我的电脑上就有两个Python和pip。</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">peic@peic-ubuntu:~$ ll /usr/local/bin/pip*</span><br><span class="line">lrwxrwxrwx 1 root root  19  1月  3 18:03 /usr/local/bin/pip -&gt; /usr/local/bin/pip2*</span><br><span class="line">-rwxr-xr-x 1 root root 204  2月 13  2017 /usr/local/bin/pip2*</span><br><span class="line">-rwxr-xr-x 1 root root 204  2月 13  2017 /usr/local/bin/pip2.7*</span><br><span class="line">-rwxr-xr-x 1 root root 206 12月 20 19:04 /usr/local/bin/pip3*</span><br><span class="line">-rwxr-xr-x 1 root root 206 12月 20 19:04 /usr/local/bin/pip3.5*</span><br></pre></td></tr></table></figure>
 <p>对于使用不同版本的Python，应该使用不同pip来管理相应的依赖库。</p>
-<p>pip使用<a href="https://pypi.Python.org/pypi">PyPI</a>的源来管理依赖库，如果国内连不上或者速度慢，可以更换为国内源。</p>
+<p>pip使用<a href="https://pypi.Python.org/pypi" target="_blank" rel="noopener">PyPI</a>的源来管理依赖库，如果国内连不上或者速度慢，可以更换为国内源。</p>
 <p>很多人喜欢用anaconda来一次安装很丰富的库，很方便。anaconda也分为2.x和3.x，和Python一样，并且一样有不同版本的pip。</p>
 <p>anaconda最重要的是自带了conda命令，也可以install，因此就会有疑惑，anaconda的pip install和conda install有什么不同？其实本质上都是从一个源获取目标并安装，只是源不同，conda使用了anaconda自己的源，因此很多时候pip安装不了的库，conda却可以，这就是因为这个库没有放到PyPI上，提交到anaconda了。需要注意的是，conda使用了一个新的包格式，你不能交替使用pip 和conda。因为pip不能安装和解析conda的包格式。你可以使用两个工具 但是他们是不能交互的。</p>
 <p>我推荐使用anaconda的同时使用conda来进行包的管理，这样能够统一，而且和后面要讲的虚拟环境也保持一致。</p>
@@ -364,7 +364,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2018/03/python-env-manage.html" title="Python虚拟环境和包管理总结">https://murphypei.github.io/blog/2018/03/python-env-manage.html</a>
@@ -475,8 +475,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1504,17 +1504,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

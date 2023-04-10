@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/10/C++11-14-1.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,12 +334,12 @@
 
       
         <p>本系列整理转载实验楼的 C++11/14 教程，对 C++11/14 中出现的部分重要特性进行介绍。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>C++1x (指 C++11/14, 甚至 C++17) 为传统 C++ 注入的大量特性使得整个 C++ 变得更加像一门现代化的语言。C++1x 不仅仅增强了 C++ 语言自身的可用性，auto 关键字语义的修改使得我们更加有信心来操控极度复杂的模板类型。同时还对语言运行期进行了大量的强化，Lambda 表达式的出现让 C++ 具有了『匿名函数』的『闭包』特性，而这一特性几乎在现代的编程语言（诸如 Python/Swift/… ）中已经司空见惯，右值引用的出现解决了 C++ 长期以来被人诟病的临时对象效率问题等等。</p>
 <p>C++1x 为自身的标准库增加了非常多的工具和方法，诸如在语言层面上提供了 std::thread 支持了并发编程，在不同平台上不再依赖于系统底层的 API，实现了语言层面的跨平台支持；std::regex提供了完整的正则表达式支持等等。</p>
 <p>C++98 已经被实践证明了是一种非常成功的『范型』，而 C++1x 的出现，则进一步推动这种范型，让 C++ 成为系统程序设计和库开发更好的语言。</p>
 <p>编译 C++1x 代码至少需要开启 -std=c++11 选项来支持 C++11 相关特性，在介绍 C++14 特性时的相关代码需要开启 -std=c++14 的编译选项，例如：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">g++ main.cpp -std=c++11</span><br><span class="line">g++ main.cpp -std=c++14</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">g++ main.cpp -std=c++11</span><br><span class="line">g++ main.cpp -std=c++14</span><br></pre></td></tr></table></figure>
 <p>本文先介绍被弃用的特性和与C的兼容性的一些参考</p>
 <h2 id="被弃用的特性"><a href="#被弃用的特性" class="headerlink" title="被弃用的特性"></a>被弃用的特性</h2><p>主要是从C++11开始，被弃用的特性。</p>
 <blockquote>
@@ -351,7 +351,7 @@
 <li><p>不再允许字符串字面值常量赋值给一个 char <em>。如果需要用字符串字面值常量赋值和初始化一个 char </em>，应该使用 const char * 或者 auto。</p>
 </li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">char *str = &quot;hello world!&quot;; // 将出现弃用警告</span><br><span class="line"></span><br><span class="line">auto str = &quot;hello world!&quot;; // 正确</span><br><span class="line">const char *str = &quot;hello world!&quot;; // 正确</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">char *str = &quot;hello world!&quot;; // 将出现弃用警告</span><br><span class="line"></span><br><span class="line">auto str = &quot;hello world!&quot;; // 正确</span><br><span class="line">const char *str = &quot;hello world!&quot;; // 正确</span><br></pre></td></tr></table></figure>
 <ul>
 <li><p>C++98 异常说明、 unexcepted_handler、set_unexpected() 等相关特性被弃用，应该使用 noexcept。</p>
 </li>
@@ -365,7 +365,7 @@
 </li>
 </ul>
 <h2 id="与-C-的兼容性"><a href="#与-C-的兼容性" class="headerlink" title="与 C 的兼容性"></a>与 C 的兼容性</h2><p>出于一些不可抗力、历史原因，我们不得不在 C++ 中使用一些 C 语言代码（甚至古老的 C 语言代码），例如 Linux 系统调用。在编写 C++ 时，也应该尽可能的避免使用诸如 void<em> 之类的程序风格。而在不得不使用 C 时，应该注意使用 extern “C” 这种特性，<em>*将 C 语言的代码与 C++代码进行分离编译，再统一链接</em></em>这种做法，例如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// foo.h</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> &#123;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">add</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> y)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// foo.c</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">add</span><span class="params">(<span class="type">int</span> x, <span class="type">int</span> y)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> x+y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// main.cpp</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;foo.h&quot;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="built_in">add</span>(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// foo.h</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">"C"</span> &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> __cplusplus</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// foo.c</span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">add</span><span class="params">(<span class="keyword">int</span> x, <span class="keyword">int</span> y)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> x+y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// main.cpp</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"foo.h"</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    add(<span class="number">1</span>, <span class="number">2</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <ol>
 <li>首先使用<code>gcc</code>来编译C语言的代码：</li>
 </ol>
@@ -376,7 +376,7 @@
 </ol>
 <p><code>g++ main.cpp foo.o -o main</code></p>
 <h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>本文先对本系列进行一个开始，后续特性将在系列中逐一介绍。</p>
-<p><a href="https://www.shiyanlou.com/courses/605/labs/2023/document">实验楼原文连接</a></p>
+<p><a href="https://www.shiyanlou.com/courses/605/labs/2023/document" target="_blank" rel="noopener">实验楼原文连接</a></p>
 
     </div>
 
@@ -390,7 +390,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2017/10/C++11-14-1.html" title="C++11/14 特性介绍（一）">https://murphypei.github.io/blog/2017/10/C++11-14-1.html</a>
@@ -495,8 +495,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1524,17 +1524,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

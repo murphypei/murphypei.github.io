@@ -246,7 +246,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/05/thundernet.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -341,7 +341,7 @@
 
       
         <p>旷视在 2019 年 3 月 推出了 ThunderNet，致力于实现移动端的实时的 two-stage 目标检测器。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h3 id="实时目标检测的问题与思路"><a href="#实时目标检测的问题与思路" class="headerlink" title="实时目标检测的问题与思路"></a>实时目标检测的问题与思路</h3><h4 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h4><ul>
 <li>two-stage detector 的 detection part（Faster R-CNN 中的 Fast R-CNN）过重（一般的head都超过10G FLOPs），即使是 light head R-CNN 也是 head 的计算比 backbone 要高出不少。这种不平衡一方面会造成算力需求过高，另一方面会导致过拟合。</li>
 <li>one-stage detector 由于同时预测 bbox 和类别概率，因此计算开销小；但是由于缺乏 ROI-wise 的特征提取和识别，导致提取的特征比较粗糙，预测精度不高。</li>
@@ -352,7 +352,7 @@
 <li>detection 部分则是对 RPN 网络和 prediction head 进行了压缩，同时为了弥补压缩带来的网络表现力的损失引入了 context enhancement module 结合局部和全局特征来提高特征层的表达能力和 spatial attention module 引入 RPN 的前后景信息优化特征的分布。</li>
 </ul>
 <h3 id="网络结构"><a href="#网络结构" class="headerlink" title="网络结构"></a>网络结构</h3><p>ThunderNet 的网络结构如下图所示：</p>
-<p><img src="/images/posts/dl/thundernet/thundernet1.png" alt=""></p>
+<p><img src="/images/posts/dl/thundernet/thundernet1.png" alt></p>
 <h4 id="backbone"><a href="#backbone" class="headerlink" title="backbone"></a>backbone</h4><p>对检测任务来说，backbone 的感受野大小和对 early stage 及 later stage feature 影响很大：</p>
 <ul>
 <li>感受野越大可以包含更多上下文信息，这对定位尤其重要，特别是大目标物体的检测；</li>
@@ -360,27 +360,27 @@
 <li>later stage feature 则辨识性更好，对分类影响更大。</li>
 </ul>
 <p>对之前的轻量骨架分析发现：ShuffleNet V1/V2 的感受野太小(121/320 pixel); ShuffleNet V2 和 MobileNet V2 则是缺失了 early stage feature。因此作者将 Shufflenet V2 做了修改作为 backbone，命名为 SNet。</p>
-<h4 id="SNet"><a href="#SNet" class="headerlink" title="SNet"></a>SNet</h4><p><img src="/images/posts/dl/thundernet/thundernet2.png" alt=""></p>
+<h4 id="SNet"><a href="#SNet" class="headerlink" title="SNet"></a>SNet</h4><p><img src="/images/posts/dl/thundernet/thundernet2.png" alt></p>
 <p>SNet 与 ShuffleNet V2 的不同之处主要在于：</p>
 <ul>
 <li>为了获得更大的感受野，SNet 中将 ShuffleNet V2 中所有 3x3 depthwise 卷积替换成了 5x5 depthwise（感受野从 121 pixel 增加到 193pixel）；</li>
 <li>SNet49 为了更快的速度，将 conv5 中输出的 1024 维压缩到了 512 维（作者认为直接去除 conv5 会导致信息的损失，而保留原来的 1024 维的话则会陷入低级特征）。SNet535 和 SNet146 则是移除 Conv5，在早期的 stage 中增加 channel 数。</li>
 </ul>
-<p><img src="/images/posts/dl/thundernet/thundernet3.png" alt=""></p>
+<p><img src="/images/posts/dl/thundernet/thundernet3.png" alt></p>
 <h4 id="压缩-RPN-和-detection-head"><a href="#压缩-RPN-和-detection-head" class="headerlink" title="压缩 RPN 和 detection head"></a>压缩 RPN 和 detection head</h4><p>对于 SNet 来说，现有的 RPN 和 detection head 太重了，因此作者在 light head R-CNN 的基础上将 <strong>RPN</strong> 的 256 通道 3x3 卷积替换成了 5x5 depthwise + 256 通道 1x1 卷积（计算量下降 28% 但是精度几乎没影响）。anchor 生成包含5种大小（32²，64²，128²，256²，512²​​​​）和 5 种长宽比（1:2，3:4，1:1，4:3，2:1）。此外使用 <strong>PSRoI align</strong> 进行 RoI warping，并且将输出的 channel 从 10 削减一半到 5，输出 feature map 尺寸为 7x7x5；而 PSRoI align 之后的输出只有 245d（7x7x5），因此再添加一个 1024d 的 fc。</p>
 <h4 id="Context-enhancement-module-CEM"><a href="#Context-enhancement-module-CEM" class="headerlink" title="Context enhancement module(CEM)"></a>Context enhancement module(CEM)</h4><p>CEM 可以看做是一个简单的单层 FPN：即将多尺度的局部特征和全局特征进行整合。在 CEM 中合并的特征层为 C4，C5 和 Cglb，并且是由1x1卷积调整输出 channel 到 245，计算开销小。</p>
-<p><img src="/images/posts/dl/thundernet/thundernet4.png" alt=""></p>
+<p><img src="/images/posts/dl/thundernet/thundernet4.png" alt></p>
 <h4 id="Spatial-Attention-Module-SAM"><a href="#Spatial-Attention-Module-SAM" class="headerlink" title="Spatial Attention Module (SAM)"></a>Spatial Attention Module (SAM)</h4><p>在 RoI warping 中我们期望前景的特征很强而背景的特征很弱。对于轻量网络和小输入，这个特征分布的学习就会更加困难。因此作者设计了 SAM 在 RoI warping 之前来重新 weight 特征图的分布。其核心思想是<strong>由于 RPN 是训练用来识别前景区域，因此 RPN 的中间特征可以用来区分前景特征和背景特征，因此 SAM 引入 RPN 的信息来重新优化前后景的特征分布</strong>。</p>
-<p><img src="/images/posts/dl/thundernet/thundernet5.png" alt=""></p>
+<p><img src="/images/posts/dl/thundernet/thundernet5.png" alt></p>
 <p>特征计算公式为：​​</p>
 <p>​​​​​​​​<script type="math/tex">F^{SAM}=F^{CEM}.sigmoid(\theta(F^{RPN}))</script></p>
 <p>$\theta$​ 函数用 1x1 卷积进行维度匹配；sigmoid 函数用于限制值到 [0, 1]，然后 $F^{CEM}$ 重新weight ​的特征分布。</p>
 <p>下图为使用SAM对特征分布的优化效果：</p>
-<p><img src="/images/posts/dl/thundernet/thundernet6.png" alt=""></p>
+<p><img src="/images/posts/dl/thundernet/thundernet6.png" alt></p>
 <h3 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h3><p>效果很不错，具体参见原文吧，懒得贴图了。</p>
 <h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><ul>
-<li><a href="https://arxiv.org/pdf/1903.11752.pdf">论文</a></li>
-<li><a href="https://medium.com/@fanzongshaoxing/thundernet-towards-real-time-generic-object-detection%E6%96%87%E7%AB%A0%E8%A7%A3%E6%9E%90-c2f66cd0bf03">论文解读</a></li>
+<li><a href="https://arxiv.org/pdf/1903.11752.pdf" target="_blank" rel="noopener">论文</a></li>
+<li><a href="https://medium.com/@fanzongshaoxing/thundernet-towards-real-time-generic-object-detection%E6%96%87%E7%AB%A0%E8%A7%A3%E6%9E%90-c2f66cd0bf03" target="_blank" rel="noopener">论文解读</a></li>
 </ul>
 
     </div>
@@ -395,7 +395,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2019/05/thundernet.html" title="目标检测之 ThunderNet">https://murphypei.github.io/blog/2019/05/thundernet.html</a>
@@ -504,8 +504,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1533,17 +1533,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

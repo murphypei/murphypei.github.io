@@ -59,7 +59,7 @@
 </script>
 
   <meta name="description" content="根据实际使用过程中的报错问题引出的Python的type和classobj的总结。">
-<meta name="keywords" content="Python,super,type,classobj">
+<meta name="keywords" content="Python,type,classobj,super">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Python中的type和classobj">
 <meta property="og:url" content="https://murphypei.github.io/blog/2018/08/python-type-classobj.html">
@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/08/python-type-classobj.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -310,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>2.4k</span>
+              <span>2.3k</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -334,30 +334,30 @@
 
       
         <p>根据实际使用过程中的报错问题引出的Python的type和classobj的总结。</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>最近在调用super的过程中，报了一个很错误：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TypeError: must be <span class="built_in">type</span>, <span class="keyword">not</span> classobj</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TypeError: must be type, <span class="keyword">not</span> classobj</span><br></pre></td></tr></table></figure>
 <p>对这个错误有点诧异，因为在Python2和Python3上运行结果不同，3就不会报错，一查才知道Python2中的类的定义分为两种，经典类（也就是报错中提到的classobj）和新式类，而Python中super只能应用于新式类，而不能应用于经典类。</p>
 <p><strong>经典类</strong></p>
 <p>所谓经典类就是什么都不用继承的类，例如最初的A类就是经典类，下面是一个经典类的例子:</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>():</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span><span class="params">()</span>:</span></span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
 <p><strong>新式类</strong></p>
 <p>所谓新式类就是必须要有继承的类，如果什么都不想继承，就继承到object类。下面是一个新类的例子：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">B</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span><span class="params">(object)</span>:</span></span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
 <p>由于Python2中新式类的定义必须显式继承object，否则会被认为是经典类，所以报错。而在Python3中，所有类都默认继承自object，也就是说<strong>Python3中全部都是新式类，没有经典类</strong>，所以也就不会报错。</p>
 <p>进一步的思考，为啥报错中提到must be type？难道不是应该是object类型吗，object和type又是什么关系？先放结论：</p>
 <blockquote>
 <p>object是所有类的超类。而type是什么呢？它是object的类型（也就是说object是type的实例），同时，object又是type的超类。总之来说，object和type是鸡生蛋，蛋生鸡，谁先生谁，无法说。</p>
 </blockquote>
-<p>上面这段结论必须要围绕Python中一切皆是对象的理念来思考。对于所有类的超类object，它是被定义的类，但这个类也是对象，它的类型就是type，如果了解Python中元类编程大概就能明白这句话的意思了。Python元类基本概念可以参考<a href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/0014319106919344c4ef8b1e04c48778bb45796e0335839000">这篇文章</a>，这里我简单说一下大概：因为Python是动态语言，所以类的创建也是在程序运行过程中创建的，创建类的方式就是通过type函数（还有一种方式就是元类），type函数既可以返回实例的类型，也可以用于创建一个类，被创建的类的类型就是type。</p>
+<p>上面这段结论必须要围绕Python中一切皆是对象的理念来思考。对于所有类的超类object，它是被定义的类，但这个类也是对象，它的类型就是type，如果了解Python中元类编程大概就能明白这句话的意思了。Python元类基本概念可以参考<a href="https://www.liaoxuefeng.com/wiki/0014316089557264a6b348958f449949df42a6d3a2e542c000/0014319106919344c4ef8b1e04c48778bb45796e0335839000" target="_blank" rel="noopener">这篇文章</a>，这里我简单说一下大概：因为Python是动态语言，所以类的创建也是在程序运行过程中创建的，创建类的方式就是通过type函数（还有一种方式就是元类），type函数既可以返回实例的类型，也可以用于创建一个类，被创建的类的类型就是type。</p>
 <p>定义一个类Hello</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Hello</span>(<span class="title class_ inherited__">object</span>):</span><br><span class="line">  <span class="keyword">def</span> <span class="title function_">hello</span>(<span class="params">self, name=<span class="string">&#x27;world&#x27;</span></span>):</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Hello, %s.&#x27;</span> % name)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Hello</span><span class="params">(object)</span>:</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">hello</span><span class="params">(self, name=<span class="string">'world'</span>)</span>:</span></span><br><span class="line">    print(<span class="string">'Hello, %s.'</span> % name)</span><br></pre></td></tr></table></figure>
 <p>测试如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> hello <span class="keyword">import</span> Hello</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>h = Hello()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>h.hello()</span><br><span class="line">Hello, world.</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">print</span>(<span class="built_in">type</span>(Hello))</span><br><span class="line">&lt;<span class="keyword">class</span> <span class="string">&#x27;type&#x27;</span>&gt;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">print</span>(<span class="built_in">type</span>(h))</span><br><span class="line">&lt;<span class="keyword">class</span> <span class="string">&#x27;hello.Hello&#x27;</span>&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">from</span> hello <span class="keyword">import</span> Hello</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>h = Hello()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>h.hello()</span><br><span class="line">Hello, world.</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(type(Hello))</span><br><span class="line">&lt;<span class="class"><span class="keyword">class</span> '<span class="title">type</span>'&gt;</span></span><br><span class="line"><span class="class">&gt;&gt;&gt; <span class="title">print</span><span class="params">(type<span class="params">(h)</span>)</span></span></span><br><span class="line"><span class="class">&lt;<span class="title">class</span> '<span class="title">hello</span>.<span class="title">Hello</span>'&gt;</span></span><br></pre></td></tr></table></figure>
 <p>type可以直接用于创建一个类：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="keyword">def</span> <span class="title function_">fn</span>(<span class="params">self, name=<span class="string">&#x27;world&#x27;</span></span>): <span class="comment"># 先定义函数</span></span><br><span class="line"><span class="meta">... </span>    <span class="built_in">print</span>(<span class="string">&#x27;Hello, %s.&#x27;</span> % name)</span><br><span class="line">...</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>Hello = <span class="built_in">type</span>(<span class="string">&#x27;Hello&#x27;</span>, (<span class="built_in">object</span>,), <span class="built_in">dict</span>(hello=fn)) <span class="comment"># 创建Hello class</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>h = Hello()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>h.hello()</span><br><span class="line">Hello, world.</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">print</span>(<span class="built_in">type</span>(Hello))</span><br><span class="line">&lt;<span class="keyword">class</span> <span class="string">&#x27;type&#x27;</span>&gt;</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="built_in">print</span>(<span class="built_in">type</span>(h))</span><br><span class="line">&lt;<span class="keyword">class</span> <span class="string">&#x27;__main__.Hello&#x27;</span>&gt;</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&gt;&gt;&gt; </span><span class="function"><span class="keyword">def</span> <span class="title">fn</span><span class="params">(self, name=<span class="string">'world'</span>)</span>:</span> <span class="comment"># 先定义函数</span></span><br><span class="line"><span class="meta">... </span>    print(<span class="string">'Hello, %s.'</span> % name)</span><br><span class="line">...</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>Hello = type(<span class="string">'Hello'</span>, (object,), dict(hello=fn)) <span class="comment"># 创建Hello class</span></span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>h = Hello()</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>h.hello()</span><br><span class="line">Hello, world.</span><br><span class="line"><span class="meta">&gt;&gt;&gt; </span>print(type(Hello))</span><br><span class="line">&lt;<span class="class"><span class="keyword">class</span> '<span class="title">type</span>'&gt;</span></span><br><span class="line"><span class="class">&gt;&gt;&gt; <span class="title">print</span><span class="params">(type<span class="params">(h)</span>)</span></span></span><br><span class="line"><span class="class">&lt;<span class="title">class</span> '<span class="title">__main__</span>.<span class="title">Hello</span>'&gt;</span></span><br></pre></td></tr></table></figure>
 <p>所以现在我们明白了，<strong>在Python2中显式继承自object的类，都是由type创建的，都是type类型，至于object，它是Python中所有类的超类。type和object是Python中两个源对象，二者的关系没有严格的父子关系，互相依赖对方来定义，所以它们不能分开而论</strong>。type和object的测试如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; object            #===&gt;(1)</span><br><span class="line">&lt;class &#x27;object&#x27;&gt;</span><br><span class="line">&gt;&gt;&gt; type              #===&gt;(2)</span><br><span class="line">&lt;class &#x27;type&#x27;&gt;</span><br><span class="line">&gt;&gt;&gt; type(object)      #===&gt;(3)</span><br><span class="line">&lt;class &#x27;type&#x27;&gt;</span><br><span class="line">&gt;&gt;&gt; object.__class__  #===&gt;(4)</span><br><span class="line">&lt;class &#x27;type&#x27;&gt;</span><br><span class="line">&gt;&gt;&gt; object.__bases__  #===&gt;(5)</span><br><span class="line">()</span><br><span class="line">&gt;&gt;&gt; type.__class__    #===&gt;(6)</span><br><span class="line">&lt;class &#x27;type&#x27;&gt;</span><br><span class="line">&gt;&gt;&gt; type.__bases__    #===&gt;(7)</span><br><span class="line">(&lt;class &#x27;object&#x27;&gt;,)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; object            #===&gt;(1)</span><br><span class="line">&lt;class &apos;object&apos;&gt;</span><br><span class="line">&gt;&gt;&gt; type              #===&gt;(2)</span><br><span class="line">&lt;class &apos;type&apos;&gt;</span><br><span class="line">&gt;&gt;&gt; type(object)      #===&gt;(3)</span><br><span class="line">&lt;class &apos;type&apos;&gt;</span><br><span class="line">&gt;&gt;&gt; object.__class__  #===&gt;(4)</span><br><span class="line">&lt;class &apos;type&apos;&gt;</span><br><span class="line">&gt;&gt;&gt; object.__bases__  #===&gt;(5)</span><br><span class="line">()</span><br><span class="line">&gt;&gt;&gt; type.__class__    #===&gt;(6)</span><br><span class="line">&lt;class &apos;type&apos;&gt;</span><br><span class="line">&gt;&gt;&gt; type.__bases__    #===&gt;(7)</span><br><span class="line">(&lt;class &apos;object&apos;&gt;,)</span><br></pre></td></tr></table></figure>
 <p>结论如下：</p>
 <ul>
 <li>(1)，(2)：Python中的两个源对象的名字。我们先前说过type()是用来获对象的类型的。事实上，它既是一个对象，也是获取其它对象的类型的方法。</li>
@@ -378,7 +378,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2018/08/python-type-classobj.html" title="Python中的type和classobj">https://murphypei.github.io/blog/2018/08/python-type-classobj.html</a>
@@ -398,11 +398,11 @@
             
               <a href="/tags/Python/" rel="tag"># Python</a>
             
-              <a href="/tags/super/" rel="tag"># super</a>
-            
               <a href="/tags/type/" rel="tag"># type</a>
             
               <a href="/tags/classobj/" rel="tag"># classobj</a>
+            
+              <a href="/tags/super/" rel="tag"># super</a>
             
           </div>
         
@@ -412,8 +412,8 @@
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
               
-                <a href="/blog/2018/08/cpp-inline-define.html" rel="next" title="C++中inline和#define的区别总结">
-                  <i class="fa fa-chevron-left"></i> C++中inline和#define的区别总结
+                <a href="/blog/2018/08/python-super.html" rel="next" title="python 多态和 super 用法">
+                  <i class="fa fa-chevron-left"></i> python 多态和 super 用法
                 </a>
               
             </div>
@@ -422,8 +422,8 @@
 
             <div class="post-nav-prev post-nav-item">
               
-                <a href="/blog/2018/08/python-super.html" rel="prev" title="python 多态和 super 用法">
-                  python 多态和 super 用法 <i class="fa fa-chevron-right"></i>
+                <a href="/blog/2018/08/python-max-index.html" rel="prev" title="Python找出矩阵中最大值的位置">
+                  Python找出矩阵中最大值的位置 <i class="fa fa-chevron-right"></i>
                 </a>
               
             </div>
@@ -483,8 +483,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1512,17 +1512,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

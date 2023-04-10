@@ -242,7 +242,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/06/bilinear-interpolation.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -337,15 +337,15 @@
 
       
         <p>最近在看Mask R-CNN，了解到其边框包裹紧密的原因在于将 Roi Pooling 层替换成了 RoiAlign 层，后者舍去了近似像素取整数的量化方法，改用双线性插值的方法确定特征图坐标对应于原图中的像素位置。本文整理了双线性插值的一些知识，便于更好的理解其中的操作。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="线性插值"><a href="#线性插值" class="headerlink" title="线性插值"></a>线性插值</h2><p>学过初中几何的学生都知道，二维直角坐标系中，已知两个点(x1, y1)和(x2, y2)，可以确定一条直线方程，对于给定的一个x，介于x1和x2之间，可以求得其满足直线方程的y：</p>
-<p><img src="/images/posts/dl/linear-interpolation.png" alt=""></p>
+<p><img src="/images/posts/dl/linear-interpolation.png" alt></p>
 <p>这个应该很好理解，就是计算x分别和x1，x2的距离作为一个权重，用于对y1和y2的加权。</p>
 <h2 id="双线性插值"><a href="#双线性插值" class="headerlink" title="双线性插值"></a>双线性插值</h2><blockquote>
 <p>双线性插值本质上就是在两个方向上做线性插值。</p>
 </blockquote>
 <p>在数学上，双线性插值是有两个变量的插值函数的线性插值扩展，其核心思想是在两个方向分别进行一次线性插值。</p>
-<p><img src="/images/posts/dl/bilinear-interpolation.jpg" alt=""></p>
+<p><img src="/images/posts/dl/bilinear-interpolation.jpg" alt></p>
 <p>对于双线性插值，其要插值的像素和原图中周围四个像素有关，然后根据与这些像素的距离来进行像素值的加权计算。</p>
 <p>简单分析如下：</p>
 <ul>
@@ -369,9 +369,9 @@
 </li>
 </ul>
 <p>那么插值公式如下（最终F(i + v, j + u)处的实际值）</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">f(i + v, j + u) = partV + partV1;</span><br><span class="line"></span><br><span class="line">partV = v * ((1 - u) * f(i + 1, j) + u * f(i + 1, j + 1));</span><br><span class="line"></span><br><span class="line">partV1 = (1 - v) * ((1 - u) * f(i, j) + u * f(i, j + 1));</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">f(i + v, j + u) = partV + partV1;</span><br><span class="line"></span><br><span class="line">partV = v * ((1 - u) * f(i + 1, j) + u * f(i + 1, j + 1));</span><br><span class="line"></span><br><span class="line">partV1 = (1 - v) * ((1 - u) * f(i, j) + u * f(i, j + 1));</span><br></pre></td></tr></table></figure>
 <p>或展开为：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">f(i + v, j + u) = f(0, 0)(1 - v)(1 - u) + f(0, 1)(1 - v)(u) + f(1, 0)(v)(1 - u) + f(1, 1)(v)(u)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">f(i + v, j + u) = f(0, 0)(1 - v)(1 - u) + f(0, 1)(1 - v)(u) + f(1, 0)(v)(1 - u) + f(1, 1)(v)(u)</span><br></pre></td></tr></table></figure>
 <p>上式中，分别是四个坐标点对x和y方向进行插值，简单的说：</p>
 <ul>
 <li><p>u越接近0，(i, j)与(i + 1, j)的权值越大</p>
@@ -411,7 +411,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2018/06/bilinear-interpolation.html" title="ROI Align和图像的双线性内插法">https://murphypei.github.io/blog/2018/06/bilinear-interpolation.html</a>
@@ -516,8 +516,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1545,17 +1545,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

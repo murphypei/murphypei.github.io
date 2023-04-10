@@ -59,7 +59,7 @@
 </script>
 
   <meta name="description" content="fPIC是C++编译中使用较多的编译选项，而且CMake甚至在一些场景中默认强制使用这个编译选项，本文对Linux编程的fPIC编译参数进行汇总备忘。">
-<meta name="keywords" content="C++,Linux,编译,链接">
+<meta name="keywords" content="Linux,C++,编译,链接">
 <meta property="og:type" content="article">
 <meta property="og:title" content="fPIC编译简介">
 <meta property="og:url" content="https://murphypei.github.io/blog/2018/10/compile-fpic.html">
@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/10/compile-fpic.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,12 +334,12 @@
 
       
         <p>fPIC是C++编译中使用较多的编译选项，而且CMake甚至在一些场景中默认强制使用这个编译选项，本文对Linux编程的fPIC编译参数进行汇总备忘。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h3 id="fPIC的使用"><a href="#fPIC的使用" class="headerlink" title="fPIC的使用"></a>fPIC的使用</h3><p>在Linux系统中，动态链接文件称为动态共享对象（DSO，Dynamic Shared Objects），简称共享对象，一般是以.so为扩展名的文件。在Windows系统中，则称为动态链接库（Dynamic Linking Library），很多以.dll为扩展名。这里只备忘Linux的共享对象。</p>
 <p>在实现一共享对象时，最一般的编译链接命令行为：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">g++ -fPIC -shared test.cc -o lib.so</span><br></pre></td></tr></table></figure></p>
 <p>或者是：<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">g++ -fPIC test.cpp -c -o test.o</span><br><span class="line">ld -shared test.o -o lib.so</span><br></pre></td></tr></table></figure></p>
 <p>上面的命令行中-shared表明产生共享库，而-fPIC则表明使用地址无关代码。PIC：Position Independent Code，作用于编译阶段，告诉编译器产生与位置无关代码。</p>
-<p><strong>Linux下编译共享库时，必须加上-fPIC参数，否则在链接时会有错误提示</strong>（有资料说AMD64的机器才会出现这种错误，但我在Inter的机器上也出现了）：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/usr/bin/ld: test.o: relocation R_X86_64_32 against `a local symbol&#x27; can not be used when making a shared object; recompile with -fPIC</span><br><span class="line">test.o: could not read symbols: Bad value</span><br><span class="line">collect2: ld returned 1 exit status</span><br></pre></td></tr></table></figure></p>
+<p><strong>Linux下编译共享库时，必须加上-fPIC参数，否则在链接时会有错误提示</strong>（有资料说AMD64的机器才会出现这种错误，但我在Inter的机器上也出现了）：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/usr/bin/ld: test.o: relocation R_X86_64_32 against `a local symbol&apos; can not be used when making a shared object; recompile with -fPIC</span><br><span class="line">test.o: could not read symbols: Bad value</span><br><span class="line">collect2: ld returned 1 exit status</span><br></pre></td></tr></table></figure></p>
 <p>在Linux系统中如何确认一个共享对象是PIC呢？使用下述命令<br><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -d foo.so | grep TEXTREL</span><br></pre></td></tr></table></figure></p>
 <p>如果上边的shell有任何输出，则说明这foo.so不是PIC。TEXTREL表示代码段重定位表地址，PIC的共享对象不会包含任何代码段重定位表。</p>
 <h3 id="fPIC的作用"><a href="#fPIC的作用" class="headerlink" title="fPIC的作用"></a>fPIC的作用</h3><p>fPIC的目的是什么？我们知道，共享对象可能会被不同的进程加载到不同的位置上，如果共享对象中的指令使用了绝对地址、外部模块地址，那么在共享对象被加载时就必须根据相关模块的加载位置对这个地址做调整，也就是修改这些地址，让它在对应进程中能正确访问，而被修改到的段就不能实现多进程共享一份物理内存，它们在每个进程中都必须有一份物理内存的拷贝。<strong>fPIC指令就是为了让使用到同一个共享对象的多个进程能尽可能多的共享物理内存，它背后把那些涉及到绝对地址、外部模块地址访问的地方都抽离出来，保证代码段的内容可以多进程相同，实现共享。</strong></p>
@@ -347,7 +347,7 @@
 <p>对于模块中全局变量的访问，为了解决可执行文件跟模块可能拥有同一个全局变量的问题（此时，模块内的全局变量会被覆盖为可执行文件中的全局变量），对模块中的全局变量访问也通过GOT间接访问。</p>
 <p>这样子，每一次访问全局变量、外部函数都需要去计算在GOT中的位置，然后再通过对应项的值访问变量、调用函数。<strong>从运行性能上来说，比装载时重定位要差点。装载时重定位就是不使用fPIC参数，代码段需要一个重定位表，在装载时修正所有特殊地址，以后运行时不需要再有GOT位置计算和间接访问。</strong>（但是，在有些测试中，编译链接共享库时，没法不使用fPIC参数，可能多数系统都要求必须有fPIC）。</p>
 <h3 id="延迟绑定"><a href="#延迟绑定" class="headerlink" title="延迟绑定"></a>延迟绑定</h3><p>如果在装载时就去计算GOT的内容，那么会影响加载速度，于是就有了延迟绑定（Lazy Binding），直到用时才去填充GOT。它使用到了PLT（Procedure Linkage Table）：每一项都是一小段代码，对应于本运行模块要引用的函数。函数调用时，先到这里，然后再到GOT。在函数第一次被调用时，进入PLT跳到加载器，加载器计算函数的真正地址，然后将地址写入GOT对应项，以后的调用就直接从PLT跳到GOT记录的函数位置。这样也减少了运行时多次调用多次计算GOT位置。</p>
-<p>PIC的共享对象也会有重定位表，数据段中的GOT、数据的绝对地址引用，这些都是需要重定位的。<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -r Lib.so</span><br></pre></td></tr></table></figure></p>
+<p>PIC的共享对象也会有重定位表，数据段中的GOT、数据的绝对地址引用，这些都是需要重定位的。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">readelf -r Lib.so</span><br></pre></td></tr></table></figure></p>
 <p>可以看到共享对象的重定位表，.rel.dyn是对数据引用的修正，.rel.plt是对函数引用的修正。</p>
 
     </div>
@@ -362,7 +362,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2018/10/compile-fpic.html" title="fPIC编译简介">https://murphypei.github.io/blog/2018/10/compile-fpic.html</a>
@@ -380,9 +380,9 @@
           
           <div class="post-tags">
             
-              <a href="/tags/C/" rel="tag"># C++</a>
-            
               <a href="/tags/Linux/" rel="tag"># Linux</a>
+            
+              <a href="/tags/C/" rel="tag"># C++</a>
             
               <a href="/tags/编译/" rel="tag"># 编译</a>
             
@@ -469,8 +469,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1498,17 +1498,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

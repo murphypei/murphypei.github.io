@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/06/python-distributed-spider.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,7 +334,7 @@
 
       
         <p>个人整理的关于srapy-redis的使用教程。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Python中Scrapy可以算是很基本的爬虫框架了，我自己也用过。感觉很方便，只需要写好几个组件，配置好环境就能运行。关于Scrapy我就不介绍了，可以看文档（有中文的）。</p>
 <p>为了提升爬虫效率主要有两种实现办法：</p>
 <ul>
@@ -342,9 +342,9 @@
 <li>分布式多台机器爬取</li>
 </ul>
 <p>后者从直观上看，肯定要更加高效，但是也涉及机器的利用率吧。我使用Scrapy-Redis体验了一下分布式爬虫，进行简要介绍。</p>
-<h2 id="Scrapy介绍"><a href="#Scrapy介绍" class="headerlink" title="Scrapy介绍"></a>Scrapy介绍</h2><p><a href="http://scrapy-chs.readthedocs.io/zh_CN/1.0/">Scrapy中文文档</a></p>
+<h2 id="Scrapy介绍"><a href="#Scrapy介绍" class="headerlink" title="Scrapy介绍"></a>Scrapy介绍</h2><p><a href="http://scrapy-chs.readthedocs.io/zh_CN/1.0/" target="_blank" rel="noopener">Scrapy中文文档</a></p>
 <p>安装好相关Python库之后，直接可以执行<code>scrapy startproject tutorial</code>来创建一个scrapy工程，会自动在当前目录下创建一个文件夹，结构如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">tutorial/</span><br><span class="line">    scrapy.cfg</span><br><span class="line"></span><br><span class="line">    tutorial/</span><br><span class="line">        __init__.py</span><br><span class="line"></span><br><span class="line">        items.py</span><br><span class="line"></span><br><span class="line">        pipelines.py</span><br><span class="line"></span><br><span class="line">        settings.py</span><br><span class="line"></span><br><span class="line">        spiders/</span><br><span class="line">            __init__.py</span><br><span class="line">            ...</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">tutorial/</span><br><span class="line">    scrapy.cfg</span><br><span class="line"></span><br><span class="line">    tutorial/</span><br><span class="line">        __init__.py</span><br><span class="line"></span><br><span class="line">        items.py</span><br><span class="line"></span><br><span class="line">        pipelines.py</span><br><span class="line"></span><br><span class="line">        settings.py</span><br><span class="line"></span><br><span class="line">        spiders/</span><br><span class="line">            __init__.py</span><br><span class="line">            ...</span><br></pre></td></tr></table></figure>
 <ul>
 <li><p><code>scrapy.cfg</code> 是爬虫的信息，主要是爬虫的配置文件位置和项目名称。</p>
 </li>
@@ -359,7 +359,7 @@
 </ul>
 <p>Scrapy中有连个基本的爬虫类，Spider和CrawlerSpider，前者利用parse函数定义对于页面的解析操作，一般需要在其中包含提取url并进行下一步的操作等等。后者适用于全站爬取，通过ruler定义自动提取页面链接的规则，并设置对于包含所要提取数据的页面的操作。CrawlerSpider中自动写好了parse函数，因此不能覆盖掉这个函数。</p>
 <h2 id="Scrapy-Redis介绍"><a href="#Scrapy-Redis介绍" class="headerlink" title="Scrapy-Redis介绍"></a>Scrapy-Redis介绍</h2><p>Scrapy-Redis是一个基于Redis的Scrapy分布式组件。它利用Redis对用于爬取的请求(Requests)进行存储和调度(Schedule)，并对爬取产生的项目(items)存储以供后续处理使用。scrapy-redi重写了scrapy一些比较关键的代码，将scrapy变成一个可以在多个主机上同时运行的分布式爬虫。</p>
-<p>官方的github地址如下：<a href="https://github.com/rmax/scrapy-redis">scrapy-redis</a>。下面是我结合网上的一些博客，对于源码和原理上的一些总结。</p>
+<p>官方的github地址如下：<a href="https://github.com/rmax/scrapy-redis" target="_blank" rel="noopener">scrapy-redis</a>。下面是我结合网上的一些博客，对于源码和原理上的一些总结。</p>
 <ul>
 <li><p><code>connect.py</code> 进行Redis数据库连接和操作</p>
 <p>  在这个文件中引入了redis模块，这个是redis-Python库的接口，用于通过Python访问redis数据库，可见，这个文件主要是实现连接redis数据库的功能（返回的是redis库的Redis对象或者StrictRedis对象，这俩都是可以直接用来进行数据操作的对象）。这些连接接口在其他文件中经常被用到。其中，我们可以看到，要想连接到redis数据库，和其他数据库差不多，需要一个ip地址、端口号、用户名密码（可选）和一个整形的数据库编号，同时我们还可以在scrapy工程的setting文件中配置套接字的超时时间、等待时间等。</p>
@@ -390,14 +390,14 @@
 </ul>
 <p>最后总结一下scrapy-redis的总体思路：这个工程通过重写scheduler和spider类，实现了调度、spider启动和redis的交互。实现新的dupefilter和queue类，达到了判重和调度容器和redis的交互，因为每个主机上的爬虫进程都访问同一个redis数据库，所以调度和判重都统一进行统一管理，达到了分布式爬虫的目的。 </p>
 <p>当spider被初始化时，同时会初始化一个对应的scheduler对象，这个调度器对象通过读取settings，配置好自己的调度容器queue和判重工具dupefilter。每当一个spider产出一个request的时候，scrapy内核会把这个reuqest递交给这个spider对应的scheduler对象进行调度，scheduler对象通过访问redis对request进行判重，如果不重复就把他添加进redis中的调度池。当调度条件满足时，scheduler对象就从redis的调度池中取出一个request发送给spider，让他爬取。当spider爬取的所有暂时可用url之后，scheduler发现这个spider对应的redis的调度池空了，于是触发信号spider_idle，spider收到这个信号之后，直接连接redis读取strart url池，拿去新的一批url入口，然后再次重复上边的工作。</p>
-<h2 id="Scrapy-Redis使用"><a href="#Scrapy-Redis使用" class="headerlink" title="Scrapy-Redis使用"></a>Scrapy-Redis使用</h2><p>这个地方，我强烈建议，不要找网上的教程看了，<strong>就看作者给的三个<a href="https://github.com/rmax/scrapy-redis/tree/master/example-project/example">例子</a></strong>，对于中文的博客，实在写的不怎么样，误导性很强。结合前面对源码和原理的分析，搞清楚作者给的例子，就能明白基本的爬虫原理了。</p>
+<h2 id="Scrapy-Redis使用"><a href="#Scrapy-Redis使用" class="headerlink" title="Scrapy-Redis使用"></a>Scrapy-Redis使用</h2><p>这个地方，我强烈建议，不要找网上的教程看了，<strong>就看作者给的三个<a href="https://github.com/rmax/scrapy-redis/tree/master/example-project/example" target="_blank" rel="noopener">例子</a></strong>，对于中文的博客，实在写的不怎么样，误导性很强。结合前面对源码和原理的分析，搞清楚作者给的例子，就能明白基本的爬虫原理了。</p>
 <p>对于布置分布式爬虫，也很简单。不要一上来就分什么主从服务器什么的，就记住一点，需要有一台机器装有Redis数据库，并且所有其余的机器都要能够访问这个数据库。然后在你想跑爬虫程序的机器上，都拷贝一份代码，包括装有Redis数据库的也可以，然后运行就完事了。对于主从服务器什么的而言，一般是为了性能上的考虑。</p>
-<p><strong>我的参考项目</strong>： <a href="https://github.com/murphypei/meizitu_distribute_crawler">https://github.com/murphypei/meizitu_distribute_crawler</a></p>
+<p><strong>我的参考项目</strong>： <a href="https://github.com/murphypei/meizitu_distribute_crawler" target="_blank" rel="noopener">https://github.com/murphypei/meizitu_distribute_crawler</a></p>
 <h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><ul>
-<li><a href="http://doc.redisfans.com/">Redis命令参考</a></li>
-<li><a href="http://www.w3school.com.cn/xpath/xpath_syntax.asp">xpath语法</a></li>
-<li><a href="http://blog.csdn.net/howtogetout/article/details/51633814">使用scrapy-redis构建简单的分布式爬虫</a></li>
-<li><a href="http://www.codexiu.cn/Python/blog/24719/">scrapy-redis分布式爬虫原理分析</a></li>
+<li><a href="http://doc.redisfans.com/" target="_blank" rel="noopener">Redis命令参考</a></li>
+<li><a href="http://www.w3school.com.cn/xpath/xpath_syntax.asp" target="_blank" rel="noopener">xpath语法</a></li>
+<li><a href="http://blog.csdn.net/howtogetout/article/details/51633814" target="_blank" rel="noopener">使用scrapy-redis构建简单的分布式爬虫</a></li>
+<li><a href="http://www.codexiu.cn/Python/blog/24719/" target="_blank" rel="noopener">scrapy-redis分布式爬虫原理分析</a></li>
 </ul>
 
     </div>
@@ -412,7 +412,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2017/06/python-distributed-spider.html" title="分布式爬虫：Scrapy-Redis使用">https://murphypei.github.io/blog/2017/06/python-distributed-spider.html</a>
@@ -521,8 +521,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1550,17 +1550,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/12/cpp-extern-array-pointer.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -310,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>2.2k</span>
+              <span>2.1k</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -334,10 +334,10 @@
 
       
         <p>在一次使用 extern 声明全局变量的过程中，因为数组和指针的混用引发了错误。</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>我们知道，C++ 中使用 extern 来声明在其他（未使用 include 包含的）文件中的全局变量。现在问题是这样的：</p>
-<p>在一个 <code>a.cpp</code> 中，有个全局变量<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">char</span> a[] = <span class="string">&quot;...&quot;</span>;</span><br></pre></td></tr></table></figure></p>
-<p>在另一个 <code>b.cpp</code> 中，我想使用这个全局变量，由于固有的思想，指针和数组名通用，偷懒写成了如下形式：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="type">char</span> *a;</span><br></pre></td></tr></table></figure></p>
+<p>在一个 <code>a.cpp</code> 中，有个全局变量<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">char</span> a[] = <span class="string">"..."</span>;</span><br></pre></td></tr></table></figure></p>
+<p>在另一个 <code>b.cpp</code> 中，我想使用这个全局变量，由于固有的思想，指针和数组名通用，偷懒写成了如下形式：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="keyword">char</span> *a;</span><br></pre></td></tr></table></figure></p>
 <p>由此引发了一个 <code>segmentation fault</code> 错误。因此查阅了一下相关资料，发现指针和数组名是不能混用的。</p>
 <h3 id="指针和数组名的区别"><a href="#指针和数组名的区别" class="headerlink" title="指针和数组名的区别"></a>指针和数组名的区别</h3><blockquote>
 <p>数组名代表了存放该数组的那块内存，它是这块内存的首地址。这就说明了数组名是一个地址，而且，还是一个不可修改的常量，完整地说，就是一个地址常量。数组名跟枚举常量一样，都属于符号常量。数组名这个符号，就代表了那块内存的首地址。注意了！<strong>不是数组名这个符号的值是那块内存的首地址，而是数组名这个符号本身就代表了首地址这个地址值，它就是这个地址</strong>。这就是数组名属于符号常量的意义所在。由于数组名是一种符号常量，它是一个右值，而指针，作为变量，却是一个左值，一个右值永远都不是左值，那么，数组名永远都不会是指针！</p>
@@ -348,9 +348,9 @@
 <blockquote>
 <p>被 extern 修饰的全局变量不被分配空间，而是在链接的时候到别的文件中通过查找索引定位该全局变量的地址。</p>
 </blockquote>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="type">char</span> a[];</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">extern</span> <span class="keyword">char</span> a[];</span><br></pre></td></tr></table></figure>
 <p>这是一个外部变量的声明，它声明了一个名为 <code>a</code> 的字符数组，编译器看到这个声明就知道不必为这个变量分配空间，这个 .cpp 文件中所有对数组 <code>a</code> 的引用都化为一个不包含类型的标号，具体地址的定位留给链接器完成。编译完成之后也得到一个中间文件，链接器遍历这个文件，发现有未经定位的标号，于是它搜索其他中间文件，试图寻找到一个匹配的空间地址，在此例中无疑链接器将成功地寻找到这个地址并将此中间文件中所有的这个标号替换为链接器所寻找到的地址，最终生成的可执行文件中，所有曾经的标号都应当已经被替换为地址。这是一个正常工作过程，链接出来的可执行文件至少在对于该数组的引用部分将工作得很好。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">extern char * a;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">extern char * a;</span><br></pre></td></tr></table></figure>
 <p>这是一个外部变量的声明，它声明了一个名为 <code>a</code> 的字符指针，编译器看到这个声明就知道不必为这个指针变量分配空间，这个 .cpp 文件中所有对指针 <code>a</code> 的引用都化为一个不包含类型的标号，具体地址的定位留给链接器完成。编译完成之后仍然得到一个中间文件，链接器遍历这个文件，发现有未经定位的标号，于是它搜索其他中间文件，试图寻找到一个匹配的空间地址，经过一番搜索，找到了一个分配过空间的名为 a 的地方（也就是我们先定义的那个字符数组），链接器并不知道它们的类型，仅仅是发现它们的名字一样，就认为应该把 extern 声明的标号链接到数组a的首地址上，因此链接器把指针 <code>a</code> 对应的标号替换为数组 <code>a</code> 的首地址。这里问题就出现了：由于在这个文件中声明的 <code>a</code> 是一个指针变量而不是数组，<strong>链接器的行为实际上是把指针 <code>a</code> 自身的地址定位到了另一个 .c 文件中定义的数组首地址之上</strong>，而不是我们所希望的把数组的首地址赋予指针 <code>a</code>（这很容易理解：指针变量也需要占用空间，如果说把数组的首地址赋给了指针 <code>a</code>，那么指针 <code>a</code> 本身在哪里存放呢？）。这就是症结所在了。所以此例中指针 <code>a</code> 的内容实际上变成了数组 <code>a</code> 首地址开始的 4 字节表示的地址（如果在 16 位机上，就是 2 字节）。</p>
 <blockquote>
 <p>上述加粗部分的可以理解为，链接器认为 a 变量本身的内存位置是数组的首地址，但其实 a 的位置是其他位置，其内容才是数组首地址。</p>
@@ -381,7 +381,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2018/12/cpp-extern-array-pointer.html" title="C++ 中 extern 数组和指针">https://murphypei.github.io/blog/2018/12/cpp-extern-array-pointer.html</a>
@@ -490,8 +490,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1519,17 +1519,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

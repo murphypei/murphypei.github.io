@@ -245,7 +245,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/04/B-Tree.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -340,7 +340,7 @@
 
       
         <p>MySQL数据库使用B+树作为索引存储的数据结构，B+树是从B-Tree发展而来，本文对该数据结构进行了详细解析。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="1-B-Tree"><a href="#1-B-Tree" class="headerlink" title="1. B-Tree"></a>1. B-Tree</h2><p><strong>B树等于B-树，不是二叉搜索树</strong>，实际上没有B-树的说法，而BST和B树不一样</p>
 <p>引自wiki：</p>
 <blockquote>
@@ -348,7 +348,7 @@
 </blockquote>
 <p>B 树（B-Tree）是为磁盘等辅助存取设备设计的一种平衡查找树，它实现了以 O(log n) 时间复杂度执行查找、顺序读取、插入和删除操作。由于 B 树和 B 树的变种在降低磁盘 I/O 操作次数方面表现优异，所以<strong>经常用于设计文件系统和数据库</strong>。</p>
 <p>如下图是一棵键值为英语字母的 B 树，带<strong>浅阴影</strong>的节点是查找字母 R 时要检查的节点。</p>
-<p><img src="/images/posts/mysql/btree/B-Tree-Alphabet.png" alt=""></p>
+<p><img src="/images/posts/mysql/btree/B-Tree-Alphabet.png" alt></p>
 <p>可以发现，上述的查找过程和BST的查找过程很相似。下面对B-Tree中的节点关系做一些说明，这个和BST有一些不同。</p>
 <h3 id="B树内的节点关系"><a href="#B树内的节点关系" class="headerlink" title="B树内的节点关系"></a>B树内的节点关系</h3><p>B 树中的节点分为<strong>内部节点（Internal Node）</strong>和<strong>叶节点（Leaf Node）</strong>，内部节点也就是<strong>非叶节点（Non-Leaf Node）</strong>。</p>
 <p>B 树的<strong>内部节点可以包含 2 个以上的子节点</strong>，所以在设计时可以预先设定可包含子节点的数量范围，也就是<strong>上界（Upper Bound）</strong>和<strong>下界（Lower Bound）</strong>。当向节点插入或删除数据时，也就意味着子节点的数量发生变化。为了维持在预先设定的数量范围，<strong>内部节点可能会被合并（Join）或拆分（Split）</strong>。因为子节点的数量有一定的范围，所以 <strong>B 树不需要频繁地变化以保持平衡</strong>（提高了效率）。但同时，由于节点可能没有被完全填充，所以会浪费一些空间。</p>
@@ -427,7 +427,7 @@
 </li>
 </ul>
 <h2 id="3-B-树的优势"><a href="#3-B-树的优势" class="headerlink" title="3. B+ 树的优势"></a>3. B+ 树的优势</h2><p>B+ 树是 B 树的一个变种，在内部节点中存储的键值同样也会出现在叶节点中，但内部节点中不存储关联附属数据或指针。在叶节点中的不仅存储键值，还存储关联附属数据或指针。这样，所有的附属数据都保存在了叶节点中，只将键值和子女指针保存在了内节点中，因此最大化了内节点的分支能力。此外，叶节点还增加了一个指向下一个顺序关联叶节点的指针，以改进顺序读取的速度。</p>
-<p><img src="/images/posts/mysql/btree/B+Tree.png" alt=""></p>
+<p><img src="/images/posts/mysql/btree/B+Tree.png" alt></p>
 <p>常见的文件系统和数据库均使用 B+ 树实现，例如：</p>
 <ul>
 <li>文件系统：NTFS, ReiserFS, NSS, XFS, JFS, ReFS, BFS, Ext4；</li>
@@ -452,7 +452,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2017/04/B-Tree.html" title="B树以及B+树">https://murphypei.github.io/blog/2017/04/B-Tree.html</a>
@@ -561,8 +561,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1590,17 +1590,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

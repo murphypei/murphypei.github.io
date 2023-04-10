@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2021/12/protobuf-debug.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -326,7 +326,7 @@
 
       
         <p>之前用 protobuf 都比较随意，直到用 protobuf 发布 SDK，遇到了一个坑，恰好遇到了手机的一些问题，导致连环坑。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="坑1："><a href="#坑1：" class="headerlink" title="坑1："></a>坑1：</h2><p>这个坑很常见，不仅仅对于我，大概情况如下：</p>
 <figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[libprotobuf ERROR /home/murphy/code/github/protobuf/src/google/protobuf/descriptor_database.cc:58] File already exists <span class="keyword">in</span> database: speech_ai.capt.proto[libprotobuf FATAL /home/murphy/code/github/protobuf/src/google/protobuf/descriptor.cc:1358] CHECK failed: GeneratedDatabase()-&gt;Add(encoded_file_descriptor, size): terminating with uncaught exception of <span class="built_in">type</span> google::protobuf::FatalException: CHECK failed: GeneratedDatabase()-&gt;Add(encoded_file_descriptor, size)</span><br></pre></td></tr></table></figure>
 <p>这个错误原因是因为在两个编译目标（共享库或者可执行文件）中都引入了相同的 <code>*.pb.cc</code> 文件。举个例子：</p>
@@ -341,7 +341,7 @@
 </ul>
 <p>最常规的解决办法就是把所有 <code>pb.cc</code> 文件编译成一个共享库 <code>p.so</code>，然后 <code>A.so</code> 和 <code>B.out</code> 都去链接这个共享库。这里需要注意，编译的时候需要设置 <code>visibility=default</code>，把符号都打开（一般 SDK 都会隐藏符号）。</p>
 <h2 id="坑2："><a href="#坑2：" class="headerlink" title="坑2："></a>坑2：</h2><p>这个坑很奇怪，大概如下：我使用 ndk 和 protobuf v3.6.1 编译了 android 的 <code>libprotobuf.so</code>，然后用这个共享库编译 android native 测序程序，运行遇到 Version verification failed，大概如下：</p>
-<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[libprotobuf FATAL /home/murphy/code/github/protobuf/src/google/protobuf/stubs/common.cc:79] This program was compiled against version 3.0.0 of the Protocol Buffer runtime library, <span class="built_in">which</span> is not compatible with the installed version (3.6.1).  Contact the program author <span class="keyword">for</span> an update.  If you compiled the program yourself, make sure that your headers are from the same version of Protocol Buffers as your link-time library.  (Version verification failed <span class="keyword">in</span> <span class="string">&quot;external/protobuf/src/google/protobuf/any.pb.cc&quot;</span>.)terminating with uncaught exception of <span class="built_in">type</span> google::protobuf::FatalException: This program was compiled against version 3.0.0 of the Protocol Buffer runtime library, <span class="built_in">which</span> is not compatible with the installed version (3.6.1).  Contact the program author <span class="keyword">for</span> an update.  If you compiled the program yourself, make sure that your headers are from the same version of Protocol Buffers as your link-time library.  (Version verification failed <span class="keyword">in</span> <span class="string">&quot;external/protobuf/src/google/protobuf/any.pb.cc&quot;</span>.)</span><br></pre></td></tr></table></figure>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[libprotobuf FATAL /home/murphy/code/github/protobuf/src/google/protobuf/stubs/common.cc:79] This program was compiled against version 3.0.0 of the Protocol Buffer runtime library, <span class="built_in">which</span> is not compatible with the installed version (3.6.1).  Contact the program author <span class="keyword">for</span> an update.  If you compiled the program yourself, make sure that your headers are from the same version of Protocol Buffers as your link-time library.  (Version verification failed <span class="keyword">in</span> <span class="string">"external/protobuf/src/google/protobuf/any.pb.cc"</span>.)terminating with uncaught exception of <span class="built_in">type</span> google::protobuf::FatalException: This program was compiled against version 3.0.0 of the Protocol Buffer runtime library, <span class="built_in">which</span> is not compatible with the installed version (3.6.1).  Contact the program author <span class="keyword">for</span> an update.  If you compiled the program yourself, make sure that your headers are from the same version of Protocol Buffers as your link-time library.  (Version verification failed <span class="keyword">in</span> <span class="string">"external/protobuf/src/google/protobuf/any.pb.cc"</span>.)</span><br></pre></td></tr></table></figure>
 <p>在 android 使用 gdbserver 调试发现（<a href="https://murphypei.github.io/blog/2021/09/android-gdbserver.html">教程</a>），<code>/system/lib64/</code> 下面有个 <code>protobuf.so</code>，这个 so 的版本是 v3.0.0，但是我们编译的程序理论上是用 v3.6.1 编译的。看上去这里运行的时候，链接的是 v3.6.1，但是 v3.6.1 的符号没有覆盖默认的 v3.0.0 的符号，导致 <code>GOOGLE_PROTOBUF_VERSION</code> 这个符号变成了 <code>3000000</code> 而不是 <code>3006001</code>，所以就会失败。</p>
 <p>这个问题没有找到解决方案，我换了一个测试手机，没有复现这个问题，所以猜测可能是之前的测试手机有一些问题，如果遇到这个问题，建议换个测试手机试试。</p>
 
@@ -357,7 +357,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2021/12/protobuf-debug.html" title="C++ 使用 protobuf 踩坑的一次记录">https://murphypei.github.io/blog/2021/12/protobuf-debug.html</a>
@@ -464,8 +464,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1493,17 +1493,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2022/03/shared-unique-ptr.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,28 +334,28 @@
 
       
         <p>C++ 中 <code>shared_ptr</code> 和 <code>unique_ptr</code> 是 C++11 之后被广泛使用的两个智能指针，但是其实他们在使用上还是有一些“秘密”的，我根据平时遇到的两个问题，总结记录一些知识。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h3 id="为什么-unique-ptr-需要明确知道类型的析构函数"><a href="#为什么-unique-ptr-需要明确知道类型的析构函数" class="headerlink" title="为什么 unique_ptr 需要明确知道类型的析构函数"></a>为什么 unique_ptr 需要明确知道类型的析构函数</h3><p>这个问题是我写 <code>unique_ptr</code> 调试接口的时候才注意到的，之前确实不知道。为什么会这样呢？首先我们必须要知道 <code>unique_ptr</code> 到底封装了什么？通常 <code>unique_ptr</code> 就是简单的对裸指针封装，并且禁用拷贝和赋值：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">T</span>,</span><br><span class="line">    <span class="keyword">class</span> <span class="title class_">Deleter</span> = std::default_delete&lt;T&gt;</span><br><span class="line">&gt; <span class="keyword">class</span> unique_ptr;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;</span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">T</span>,</span></span><br><span class="line"><span class="class">    <span class="title">class</span> <span class="title">Deleter</span> = <span class="title">std</span>:</span>:default_delete&lt;T&gt;</span><br><span class="line">&gt; <span class="class"><span class="keyword">class</span> <span class="title">unique_ptr</span>;</span></span><br></pre></td></tr></table></figure>
 <p>可以看到，<code>Deleter</code> 的类型是 <code>unique_ptr</code> 类型的一部分。在 <code>unique_ptr</code> 内部会保存类型为 <code>T*</code> 和 <code>Deleter</code> 的成员 ，分别表示保存的裸指针和删除器。假设内部是这么实现的 (一般会运用空基类优化把 <code>Deleter</code> 的空间优化掉，<code>libstdc++</code> 里把他们放进了一个 tuple。这里是简化了)：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    T* p;</span><br><span class="line">    Deleter del;</span><br></pre></td></tr></table></figure>
 <p>然后析构的时候就会这样：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">~<span class="built_in">unique_ptr</span>()</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">del</span>(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">~<span class="built_in">unique_ptr</span>()</span><br><span class="line">&#123;</span><br><span class="line">    del(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>当 <code>Deleter</code> 是默认的 <code>std::default_delete</code> 时，<code>del(p)</code> 就会 <code>delete p</code>，<code>delete</code> 会调用析构函数。而 <code>delete</code> 一个不完整类型的指针是 ub(undefined behavior)。在典型的实现中都会在 <code>delete</code> 前通过 <code>static_assert(sizeof(T) &gt; 0)</code> 做检查。 <code>sizeof</code> 对 incomplete type 求值会直接编译出错。</p>
 <blockquote>
-<p>incomplete type 是指当定义一个变量的时候，不知道应该分配多少内存。C++ 声明和定义最大的区别就是是否发生内存分配，当发生内存分配的时候，必须知道要分配多少内存，通常一个未定义的 struct，未指定长度的数组类型，都会引发 incomplete type 的问题。参考：<a href="https://docs.microsoft.com/en-us/cpp/c-language/incomplete-types?view=msvc-170">https://docs.microsoft.com/en-us/cpp/c-language/incomplete-types?view=msvc-170</a></p>
+<p>incomplete type 是指当定义一个变量的时候，不知道应该分配多少内存。C++ 声明和定义最大的区别就是是否发生内存分配，当发生内存分配的时候，必须知道要分配多少内存，通常一个未定义的 struct，未指定长度的数组类型，都会引发 incomplete type 的问题。参考：<a href="https://docs.microsoft.com/en-us/cpp/c-language/incomplete-types?view=msvc-170" target="_blank" rel="noopener">https://docs.microsoft.com/en-us/cpp/c-language/incomplete-types?view=msvc-170</a></p>
 </blockquote>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">student</span>;</span><br><span class="line">std::cout &lt;&lt; <span class="built_in">sizeof</span>(student) &lt;&lt; std::endl;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">student</span>;</span></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="keyword">sizeof</span>(student) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br></pre></td></tr></table></figure>
 <p>上述代码执行会报错</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">prog.cc:17:18: error: invalid application of &#x27;sizeof&#x27; to an incomplete type &#x27;student&#x27;</span><br><span class="line">    std::cout &lt;&lt; sizeof(student) &lt;&lt; std::endl;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">prog.cc:17:18: error: invalid application of &apos;sizeof&apos; to an incomplete type &apos;student&apos;</span><br><span class="line">    std::cout &lt;&lt; sizeof(student) &lt;&lt; std::endl;</span><br></pre></td></tr></table></figure>
 <p>只声明了结构体 <code>student</code>，但是并没有定义，所以是一个 incomplete type，所以 <code>sizeof</code> 无法执行。</p>
 <p>回到 <code>unique_ptr</code>，现在我们知道 <code>unique_ptr</code> 的报错链路是 <code>unique_ptr</code>-&gt;<code>delete</code>-&gt;<code>sizoef</code>，也就是 <code>sizeof</code> 才是罪魁祸首。所以当 <code>Deleter</code> 非默认时，就不一定需要知道类型的析构函数。比如下面这样：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A is incomplete type</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">A</span>;</span><br><span class="line"><span class="keyword">auto</span> Del = [] (A*) &#123; &#125;;</span><br><span class="line">std::unique_ptr&lt;A, <span class="keyword">decltype</span>(Del)&gt; ptr;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// A is incomplete type</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span>;</span></span><br><span class="line"><span class="keyword">auto</span> Del = [] (A*) &#123; &#125;;</span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;A, <span class="keyword">decltype</span>(Del)&gt; ptr;</span><br></pre></td></tr></table></figure>
 <p>因此可以对这个问题做定性：<strong>并不是 <code>unique_ptr</code> 需要知道析构函数，而是 <code>unique_ptr</code> 的默认删除器 <code>Deleter</code> 需要明确知道类型的析构函数</strong>。</p>
 <p>继续深挖一下，这个问题会出现在 <code>shared_ptr</code> 吗？答案是<strong>不会</strong>。这又引入了另一个问题，shared_ptr 和 unique_ptr 的封装有什么不同？</p>
 <h3 id="shared-ptr-的封装"><a href="#shared-ptr-的封装" class="headerlink" title="shared_ptr 的封装"></a>shared_ptr 的封装</h3><p>按理说 <code>shared_ptr.reset</code> 的时候需要 <code>delete</code> ptr 就需要 ptr 的类型（错了请指正），而 <code>shared_ptr</code> 的 template type 可以是 incomplete type（错误请指正）。cppreference 是这么描述的：</p>
 <blockquote>
-<p><code>std::shared_ptr</code> may be used with an incomplete typeT. However, the constructor from a raw pointer (template<class Y> shared_ptr(Y<em>)) and the template<class Y>void reset(Y</em>) member function may only be called with a pointer to a complete type (note that std::unique_ptr may be constructed from a raw pointer to an incomplete type).</p>
+<p><code>std::shared_ptr</code> may be used with an incomplete typeT. However, the constructor from a raw pointer (template<class y> shared_ptr(Y<em>)) and the template<class y>void reset(Y</class></em>) member function may only be called with a pointer to a complete type (note that std::unique_ptr may be constructed from a raw pointer to an incomplete type).</class></p>
 </blockquote>
 <p><code>reset</code> 的时候需要类型完整。默认构造的时候允许是不完整类型。为什么会这样呢？<code>shared_ptr</code> 怎么处理 <code>Deleter</code> 呢？(还记得吧， Deleter 就是智能指针析构时候的删除操作)</p>
 <p>在常见编译器的实现里，<code>shared_ptr</code> 把 <code>Deleter</code>（包括默认情况下的 operator delete）放进一个叫做 <strong>control block</strong> 的结构里，相当于做了一次 type erasure，把 <code>Deleter</code> 的类型从 <code>shared_ptr</code> 类型本身里面擦下去。<code>Deleter</code> 的类型在 control block 的具体类型上，<code>shared_ptr</code> 本身只<strong>持有一个 <code>control block</code> 基类的指针</strong>，通过虚函数来调用 <code>Deleter</code>。而因为 <code>shared_ptr</code> 构造的时候要求必须是 complete type，control block已经知道怎么析构了，<code>shared_ptr</code> 析构的时候就调用个虚函数，具体事情它不管的。</p>
@@ -378,7 +378,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2022/03/shared-unique-ptr.html" title="shared_ptr 和 unique_ptr 深入探秘">https://murphypei.github.io/blog/2022/03/shared-unique-ptr.html</a>
@@ -487,8 +487,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1516,17 +1516,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

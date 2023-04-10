@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/05/qt-opencv-vs.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,20 +334,20 @@
 
       
         <p>记录Qt配置opencv环境遇到的问题，折腾了好几天弄这个环境，不得不说QT自带的creator真是让人醉了，只提示程序crashed，没有任何原因。所以记录一下，防止以后再被坑。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h3 id="基本环境"><a href="#基本环境" class="headerlink" title="基本环境"></a>基本环境</h3><ul>
 <li>Windows7 64bit（盗版已激活）</li>
 <li>安装了Visual Studio 2015 64bit（盗版已激活）</li>
 </ul>
 <h3 id="Qt安装"><a href="#Qt安装" class="headerlink" title="Qt安装"></a>Qt安装</h3><p>因为已经安装了VS2015，所以直接去官网下载Qt，下载地址：</p>
-<p><a href="https://www.qt.io/download-open-source/#section-2">摸我</a></p>
+<p><a href="https://www.qt.io/download-open-source/#section-2" target="_blank" rel="noopener">摸我</a></p>
 <p>出于保守观念，我下载了较老的<strong>5.6版本</strong>：</p>
 <p><code>Qt 5.6.2 for Windows 64-bit (VS 2015, 839 MB)    (info)</code></p>
 <p>然后就是一路安装….</p>
 <p>装完之后，这个就是可以运行Qt Creator的，在Creator这个IDE中测试，通过。</p>
 <h3 id="VS安装Qt插件"><a href="#VS安装Qt插件" class="headerlink" title="VS安装Qt插件"></a>VS安装Qt插件</h3><p>这个主要是为了在VS中编辑Qt的工程，至于原因，当然是以为VS这个宇宙最强IDE更好用。</p>
 <p>需要安装Qt插件，Qt官网就有vs-add-in这个VS插件，直接下载点击安装就行了，下载地址：</p>
-<p><a href="http://download.qt.io/development_releases/vsaddin/">摸我</a></p>
+<p><a href="http://download.qt.io/development_releases/vsaddin/" target="_blank" rel="noopener">摸我</a></p>
 <p>然后就可以在VS中配置Qt项目选项了，这也没啥问题。网上教程一堆。</p>
 <h3 id="Qt和opencv"><a href="#Qt和opencv" class="headerlink" title="Qt和opencv"></a>Qt和opencv</h3><p>Qt和opencv网上教程也是一堆。我天真的以为，这也很顺风顺水….</p>
 <p>我首先下载了opencv2.4.13（windows版本），然后解压，然后开始疯狂添加路径。</p>
@@ -360,8 +360,8 @@
 <p>使用VS2015的编译器MSVC2015手动编译一下opencv的源码，然后在Qt中引用这个编译得到的库文件。</p>
 <h3 id="Qt版本问题"><a href="#Qt版本问题" class="headerlink" title="Qt版本问题"></a>Qt版本问题</h3><p>这个版本主要是指编译器，在windows中，Qt可以使用两种版本的编译器，Mingw和MSVC，至于我为什么不用前者，因为我下载不了。</p>
 <p>根据我浏览的解答来看，无论是使用哪个版本，除非和opencv中的自带的编译一样（比如VS2012），<strong>都需要手动编译opencv然后再使用库文件</strong>。至于网上一堆只添加路径就跑起来的教程，我只想说，NB！</p>
-<p><a href="http://blog.csdn.net/waterbinbin/article/details/52238519">使用VS2015编译opencv的Qt教程</a></p>
-<p><a href="http://blog.csdn.net/u014695839/article/details/53130424">使用Mingw编译opencv的Qt教程</a></p>
+<p><a href="http://blog.csdn.net/waterbinbin/article/details/52238519" target="_blank" rel="noopener">使用VS2015编译opencv的Qt教程</a></p>
+<p><a href="http://blog.csdn.net/u014695839/article/details/53130424" target="_blank" rel="noopener">使用Mingw编译opencv的Qt教程</a></p>
 
     </div>
 
@@ -375,7 +375,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2017/05/qt-opencv-vs.html" title="windows7搭建Qt和opencv环境（借助VS2015编译器）">https://murphypei.github.io/blog/2017/05/qt-opencv-vs.html</a>
@@ -482,8 +482,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1511,17 +1511,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

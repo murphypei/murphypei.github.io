@@ -242,7 +242,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/04/mysql-index.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -337,7 +337,7 @@
 
       
         <p>索引是MySQL中最重要的概念之一，本文对索引的原理、数据结构实现和使用方法等进行详细的总结。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="1-MySQL索引原理"><a href="#1-MySQL索引原理" class="headerlink" title="1. MySQL索引原理"></a>1. MySQL索引原理</h2><h3 id="索引目的"><a href="#索引目的" class="headerlink" title="索引目的"></a>索引目的</h3><p>索引的目的在于提高查询效率，可以类比字典，如果要查“mysql”这个单词，我们肯定需要定位到m字母，然后从下往下找到y字母，再找到剩下的sql。如果没有索引，那么你可能需要把所有单词看一遍才能找到你想要的，如果我想找到m开头的单词呢？或者ze开头的单词呢？是不是觉得如果没有索引，这个事情根本无法完成？</p>
 <h3 id="索引原理"><a href="#索引原理" class="headerlink" title="索引原理"></a>索引原理</h3><p>除了词典，生活中随处可见索引的例子，如火车站的车次表、图书的目录等。它们的原理都是一样的，通过不断的缩小想要获得数据的范围来筛选出最终想要的结果，同时把随机的事件变成顺序的事件，也就是我们总是通过同一种查找方式来锁定数据。</p>
 <p>数据库也是一样，但显然要复杂许多，因为不仅面临着等值查询，还有范围查询(&gt;、&lt;、between、in)、模糊查询(like)、并集查询(or)等等。数据库应该选择怎么样的方式来应对所有的问题呢？我们回想字典的例子，能不能把数据分成段，然后分段查询呢？最简单的如果1000条数据，1到100分成第一段，101到200分成第二段，201到300分成第三段……这样查第250条数据，只要找第三段就可以了，一下子去除了90%的无效数据。但如果是1千万的记录呢，分成几段比较好？稍有算法基础的同学会想到搜索树，其平均复杂度是lgN，具有不错的查询性能。但这里我们忽略了一个<strong>关键的问题</strong>：</p>
@@ -350,7 +350,7 @@
 <p>数据库查询是数据库的最主要功能之一。我们都希望查询数据的速度能尽可能的快，因此数据库系统的设计者会从查询算法的角度进行优化。最基本的查询算法当然是顺序查找（linear search），这种复杂度为O(n)的算法在数据量很大时显然是糟糕的，好在计算机科学的发展提供了很多更优秀的查找算法，例如二分查找（binary search）、二叉树查找（binary tree search）等。如果稍微分析一下会发现，每种查找算法都只能应用于特定的数据结构之上，例如二分查找要求被检索数据有序，而二叉树查找只能应用于二叉查找树上，但是数据本身的组织结构不可能完全满足各种数据结构（例如，理论上不可能同时将两列都按顺序进行组织），所以，<strong>在数据之外，数据库系统还维护着满足特定查找算法的数据结构，这些数据结构以某种方式引用（指向）数据，这样就可以在这些数据结构上实现高级查找算法。这种数据结构，就是索引</strong>。</p>
 </blockquote>
 <h3 id="磁盘IO与预读"><a href="#磁盘IO与预读" class="headerlink" title="磁盘IO与预读"></a>磁盘IO与预读</h3><p>前面提到了访问磁盘，那么这里先简单介绍一下磁盘IO和预读，磁盘读取数据靠的是机械运动，每次读取数据花费的时间可以分为寻道时间、旋转延迟、传输时间三个部分，寻道时间指的是磁臂移动到指定磁道所需要的时间，主流磁盘一般在5ms以下；旋转延迟就是我们经常听说的磁盘转速，比如一个磁盘7200转，表示每分钟能转7200次，也就是说1秒钟能转120次，旋转延迟就是1/120/2 = 4.17ms；传输时间指的是从磁盘读出或将数据写入磁盘的时间，一般在零点几毫秒，相对于前两个时间可以忽略不计。那么访问一次磁盘的时间，即一次磁盘IO的时间约等于5+4.17 = 9ms左右，听起来还挺不错的，但要知道一台500 -MIPS的机器每秒可以执行5亿条指令，因为指令依靠的是电的性质，换句话说执行一次IO的时间可以执行40万条指令，数据库动辄十万百万乃至千万级数据，每次9毫秒的时间，显然是个灾难。下图是计算机硬件延迟的对比图，供大家参考：</p>
-<p><img src="/images/posts/mysql/various-system-software-hardware-latencies.png" alt=""></p>
+<p><img src="/images/posts/mysql/various-system-software-hardware-latencies.png" alt></p>
 <p>考虑到磁盘IO是非常高昂的操作，计算机操作系统做了一些优化，当一次IO时，不光把当前磁盘地址的数据，而是把相邻的数据也都读取到内存缓冲区内，因为局部预读性原理告诉我们，当计算机访问一个地址的数据的时候，与其相邻的数据也会很快被访问到。每一次IO读取的数据我们称之为一页(page)。具体一页有多大数据跟操作系统有关，一般为4k或8k，也就是我们读取一页内的数据时候，实际上才发生了一次IO，这个理论对于索引的数据结构设计非常有帮助。</p>
 <h3 id="索引的存储分类"><a href="#索引的存储分类" class="headerlink" title="索引的存储分类"></a>索引的存储分类</h3><p>索引是在MYSQL的存储引擎层中实现的，而不是在服务层实现的。所以每种存储引擎的索引都不一定完全相同，也不是所有的存储引擎都支持所有的索引类型。MYSQL目前提供了一下4种索引。</p>
 <ul>
@@ -403,7 +403,7 @@
 </div>
 <h3 id="索引的数据结构（B-Tree-amp-B-Tree）"><a href="#索引的数据结构（B-Tree-amp-B-Tree）" class="headerlink" title="索引的数据结构（B-Tree &amp; B+ Tree）"></a>索引的数据结构（B-Tree &amp; B+ Tree）</h3><p>前面讲了生活中索引的例子，索引的基本原理，数据库的复杂性，又讲了操作系统的相关知识，目的就是让大家了解，任何一种数据结构都不是凭空产生的，一定会有它的背景和使用场景，我们现在总结一下，我们需要这种数据结构能够做些什么，其实很简单，那就是：<strong>每次查找数据时把磁盘IO次数控制在一个很小的数量级，最好是常数数量级</strong>。那么我们就想到如果一个高度可控的多路搜索树是否能满足需求呢？就这样，b+树应运而生。</p>
 <p><strong>B-Tree结构</strong></p>
-<p><img src="/images/posts/mysql/btree.jpg" alt=""></p>
+<p><img src="/images/posts/mysql/btree.jpg" alt></p>
 <p>如上图，是一颗b+树，关于b+树的定义可以参见B+树，这里只说一些重点，浅蓝色的块我们称之为一个磁盘块，可以看到每个磁盘块包含几个数据项（深蓝色所示）和指针（黄色所示），如磁盘块1包含数据项17和35，包含指针P1、P2、P3，P1表示小于17的磁盘块，P2表示在17和35之间的磁盘块，P3表示大于35的磁盘块。<strong>真实的数据存在于叶子节点即3、5、9、10、13、15、28、29、36、60、75、79、90、99。非叶子节点只不存储真实的数据，只存储指引搜索方向的数据项，如17、35并不真实存在于数据表中。</strong></p>
 <p><strong>b+树的查找过程</strong></p>
 <p>如图所示，如果要查找数据项29：</p>
@@ -434,14 +434,14 @@
 </ul>
 <h2 id="3-索引的使用"><a href="#3-索引的使用" class="headerlink" title="3. 索引的使用"></a>3. 索引的使用</h2><h3 id="设置索引"><a href="#设置索引" class="headerlink" title="设置索引"></a>设置索引</h3><p>在执行CREATE TABLE语句时可以创建索引，也可以单独用CREATE INDEX或ALTER TABLE来为表增加索引。</p>
 <p>1．ALTER TABLE - ALTER TABLE用来创建普通索引、UNIQUE索引或PRIMARY KEY索引。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE table_name ADD INDEX index_name (column_list)</span><br><span class="line">ALTER TABLE table_name ADD UNIQUE (column_list)</span><br><span class="line">ALTER TABLE table_name ADD PRIMARY KEY (column_list)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ALTER TABLE table_name ADD INDEX index_name (column_list)</span><br><span class="line">ALTER TABLE table_name ADD UNIQUE (column_list)</span><br><span class="line">ALTER TABLE table_name ADD PRIMARY KEY (column_list)</span><br></pre></td></tr></table></figure>
 <p>2．CREATE INDEX - CREATE INDEX可对表增加普通索引或UNIQUE索引。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CREATE INDEX index_name ON table_name (column_list)</span><br><span class="line">CREATE UNIQUE INDEX index_name ON table_name (column_list)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">CREATE INDEX index_name ON table_name (column_list)</span><br><span class="line">CREATE UNIQUE INDEX index_name ON table_name (column_list)</span><br></pre></td></tr></table></figure>
 <h3 id="删除索引"><a href="#删除索引" class="headerlink" title="删除索引"></a>删除索引</h3><p>可利用ALTER TABLE或DROP INDEX语句来删除索引。类似于CREATE INDEX语句，DROP INDEX可以在ALTER TABLE内部作为一条语句处理，语法如下。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">DROP INDEX index_name ON talbe_name</span><br><span class="line">ALTER TABLE table_name DROP INDEX index_name</span><br><span class="line">ALTER TABLE table_name DROP PRIMARY KEY</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">DROP INDEX index_name ON talbe_name</span><br><span class="line">ALTER TABLE table_name DROP INDEX index_name</span><br><span class="line">ALTER TABLE table_name DROP PRIMARY KEY</span><br></pre></td></tr></table></figure>
 <p>其中，前两条语句是等价的，删除掉table_name中的索引index_name。<br>第3条语句只在删除PRIMARY KEY索引时使用，因为一个表只可能有一个PRIMARY KEY索引，因此不需要指定索引名。如果没有创建PRIMARY KEY索引，但表具有一个或多个UNIQUE索引，则MySQL将删除第一个UNIQUE索引。</p>
 <p>如果从表中删除了某列，则索引会受到影响。对于多列组合的索引，如果删除其中的某列，则该列也会从索引中删除。如果删除组成索引的所有列，则整个索引将被删除。</p>
-<h3 id="查看索引"><a href="#查看索引" class="headerlink" title="查看索引"></a>查看索引</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show index from tblname;</span><br><span class="line">mysql&gt; show keys from tblname;</span><br></pre></td></tr></table></figure>
+<h3 id="查看索引"><a href="#查看索引" class="headerlink" title="查看索引"></a>查看索引</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; show index from tblname;</span><br><span class="line">mysql&gt; show keys from tblname;</span><br></pre></td></tr></table></figure>
 <ul>
 <li>Table：表的名称</li>
 <li>Non_unique：如果索引不能包括重复词，则为0。如果可以，则为1</li>
@@ -474,7 +474,7 @@
 <li><p>索引的选择性较低。所谓索引的选择性（Selectivity），是指不重复的索引值（也叫基数，Cardinality）与表记录数（#T）的比值：<br>Index Selectivity = Cardinality / #T<br>显然选择性的取值范围为(0, 1]，选择性越高的索引价值越大，这是由B+Tree的性质决定的。例如，上文用到的employees.titles表，如果title字段经常被单独查询，是否需要建索引，我们看一下它的选择性：</p>
 </li>
 </ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">SELECT count(DISTINCT(title))/count(*) AS Selectivity FROM employees.titles;</span><br><span class="line">+-------------+</span><br><span class="line">| Selectivity |</span><br><span class="line">+-------------+</span><br><span class="line">|      0.0000 |</span><br><span class="line">+-------------+</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">SELECT count(DISTINCT(title))/count(*) AS Selectivity FROM employees.titles;</span><br><span class="line">+-------------+</span><br><span class="line">| Selectivity |</span><br><span class="line">+-------------+</span><br><span class="line">|      0.0000 |</span><br><span class="line">+-------------+</span><br></pre></td></tr></table></figure>
 <p>title的选择性不足0.0001（精确值为0.00001579），所以实在没有什么必要为其单独建索引。<br>MySQL只对一下操作符才使用索引：&lt;,&lt;=,=,&gt;,&gt;=,between,in, 以及某些时候的like(不以通配符%或_开头的情形)。<br>不要过度索引，只保持所需的索引。每个额外的索引都要占用额外的磁盘空间，并降低写操作的性能。 在修改表的内容时，索引必须进行更新，有时可能需要重构，因此，索引越多，所花的时间越长。</p>
 <h2 id="5-索引的弊端"><a href="#5-索引的弊端" class="headerlink" title="5. 索引的弊端"></a>5. 索引的弊端</h2><p>索引的益处已经清楚了，但是我们不能只看到这些益处，并认为索引是解决查询优化的圣经，只要发现 查询运行不够快就将 WHERE 子句中的条件全部放在索引中。</p>
 <p>确实，索引能够极大地提高数据检索效率，也能够改善排序分组操作的性能，但有不能忽略的一个问题就是索引是完全独立于基础数据之外的一部分数据。假设在Table ta 中的Column ca 创建了索引 idx_ta_ca，那么任何更新 Column ca 的操作，MySQL在更新表中 Column ca的同时，都须要更新Column ca 的索引数据，调整因为更新带来键值变化的索引信息。而如果没有对 Column ca 进行索引，MySQL要做的仅仅是更新表中 Column ca 的信息。这样，最明显的资源消耗就是增加了更新所带来的 IO 量和调整索引所致的计算量。此外，Column ca 的索引idx_ta_ca须要占用存储空间，而且随着 Table ta 数据量的增加，idx_ta_ca 所占用的空间也会不断增加，所以索引还会带来存储空间资源消耗的增加。</p>
@@ -492,7 +492,7 @@
 </ul>
 <h3 id="查询优化神器-explain命令"><a href="#查询优化神器-explain命令" class="headerlink" title="查询优化神器 - explain命令"></a>查询优化神器 - explain命令</h3><p>（暂时空）</p>
 <h3 id="慢查询优化基本步骤"><a href="#慢查询优化基本步骤" class="headerlink" title="慢查询优化基本步骤"></a>慢查询优化基本步骤</h3><p>1.先运行看看是否真的很慢，注意设置SQL_NO_CACHE<br>2.where条件单表查，锁定最小返回记录表。这句话的意思是把查询语句的where都应用到表中返回的记录数最小的表开始查起，单表每个字段分别查询，<strong>看哪个字段的区分度最高</strong><br>3.explain查看执行计划，是否与1预期一致（从锁定记录较少的表开始查询）<br>4.order by limit 形式的sql语句让排序的表优先查<br>5.了解业务方使用场景<br>6.加索引时参照建索引的几大原则<br>7.观察结果，不符合预期继续从0分析</p>
-<h3 id="几个慢查询案例"><a href="#几个慢查询案例" class="headerlink" title="几个慢查询案例"></a><a href="http://tech.meituan.com/mysql-index.html">几个慢查询案例</a></h3>
+<h3 id="几个慢查询案例"><a href="#几个慢查询案例" class="headerlink" title="几个慢查询案例"></a><a href="http://tech.meituan.com/mysql-index.html" target="_blank" rel="noopener">几个慢查询案例</a></h3>
     </div>
 
     
@@ -505,7 +505,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2017/04/mysql-index.html" title="MySQL索引原理及慢查询优化">https://murphypei.github.io/blog/2017/04/mysql-index.html</a>
@@ -614,8 +614,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1643,17 +1643,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

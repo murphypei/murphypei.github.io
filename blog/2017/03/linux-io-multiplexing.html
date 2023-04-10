@@ -245,7 +245,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/03/linux-io-multiplexing.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -340,7 +340,7 @@
 
       
         <p>Linux IO 模式总结并对 select、poll、epoll 的使用做介绍。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="概念说明"><a href="#概念说明" class="headerlink" title="概念说明"></a>概念说明</h2><p>在进行解释之前，首先要说明几个概念：</p>
 <ul>
 <li>用户空间和内核空间</li>
@@ -412,16 +412,16 @@
 <p><img src="/images/posts/linux/io_model_compare.png" alt="IO模型比较"></p>
 <p>通过上面的图片，可以发现 non-blocking IO 和 asynchronous IO 的区别还是很明显的。在 non-blocking IO 中，虽然进程大部分时间都不会被 block，但是它仍然要求进程去主动的 check，并且当数据准备完成以后，也需要进程主动的再次调用 <code>recvfrom</code> 来将数据拷贝到用户内存。而 asynchronous IO 则完全不同。它就像是用户进程将整个 IO 操作交给了他人（kernel）完成，然后他人做完后发信号通知。在此期间，用户进程不需要去检查 IO 操作的状态，也不需要主动的去拷贝数据。</p>
 <h2 id="IO-多路复用之-select、poll、epoll-详解"><a href="#IO-多路复用之-select、poll、epoll-详解" class="headerlink" title="IO 多路复用之 select、poll、epoll 详解"></a>IO 多路复用之 select、poll、epoll 详解</h2><p><code>select</code>，<code>poll</code>，<code>epoll</code> 都是 IO 多路复用的机制。IO 多路复用就是通过一种机制，一个进程可以监视多个描述符，一旦某个描述符就绪（一般是读就绪或者写就绪），能够通知程序进行相应的读写操作。但 <code>select</code>，<code>poll</code>，<code>epoll</code> 本质上都是同步 IO，因为他们都需要在读写事件就绪后自己负责进行读写，也就是说这个读写过程是阻塞的，而异步 IO 则无需自己负责进行读写，异步 IO 的实现会负责把数据从内核拷贝到用户空间。</p>
-<h3 id="select"><a href="#select" class="headerlink" title="select"></a>select</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">select</span> <span class="params">(<span class="type">int</span> n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, <span class="keyword">struct</span> timeval *timeout)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="select"><a href="#select" class="headerlink" title="select"></a>select</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">select</span> <span class="params">(<span class="keyword">int</span> n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)</span></span>;</span><br></pre></td></tr></table></figure>
 <p><code>select</code> 函数监视的文件描述符分 3 类，分别是 <code>writefds</code>、<code>readfds</code> 和 <code>exceptfds</code>。调用后 <code>select</code> 函数会阻塞，直到有描述副就绪（有数据 可读、可写、或者有 <code>except</code>），或者超时（<code>timeout</code> 指定等待时间，如果立即返回设为 null 即可），函数返回。当 <code>select</code> 函数返回后，可以通过遍历 <code>fdset</code>，来找到就绪的描述符。</p>
 <p><code>select</code> 目前几乎在所有的平台上支持，其良好跨平台支持也是它的一个优点。<code>select</code> 的一个缺点在于<strong>单个进程能够监视的文件描述符的数量存在最大限制，在 Linux 上一般为 1024，可以通过修改宏定义甚至重新编译内核的方式提升这一限制，但是这样也会造成效率的降低</strong>。</p>
-<h3 id="poll"><a href="#poll" class="headerlink" title="poll"></a>poll</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">poll</span> <span class="params">(<span class="keyword">struct</span> pollfd *fds, <span class="type">unsigned</span> <span class="type">int</span> nfds, <span class="type">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure>
+<h3 id="poll"><a href="#poll" class="headerlink" title="poll"></a>poll</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">poll</span> <span class="params">(struct pollfd *fds, <span class="keyword">unsigned</span> <span class="keyword">int</span> nfds, <span class="keyword">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure>
 <p>不同与 <code>select</code> 使用三个位图来表示三种 <code>fdset</code> 的方式，<code>poll</code> 使用一个 <code>pollfd</code> 的指针实现。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">pollfd</span> &#123;</span><br><span class="line">    <span class="type">int</span> fd;         <span class="comment">/* file descriptor */</span></span><br><span class="line">    <span class="type">short</span> events;   <span class="comment">/* requested events to watch */</span></span><br><span class="line">    <span class="type">short</span> revents;  <span class="comment">/* returned events witnessed */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> fd;         <span class="comment">/* file descriptor */</span></span><br><span class="line">    <span class="keyword">short</span> events;   <span class="comment">/* requested events to watch */</span></span><br><span class="line">    <span class="keyword">short</span> revents;  <span class="comment">/* returned events witnessed */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p><code>pollfd</code> 结构包含了要监视的 event 和发生的 event，不再使用 select 那样“参数-值”传递的方式。同时，<code>pollfd</code> 并没有最大数量限制（但是数量过大后性能也是会下降）。 和 <code>select</code> 函数一样，<code>poll</code> 返回后，需要轮询 <code>pollfd</code> 来获取就绪的描述符。</p>
 <p>从上面看，<strong><code>select</code> 和 <code>poll</code> 都需要在返回后，将所有监控的描述符拷贝到内核空间，通过遍历文件描述符来获取已经就绪的 fd</strong>。事实上，同时连接的大量客户端在一时刻可能只有很少的处于就绪状态，因此随着监视的描述符数量的增长，其效率也会线性下降。</p>
 <h3 id="epoll"><a href="#epoll" class="headerlink" title="epoll"></a>epoll</h3><p><code>epoll</code> 操作过程需要三个接口，分别如下：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">epoll_create</span><span class="params">(<span class="type">int</span> size)</span>；<span class="comment">//创建一个epoll的句柄，size用来告诉内核这个监听的数目一共有多大</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">epoll_ctl</span><span class="params">(<span class="type">int</span> epfd, <span class="type">int</span> op, <span class="type">int</span> fd, <span class="keyword">struct</span> epoll_event *event)</span>；</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">epoll_wait</span><span class="params">(<span class="type">int</span> epfd, <span class="keyword">struct</span> epoll_event * events, <span class="type">int</span> maxevents, <span class="type">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int epoll_create(int size)；//创建一个epoll的句柄，size用来告诉内核这个监听的数目一共有多大</span><br><span class="line">int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)；</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_wait</span><span class="params">(<span class="keyword">int</span> epfd, struct epoll_event * events, <span class="keyword">int</span> maxevents, <span class="keyword">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure>
 <h4 id="epoll-create"><a href="#epoll-create" class="headerlink" title="epoll_create"></a>epoll_create</h4><p>创建一个 <code>epoll</code> 的句柄，<code>size</code> 用来告诉内核这个监听的数目一共有多大，这个参数不同于 <code>select</code> 中的第一个参数（给出最大监听的 fd+1 的值），参数 <code>size</code> 并不是限制了 <code>epoll</code> 所能监听的描述符最大个数，只是对内核初始分配内部数据结构的一个建议。当创建好 <code>epoll</code> 句柄后，它就会占用一个 fd 值，在 Linux 下如果查看 <code>/proc/进程id/fd/</code>，是能够看到这个 fd 的，所以在使用完 <code>epoll</code> 后，必须调用 <code>close()</code> 关闭，否则可能导致 fd 被耗尽。</p>
 <h4 id="epoll-ctl"><a href="#epoll-ctl" class="headerlink" title="epoll_ctl"></a>epoll_ctl</h4><p>函数是对指定描述符 fd 执行 op 操作。</p>
 <ul>
@@ -430,7 +430,7 @@
 <li><code>fd</code>：是需要监听的 fd（文件描述符）。</li>
 <li><code>epoll_event</code>：是告诉内核需要监听什么事，<code>struct epoll_event</code> 结构如下：</li>
 </ul>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">epoll_event</span> &#123;</span><br><span class="line">  <span class="type">__uint32_t</span> events;  <span class="comment">/* Epoll events */</span></span><br><span class="line">  <span class="type">epoll_data_t</span> data;  <span class="comment">/* User data variable */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// events可以是以下几个宏的集合</span></span><br><span class="line"><span class="comment">// EPOLLIN ：表示对应的文件描述符可以读（包括对端SOCKET正常关闭）；</span></span><br><span class="line"><span class="comment">// EPOLLOUT：表示对应的文件描述符可以写；</span></span><br><span class="line"><span class="comment">// EPOLLPRI：表示对应的文件描述符有紧急的数据可读（这里应该表示有带外数据到来）；</span></span><br><span class="line"><span class="comment">// EPOLLERR：表示对应的文件描述符发生错误；</span></span><br><span class="line"><span class="comment">// EPOLLHUP：表示对应的文件描述符被挂断；</span></span><br><span class="line"><span class="comment">// EPOLLET： 将EPOLL设为边缘触发(Edge Triggered)模式，这是相对于水平触发(Level Triggered)来说的。</span></span><br><span class="line"><span class="comment">// EPOLLONESHOT：只监听一次事件，当监听完这次事件之后，如果还需要继续监听这个socket的话，需要再次把这个socket加入到EPOLL队列里</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">epoll_event</span> &#123;</span></span><br><span class="line">  <span class="keyword">__uint32_t</span> events;  <span class="comment">/* Epoll events */</span></span><br><span class="line">  <span class="keyword">epoll_data_t</span> data;  <span class="comment">/* User data variable */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// events可以是以下几个宏的集合</span></span><br><span class="line"><span class="comment">// EPOLLIN ：表示对应的文件描述符可以读（包括对端SOCKET正常关闭）；</span></span><br><span class="line"><span class="comment">// EPOLLOUT：表示对应的文件描述符可以写；</span></span><br><span class="line"><span class="comment">// EPOLLPRI：表示对应的文件描述符有紧急的数据可读（这里应该表示有带外数据到来）；</span></span><br><span class="line"><span class="comment">// EPOLLERR：表示对应的文件描述符发生错误；</span></span><br><span class="line"><span class="comment">// EPOLLHUP：表示对应的文件描述符被挂断；</span></span><br><span class="line"><span class="comment">// EPOLLET： 将EPOLL设为边缘触发(Edge Triggered)模式，这是相对于水平触发(Level Triggered)来说的。</span></span><br><span class="line"><span class="comment">// EPOLLONESHOT：只监听一次事件，当监听完这次事件之后，如果还需要继续监听这个socket的话，需要再次把这个socket加入到EPOLL队列里</span></span><br></pre></td></tr></table></figure>
 <p><code>epoll()</code> 的事件注册函数，它不同与 <code>select()</code> 是在监听事件时告诉内核要监听什么类型的事件，而是在这里先注册要监听的事件类型。当事件发生时，会触发回调，返回给用户进程。</p>
 <h4 id="epoll-wait"><a href="#epoll-wait" class="headerlink" title="epoll_wait"></a>epoll_wait</h4><p>等待 <code>epfd</code> 上的 IO 事件，最多返回 <code>maxevents</code> 个事件。<br>参数 <code>events</code> 用来从内核得到事件的集合，<code>maxevents</code> 告之内核这个 <code>events</code> 有多大，这个 <code>maxevents</code> 的值不能大于创建 <code>epoll_create()</code> 时的 size，参数 <code>timeout</code> 是超时时间（毫秒，0 会立即返回，-1 将不确定，也有说法说是永久阻塞）。该函数返回需要处理的事件数目，如返回 0 表示已超时。</p>
 <h4 id="epoll-工作模式"><a href="#epoll-工作模式" class="headerlink" title="epoll 工作模式"></a>epoll 工作模式</h4><p><code>epoll</code> 对文件描述符的操作有两种模式：LT（level trigger）和 ET（edge trigger）。LT 模式是默认模式，LT 模式与 ET 模式的区别如下：</p>
@@ -467,7 +467,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2017/03/linux-io-multiplexing.html" title="Linux IO 模式及 select、poll、epoll 详解">https://murphypei.github.io/blog/2017/03/linux-io-multiplexing.html</a>
@@ -574,8 +574,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1603,17 +1603,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

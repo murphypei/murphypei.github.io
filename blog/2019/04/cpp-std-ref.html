@@ -59,7 +59,7 @@
 </script>
 
   <meta name="description" content="C++11 中引入 std::ref 用于取某个变量的引用，这个引入是为了解决一些传参问题。">
-<meta name="keywords" content="C++,thread,STL,ref,bind">
+<meta name="keywords" content="C++,STL,thread,ref,bind">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++11 的 std::ref 用法">
 <meta property="og:url" content="https://murphypei.github.io/blog/2019/04/cpp-std-ref.html">
@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/04/cpp-std-ref.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -310,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>1.7k</span>
+              <span>1.6k</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -334,15 +334,15 @@
 
       
         <p>C++11 中引入 <code>std::ref</code> 用于取某个变量的引用，这个引入是为了解决一些传参问题。</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>我们知道 C++ 中本来就有引用的存在，为何 C++11 中还要引入一个 <code>std::ref</code> 了？主要是考虑函数式编程（如 <code>std::bind</code>）在使用时，是对参数直接拷贝，而不是引用。下面通过例子说明</p>
 <p>示例1：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;functional&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">(<span class="type">int</span>&amp; n1, <span class="type">int</span>&amp; n2, <span class="type">const</span> <span class="type">int</span>&amp; n3)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;In function: &quot;</span> &lt;&lt; n1 &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; n2 &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; n3 &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    ++n1; <span class="comment">// increments the copy of n1 stored in the function object</span></span><br><span class="line">    ++n2; <span class="comment">// increments the main()&#x27;s n2</span></span><br><span class="line">    <span class="comment">// ++n3; // compile error</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">int</span> n1 = <span class="number">1</span>, n2 = <span class="number">2</span>, n3 = <span class="number">3</span>;</span><br><span class="line">    std::function&lt;<span class="type">void</span>()&gt; bound_f = std::<span class="built_in">bind</span>(f, n1, std::<span class="built_in">ref</span>(n2), std::<span class="built_in">cref</span>(n3));</span><br><span class="line">    n1 = <span class="number">10</span>;</span><br><span class="line">    n2 = <span class="number">11</span>;</span><br><span class="line">    n3 = <span class="number">12</span>;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Before function: &quot;</span> &lt;&lt; n1 &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; n2 &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; n3 &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">    <span class="built_in">bound_f</span>();</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;After function: &quot;</span> &lt;&lt; n1 &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; n2 &lt;&lt; <span class="string">&#x27; &#x27;</span> &lt;&lt; n3 &lt;&lt; <span class="string">&#x27;\n&#x27;</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>输出：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Before function: 10 11 12</span><br><span class="line">In function: 1 11 12</span><br><span class="line">After function: 10 12 12</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;functional&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span>&amp; n1, <span class="keyword">int</span>&amp; n2, <span class="keyword">const</span> <span class="keyword">int</span>&amp; n3)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"In function: "</span> &lt;&lt; n1 &lt;&lt; <span class="string">' '</span> &lt;&lt; n2 &lt;&lt; <span class="string">' '</span> &lt;&lt; n3 &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    ++n1; <span class="comment">// increments the copy of n1 stored in the function object</span></span><br><span class="line">    ++n2; <span class="comment">// increments the main()'s n2</span></span><br><span class="line">    <span class="comment">// ++n3; // compile error</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> n1 = <span class="number">1</span>, n2 = <span class="number">2</span>, n3 = <span class="number">3</span>;</span><br><span class="line">    <span class="built_in">std</span>::function&lt;<span class="keyword">void</span>()&gt; bound_f = <span class="built_in">std</span>::bind(f, n1, <span class="built_in">std</span>::ref(n2), <span class="built_in">std</span>::cref(n3));</span><br><span class="line">    n1 = <span class="number">10</span>;</span><br><span class="line">    n2 = <span class="number">11</span>;</span><br><span class="line">    n3 = <span class="number">12</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Before function: "</span> &lt;&lt; n1 &lt;&lt; <span class="string">' '</span> &lt;&lt; n2 &lt;&lt; <span class="string">' '</span> &lt;&lt; n3 &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">    bound_f();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"After function: "</span> &lt;&lt; n1 &lt;&lt; <span class="string">' '</span> &lt;&lt; n2 &lt;&lt; <span class="string">' '</span> &lt;&lt; n3 &lt;&lt; <span class="string">'\n'</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">Before function: 10 11 12</span><br><span class="line">In function: 1 11 12</span><br><span class="line">After function: 10 12 12</span><br></pre></td></tr></table></figure></p>
 <p>上述代码在执行 <code>std::bind</code> 后，在函数 <code>f()</code> 中 <code>n1</code> 的值仍然是 1，<code>n2</code> 和 <code>n3</code> 改成了修改的值，<strong>说明 <code>std::bind</code> 使用的是参数的拷贝而不是引用，因此必须显示利用 <code>std::ref</code> 来进行引用绑定</strong>。具体为什么 <code>std::bind</code> 不使用引用，可能确实有一些需求，使得 C++11 的设计者认为默认应该采用拷贝，如果使用者有需求，加上 <code>std::ref</code> 即可。</p>
 <p>示例2：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">threadFunc</span><span class="params">(std::string &amp;str, <span class="type">int</span> a)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    str = <span class="string">&quot;change by threadFunc&quot;</span>;</span><br><span class="line">    a = <span class="number">13</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="function">std::string <span class="title">str</span><span class="params">(<span class="string">&quot;main&quot;</span>)</span></span>;</span><br><span class="line">    <span class="type">int</span> a = <span class="number">9</span>;</span><br><span class="line">    <span class="function">std::thread <span class="title">th</span><span class="params">(threadFunc, std::ref(str), a)</span></span>;</span><br><span class="line"></span><br><span class="line">    th.<span class="built_in">join</span>();</span><br><span class="line"></span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;str = &quot;</span> &lt;&lt; str &lt;&lt; std::endl;</span><br><span class="line">    std::cout&lt;&lt;<span class="string">&quot;a = &quot;</span> &lt;&lt; a &lt;&lt; std::endl;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>输出：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">str = change by threadFunc</span><br><span class="line">a = 9</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;thread&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span><span class="meta-string">&lt;string&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">threadFunc</span><span class="params">(<span class="built_in">std</span>::<span class="built_in">string</span> &amp;str, <span class="keyword">int</span> a)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    str = <span class="string">"change by threadFunc"</span>;</span><br><span class="line">    a = <span class="number">13</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function"><span class="built_in">string</span> <span class="title">str</span><span class="params">(<span class="string">"main"</span>)</span></span>;</span><br><span class="line">    <span class="keyword">int</span> a = <span class="number">9</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="function">thread <span class="title">th</span><span class="params">(threadFunc, <span class="built_in">std</span>::ref(str), a)</span></span>;</span><br><span class="line"></span><br><span class="line">    th.join();</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span>&lt;&lt;<span class="string">"str = "</span> &lt;&lt; str &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span>&lt;&lt;<span class="string">"a = "</span> &lt;&lt; a &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">str = change by threadFunc</span><br><span class="line">a = 9</span><br></pre></td></tr></table></figure></p>
 <p>可以看到，和 <code>std::bind</code> 类似，多线程的 <code>std::thread</code> 也是必须显式通过 <code>std::ref</code> 来绑定引用进行传参，否则，形参的引用声明是无效的。</p>
 
     </div>
@@ -357,7 +357,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2019/04/cpp-std-ref.html" title="C++11 的 std::ref 用法">https://murphypei.github.io/blog/2019/04/cpp-std-ref.html</a>
@@ -377,9 +377,9 @@
             
               <a href="/tags/C/" rel="tag"># C++</a>
             
-              <a href="/tags/thread/" rel="tag"># thread</a>
-            
               <a href="/tags/STL/" rel="tag"># STL</a>
+            
+              <a href="/tags/thread/" rel="tag"># thread</a>
             
               <a href="/tags/ref/" rel="tag"># ref</a>
             
@@ -464,8 +464,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1493,17 +1493,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

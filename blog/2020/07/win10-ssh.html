@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2020/07/win10-ssh.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,19 +334,19 @@
 
       
         <p>win10 已经使用的越来越顺手，而且越发喜爱在 win10 上工作了，随手记录一下一些使用的体验和配置。</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>工作中使用跳板机和服务器是不可避免的，win10 中内置了 SSH 服务，可以很方便的满足我们的需求。</p>
-<p>首先，远程 SSH 必须要有一个给力的 terminal，这里我大力推荐 windows-terminal，微软自家研发的，很有 vscode 的味道，爱不释手，目前的缺点是必须有些版本（1903以上）才能用，而且看上去比较简单，配置起来略显麻烦。关于配置，可以参考<a href="https://sspai.com/post/59380">新生代 Windows 终端：Windows Terminal 的全面自定义</a>。</p>
+<p>首先，远程 SSH 必须要有一个给力的 terminal，这里我大力推荐 windows-terminal，微软自家研发的，很有 vscode 的味道，爱不释手，目前的缺点是必须有些版本（1903以上）才能用，而且看上去比较简单，配置起来略显麻烦。关于配置，可以参考<a href="https://sspai.com/post/59380" target="_blank" rel="noopener">新生代 Windows 终端：Windows Terminal 的全面自定义</a>。</p>
 <p>一般公司都是通过密钥登陆的，这里也比较推荐这种方式。关于密钥登录的方式以及 SSH 服务器的密钥登陆配置，可以自行查资料。不再赘述。</p>
 <p>假设服务器已经配置了密钥登陆，那么服务器会产生一个公钥 <code>id_rsa.pub</code> 和私钥 <code>id_rsa</code>，其中公钥会写入到服务器的 <code>~/.ssh/authorized_keys</code> 中（可以添加多个公钥）。私钥就是我们用于登录服务器的。可以通过 <code>ssh -i id_rsa xxx</code> 来登录服务器。私钥和公钥是通过 <code>ssh-keygen</code> 产生的，如果产生的过程中私钥有密码，还需要输入密码。</p>
 <p>以上登录方式每次都需要输入私钥路径，我们可以配置本地机器的 <code>~/.ssh/config</code> 来达到简化目的。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Host ubuntu</span><br><span class="line">  IdentityFile ~/.ssh/id_rsa</span><br><span class="line">  HostName 1.1.1.1</span><br><span class="line">  Port 1111</span><br><span class="line">  User murphy</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Host ubuntu</span><br><span class="line">  IdentityFile ~/.ssh/id_rsa</span><br><span class="line">  HostName 1.1.1.1</span><br><span class="line">  Port 1111</span><br><span class="line">  User murphy</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>注意，这里的 <code>id_rsa</code> 是服务器上的公钥（写进 <code>~/.ssh/authorized_keys</code>）对应的私钥。</p>
 </blockquote>
 <p>如此处理之后，我们就可以直接通过 <code>ssh ubuntu</code> 来登录这台机器了。</p>
 <h3 id="跳板机的处理"><a href="#跳板机的处理" class="headerlink" title="跳板机的处理"></a>跳板机的处理</h3><p>跳板机一般通过 SSH ProxyCommand 来实现直连，命令和 Linux 有一点点区别。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Host k8s006</span><br><span class="line">  IdentityFile ~/.ssh/id_rsa</span><br><span class="line">  HostName 2.2.2.2</span><br><span class="line">  User murphy</span><br><span class="line">  Port 2222</span><br><span class="line">  StrictHostKeyChecking no</span><br><span class="line">  ProxyCommand C:\Windows\System32\OpenSSH\ssh.exe ubuntu -q -X -W %h:%p</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">Host k8s006</span><br><span class="line">  IdentityFile ~/.ssh/id_rsa</span><br><span class="line">  HostName 2.2.2.2</span><br><span class="line">  User murphy</span><br><span class="line">  Port 2222</span><br><span class="line">  StrictHostKeyChecking no</span><br><span class="line">  ProxyCommand C:\Windows\System32\OpenSSH\ssh.exe ubuntu -q -X -W %h:%p</span><br></pre></td></tr></table></figure>
 <blockquote>
 <p>这里是以上文设置的 ubuntu 作为跳板机。</p>
 </blockquote>
@@ -383,7 +383,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2020/07/win10-ssh.html" title="win10 上使用 SSH 实践">https://murphypei.github.io/blog/2020/07/win10-ssh.html</a>
@@ -492,8 +492,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1521,17 +1521,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

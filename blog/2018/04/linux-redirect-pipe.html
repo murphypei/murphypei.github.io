@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/04/linux-redirect-pipe.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,7 +334,7 @@
 
       
         <p>在日常使用Linux命令时候，经常使用重定向或者管道的方式处理命令的结果。以前对这两个命令的使用场景存在一些困惑，所以本文对这两个命令进行详细的总结。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="文件描述符"><a href="#文件描述符" class="headerlink" title="文件描述符"></a>文件描述符</h2><p>Linux的宗旨是一切皆文件，对于进程、IO等等都是通过文件的形式存在，这些文件都通过文件描述符的形式来表示。Linux的文件描述符可以理解为Linux为了跟踪一个打开的文件而分配的唯一标号，可以通过这个标号对文件实现读写操作。Linux系统的文件描述符一般都有最大的限制，可以通过<code>ulimit -n</code>这条命令来查看。如果想改变这个限制，需要修改/etc/security/limits.conf 文件，如下：</p>
 <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/security/limits.conf</span><br><span class="line">* hard nofile 102400</span><br><span class="line">* soft nofile 102400</span><br></pre></td></tr></table></figure>
 <p>保存后退出，重新登录，可以看到其被改变。</p>
@@ -350,37 +350,37 @@
 <p>关于文件描述符有很多相关知识，本文不展开，大家只要知道这个概念即可。</p>
 <h2 id="重定向"><a href="#重定向" class="headerlink" title="重定向"></a>重定向</h2><p>根据前文，我们知道了命令的输入输出默认的文件描述符，如果我们不使用默认的文件描述符，而想自己指定，则需要用到重定向了。</p>
 <h3 id="输出重定向"><a href="#输出重定向" class="headerlink" title="输出重定向"></a>输出重定向</h3><p>输出重定向是最常见的了，格式一般如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command [1-n] &gt; file或者文件描述符或者设备</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command [1-n] &gt; file或者文件描述符或者设备</span><br></pre></td></tr></table></figure>
 <p>下面示例输出重定向的操作，假设当前目录下只存在一个文件exists.txt。</p>
 <ul>
 <li><p>不重定向输出</p>
 <p>  执行命令: </p>
-  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls exists.txt no-exists.txt</span><br></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls exists.txt no-exists.txt</span><br></pre></td></tr></table></figure>
 <p>  因为exists.txt文件存在，而no-exists.txt文件不存在，因此这个命令即具有成功执行的结果（标准输出），又具有出错的结果（标准错误）。由于这个命令没有进行重定向，因此标准输出和标准错误都将打印在屏幕上：</p>
-  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls: no-exists.txt: No such file or directory  # 执行错误，标准错误</span><br><span class="line">exists.txt  # 成功执行，标准输出</span><br></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls: no-exists.txt: No such file or directory  # 执行错误，标准错误</span><br><span class="line">exists.txt  # 成功执行，标准输出</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>重定向输出</p>
 <p>  执行命令：</p>
-  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls exists.txt no-exists.txt 1 &gt; success.txt 2 &gt; fail.txt</span><br></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls exists.txt no-exists.txt 1 &gt; success.txt 2 &gt; fail.txt</span><br></pre></td></tr></table></figure>
 <p>  命令执行，屏幕上将不显示任何信息，但是多了两个文件，其中succcess.txt中是执行成功的结果，标准输出重定向的文件，内容为<code>exists.txt</code>，而fail.txt是执行出错的结果，标准错误重定向的结果，内容为<code>ls: no-exists.txt: No such file or directory</code>。</p>
 </li>
 <li><p>只重定向标准输出</p>
 <p>  执行命令：</p>
-  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls exists.txt no-exists.txt  &gt; result.txt</span><br></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls exists.txt no-exists.txt  &gt; result.txt</span><br></pre></td></tr></table></figure>
 <p>  这个应该是我们平时用的最多的形式了，其意义就是将命令执行成功的结果输出到result.txt中，因此屏幕上没有命令执行成功的结果，只有出错的结果。值得注意的是，<strong>标准输出的文件描述符1可以省略</strong></p>
 <p>  同理，我们也可以只重定向标准错误的结果，不过文件描述符2不能省略。</p>
 </li>
 <li><p>关闭标准错误</p>
 <p>  将标准错误信息关闭掉：</p>
-  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls exists.txt no-exists.txt 2 &gt; /dev/null</span><br><span class="line">ls exists.txt no-exists.txt 2 &gt; &amp;-</span><br></pre></td></tr></table></figure>
-<p>  /dev/null 这个设备，是linux 中黑洞设备，什么信息只要输出给这个设备，都会给吃掉。&amp;<n>代表当前命令进程中是已经存在的文件描述符，&amp;1代表标准输出，因为1可以省略，所以&amp;也代表标准输出，&amp;2代表标准错误，&amp;-代表关闭与它绑定的描述符。重定向符号后面的文件描述符用&amp;引用。</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls exists.txt no-exists.txt 2 &gt; /dev/null</span><br><span class="line">ls exists.txt no-exists.txt 2 &gt; &amp;-</span><br></pre></td></tr></table></figure>
+<p>  /dev/null 这个设备，是linux 中黑洞设备，什么信息只要输出给这个设备，都会给吃掉。&amp;<n>代表当前命令进程中是已经存在的文件描述符，&amp;1代表标准输出，因为1可以省略，所以&amp;也代表标准输出，&amp;2代表标准错误，&amp;-代表关闭与它绑定的描述符。重定向符号后面的文件描述符用&amp;引用。</n></p>
 </li>
 <li><p>关闭所有输出</p>
 <p>  和上面类似：</p>
-  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls exists.txt no-exists.txt 1 &gt; /dev/null 2 &gt; /dev/null</span><br><span class="line">ls exists.txt no-exists.txt 1 &gt; &amp;- 2 &gt; &amp;-</span><br></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ls exists.txt no-exists.txt 1 &gt; /dev/null 2 &gt; /dev/null</span><br><span class="line">ls exists.txt no-exists.txt 1 &gt; &amp;- 2 &gt; &amp;-</span><br></pre></td></tr></table></figure>
 </li>
 <li><p>将标准错误绑定给标准输出</p>
-  <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls exists.txt no-exists.txt 2 &gt; &amp;1 1 &gt; /dev/null</span><br></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls exists.txt no-exists.txt 2 &gt; &amp;1 1 &gt; /dev/null</span><br></pre></td></tr></table></figure>
 <p>  将标准错误绑定给标准输出，然后将标准输出发送给/dev/null设备，常用</p>
 </li>
 </ul>
@@ -391,13 +391,13 @@
 
 * 一条命令在执行前，先会检查输出是否正确，如果输出设备错误，将不会进行命令执行
 </code></pre><h3 id="输入重定向"><a href="#输入重定向" class="headerlink" title="输入重定向"></a>输入重定向</h3><p>输入重定向和输出重定向类似，其格式为：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command [n] &lt; file或文件描述符或者设备</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">command [n] &lt; file或文件描述符或者设备</span><br></pre></td></tr></table></figure>
 <p>示例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat &gt; output.txt  &lt; input.txt</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat &gt; output.txt  &lt; input.txt</span><br></pre></td></tr></table></figure>
 <p>这条命令cat命令的输入重定向到input.txt文件，因此该文件的内容作为cat的输入。然后cat命令的输出重定向到output.txt，因此将内容输出到output.txt中。</p>
 <p>与输出重定向类似，输入重定向的<code>&lt;&lt;</code>也表示追加。</p>
 <h3 id="绑定重定向"><a href="#绑定重定向" class="headerlink" title="绑定重定向"></a>绑定重定向</h3><p>上面的输出和输出绑定的文件或者设备只对该命令有效，如果需要一次绑定，接下来均有效的话，可以使用exec命令来绑定描述符。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">exec 6 &gt; &amp;1</span><br><span class="line">exec 1 &gt; success.txt</span><br><span class="line">exec 1 &gt; &amp;6</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">exec 6 &gt; &amp;1</span><br><span class="line">exec 1 &gt; success.txt</span><br><span class="line">exec 1 &gt; &amp;6</span><br></pre></td></tr></table></figure>
 <p>上述命令分别表示：</p>
 <ul>
 <li><p>将标准输出与fd 6绑定。</p>
@@ -417,7 +417,7 @@
 </li>
 </ul>
 <p>使用示例：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat test.txt | grep -n &#x27;test&#x27;</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat test.txt | grep -n &apos;test&apos;</span><br></pre></td></tr></table></figure>
 <p><code>cat test.txt</code>会将test.txt的内容作为标准输出，然后利用管道，将其作为<code>grep -n &#39;test&#39;</code>命令的标准输入。</p>
 <h2 id="管道和重定向的区别"><a href="#管道和重定向的区别" class="headerlink" title="管道和重定向的区别"></a>管道和重定向的区别</h2><ul>
 <li><p><strong>管道</strong>触发两个子进程，执行<code>|</code>两边的程序；而<strong>重定向</strong>是在一个进程内执行。</p>
@@ -429,7 +429,7 @@
 <li><p><strong>重定向符号的优先级大于管道</strong></p>
 </li>
 </ul>
-<p>关于Linux重定向和管道的更多用法，可以参考：<a href="https://www.cnblogs.com/pengliangcheng/p/5211786.html">linux shell 管道命令(pipe)使用及与shell重定向区别</a></p>
+<p>关于Linux重定向和管道的更多用法，可以参考：<a href="https://www.cnblogs.com/pengliangcheng/p/5211786.html" target="_blank" rel="noopener">linux shell 管道命令(pipe)使用及与shell重定向区别</a></p>
 
     </div>
 
@@ -443,7 +443,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2018/04/linux-redirect-pipe.html" title="Linux命令中的重定向(>)和管道(|)">https://murphypei.github.io/blog/2018/04/linux-redirect-pipe.html</a>
@@ -550,8 +550,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1579,17 +1579,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

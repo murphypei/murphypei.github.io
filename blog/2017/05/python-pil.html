@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/05/python-pil.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -310,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>3.5k</span>
+              <span>3.4k</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -334,12 +334,12 @@
 
       
         <p>Pillow是Python里的图像处理库（PIL：Python Image Library），提供了了广泛的文件格式支持，强大的图像处理能力，主要包括图像储存、图像显示、格式转换以及基本的图像处理操作等。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="使用Image类"><a href="#使用Image类" class="headerlink" title="使用Image类"></a>使用Image类</h2><p>PIL最重要的类是 Image class, 你可以通过多种方法创建这个类的实例；你可以从文件加载图像，或者处理其他图像, 或者从 scratch 创建。</p>
 <p>要从文件加载图像，可以使用open( )函数，在Image模块中：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line">im = Image.<span class="built_in">open</span>(<span class="string">&quot;E:/Python/lena.jpg&quot;</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line">im = Image.open(<span class="string">"E:/Python/lena.jpg"</span>)</span><br></pre></td></tr></table></figure>
 <p>加载成功后，将返回一个Image对象，可以通过使用示例属性查看文件内容：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">print</span>(im.<span class="built_in">format</span>, im.size, im.mode)</span><br><span class="line">(<span class="string">&#x27;JPEG&#x27;</span>,(<span class="number">600</span>,<span class="number">600</span>),<span class="string">&#x27;RGB&#x27;</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">print(im.format, im.size, im.mode)</span><br><span class="line">(<span class="string">'JPEG'</span>,(<span class="number">600</span>,<span class="number">600</span>),<span class="string">'RGB'</span>)</span><br></pre></td></tr></table></figure>
 <ul>
 <li><strong>format</strong> 这个属性标识了图像来源。如果图像不是从文件读取它的值就是None。</li>
 <li><strong>size</strong> 属性是一个二元tuple，包含width和height（宽度和高度，单位都是px）。 </li>
@@ -350,27 +350,27 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">im.show()</span><br></pre></td></tr></table></figure>
 <h2 id="读写图像"><a href="#读写图像" class="headerlink" title="读写图像"></a>读写图像</h2><p>PIL 模块支持大量图片格式。使用在 Image 模块的 open() 函数从磁盘读取文件。你不需要知道文件格式就能打开它，这个库能够根据文件内容自动确定文件格式。要保存文件，使用 Image 类的 save() 方法。<strong>保存文件的时候文件名变得重要了。除非你指定格式，否则这个库将会以文件名的扩展名作为格式保存。</strong></p>
 <p>加载文件，并转化为png格式：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> infile <span class="keyword">in</span> sys.argv[<span class="number">1</span>]:</span><br><span class="line">    f,e = os.path.splitext(infile)</span><br><span class="line">    outfile = f + <span class="string">&#x27;.png&#x27;</span></span><br><span class="line">    <span class="keyword">if</span> infile != outfile:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            Image.<span class="built_in">open</span>(infile).save(outfile)</span><br><span class="line">        <span class="keyword">except</span> IOError:</span><br><span class="line">            <span class="built_in">print</span>(<span class="string">&#x27;Cannot convert&#x27;</span>, infile)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> Image</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> infile <span class="keyword">in</span> sys.argv[<span class="number">1</span>]:</span><br><span class="line">    f,e = os.path.splitext(infile)</span><br><span class="line">    outfile = f + <span class="string">'.png'</span></span><br><span class="line">    <span class="keyword">if</span> infile != outfile:</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            Image.open(infile).save(outfile)</span><br><span class="line">        <span class="keyword">except</span> IOError:</span><br><span class="line">            print(<span class="string">'Cannot convert'</span>, infile)</span><br></pre></td></tr></table></figure>
 <h2 id="创建缩略图"><a href="#创建缩略图" class="headerlink" title="创建缩略图"></a>创建缩略图</h2><p>缩略图是网络开发或图像软件预览常用的一种基本技术，使用Python的Pillow图像库可以很方便的建立缩略图，如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">size = (<span class="number">128</span>, <span class="number">128</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> infile <span class="keyword">in</span> glob.glob(<span class="string">&quot;E:/Python/*.jpg&quot;</span>)</span><br><span class="line">    f,ext = os.path.splitext(infile)</span><br><span class="line">    img = Image.<span class="built_in">open</span>(infile)</span><br><span class="line">    img.thumbnail(size, Image.ANTIALIAS)</span><br><span class="line">    img.save(f+<span class="string">&quot;.thumbnail&quot;</span>, <span class="string">&quot;JPEG&quot;</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">size = (<span class="number">128</span>, <span class="number">128</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> infile <span class="keyword">in</span> glob.glob(<span class="string">"E:/Python/*.jpg"</span>)</span><br><span class="line">    f,ext = os.path.splitext(infile)</span><br><span class="line">    img = Image.open(infile)</span><br><span class="line">    img.thumbnail(size, Image.ANTIALIAS)</span><br><span class="line">    img.save(f+<span class="string">".thumbnail"</span>, <span class="string">"JPEG"</span>)</span><br></pre></td></tr></table></figure>
 <p>上段代码对Python下的jpg图像文件全部创建缩略图，并保存。<strong>glob模块是一种智能化的文件名匹配技术，在批图像处理中经常会用到</strong>。</p>
 <blockquote>
 <p> 注意：Pillow库不会直接解码或者加载图像栅格数据。当你打开一个文件，只会读取文件头信息用来确定格式，颜色模式，大小等等，文件的剩余部分不会主动处理。这意味着打开一个图像文件的操作十分快速，跟图片大小和压缩方式无关。</p>
 </blockquote>
 <h2 id="图像的剪切、粘贴和合并"><a href="#图像的剪切、粘贴和合并" class="headerlink" title="图像的剪切、粘贴和合并"></a>图像的剪切、粘贴和合并</h2><p>Image 类包含的方法允许你操作图像部分选区，PIL.Image.crop 方法获取图像的一个子矩形选区，如：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">im = Image.<span class="built_in">open</span>(<span class="string">&quot;E:/Python/lena.jpg&quot;</span>)</span><br><span class="line">box = (<span class="number">100</span>, <span class="number">100</span>, <span class="number">300</span>, <span class="number">300</span>)</span><br><span class="line">region = im.crop(box)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">im = Image.open(<span class="string">"E:/Python/lena.jpg"</span>)</span><br><span class="line">box = (<span class="number">100</span>, <span class="number">100</span>, <span class="number">300</span>, <span class="number">300</span>)</span><br><span class="line">region = im.crop(box)</span><br></pre></td></tr></table></figure>
 <p>矩形选区有一个4元元组定义，分别表示左、上、右、下的坐标。这个库以左上角为坐标原点，单位是px，所以上诉代码复制了一个 200×200 pixels 的矩形选区。这个选区现在可以被处理并且粘贴到原图。</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">region = region.transpose(Image.ROTATE_180)</span><br><span class="line">im.paste(region, box)</span><br></pre></td></tr></table></figure>
 <p>当你粘贴矩形选区的时候必须保证尺寸一致。此外，矩形选区不能在图像外。然而你不必保证矩形选区和原图的颜色模式一致，因为矩形选区会被自动转换颜色。</p>
 <h2 id="分离、合并颜色通道"><a href="#分离、合并颜色通道" class="headerlink" title="分离、合并颜色通道"></a>分离、合并颜色通道</h2><p>对于多通道图像，有时候在处理时希望能够分别对每个通道处理，处理完成后重新合成多通道，在Pillow中，很简单，如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">r,g,b = im.split()</span><br><span class="line">im = Image.merge(<span class="string">&quot;RGB&quot;</span>, (r,g,b))</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">r,g,b = im.split()</span><br><span class="line">im = Image.merge(<span class="string">"RGB"</span>, (r,g,b))</span><br></pre></td></tr></table></figure>
 <p>对于split函数，如果是单通道的，则返回其本身，否则，返回各个通道。</p>
 <h2 id="几何变换"><a href="#几何变换" class="headerlink" title="几何变换"></a>几何变换</h2><p>对图像进行几何变换是一种基本处理，在Pillow中包括resize()和rotate()，如用法如下：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">out = im.resize((<span class="number">128</span>,<span class="number">128</span>))</span><br><span class="line">out = im.rotate(<span class="number">45</span>)</span><br></pre></td></tr></table></figure>
 <p>其中，resize( )函数的参数是一个新图像大小的元祖，而rotate( )则需要输入顺时针的旋转角度。在Pillow中，对于一些常见的旋转作了专门的定义：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">out = im.transpose(Image.FLIP_LEFT_RIGHT)</span><br><span class="line">out = im.transpose(Image.FLIP_TOP_BOTTOM)</span><br><span class="line">out = im.transpose(Image.ROTATE_90)</span><br><span class="line">out = im.transpose(Image.ROTATE_180)</span><br><span class="line">out = im.transpose(Image.ROTATE_270)</span><br></pre></td></tr></table></figure>
 <h2 id="颜色空间变换"><a href="#颜色空间变换" class="headerlink" title="颜色空间变换"></a>颜色空间变换</h2><p>在处理图像时，根据需要进行颜色空间的转换，如将彩色转换为灰度：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cmyk = im.convert(<span class="string">&quot;CMYK&quot;</span>)</span><br><span class="line">gray = im.convert(<span class="string">&quot;L&quot;</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cmyk = im.convert(<span class="string">"CMYK"</span>)</span><br><span class="line">gray = im.convert(<span class="string">"L"</span>)</span><br></pre></td></tr></table></figure>
 <h2 id="图像滤波"><a href="#图像滤波" class="headerlink" title="图像滤波"></a>图像滤波</h2><p>图像滤波在ImageFilter 模块中，在该模块中，<strong>预先定义了很多增强滤波器，可以通过filter( )函数使用</strong>，预定义滤波器包括：</p>
 <ul>
 <li>BLUR</li>
@@ -385,13 +385,13 @@
 <li>SHARPEN</li>
 </ul>
 <p>其中BLUR就是均值滤波，CONTOUR找轮廓，FIND_EDGES边缘检测，使用该模块时，需先导入，使用方法如下：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> ImageFilter</span><br><span class="line"> </span><br><span class="line">imgF = Image.<span class="built_in">open</span>(<span class="string">&quot;E:/Python/lena.jpg&quot;</span>)</span><br><span class="line">outF = imgF.<span class="built_in">filter</span>(ImageFilter.DETAIL)</span><br><span class="line">conF = imgF.<span class="built_in">filter</span>(ImageFilter.CONTOUR)</span><br><span class="line">edgeF = imgF.<span class="built_in">filter</span>(ImageFilter.FIND_EDGES)</span><br><span class="line">imgF.show()</span><br><span class="line">outF.show()</span><br><span class="line">conF.show()</span><br><span class="line">edgeF.show()</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> ImageFilter</span><br><span class="line"> </span><br><span class="line">imgF = Image.open(<span class="string">"E:/Python/lena.jpg"</span>)</span><br><span class="line">outF = imgF.filter(ImageFilter.DETAIL)</span><br><span class="line">conF = imgF.filter(ImageFilter.CONTOUR)</span><br><span class="line">edgeF = imgF.filter(ImageFilter.FIND_EDGES)</span><br><span class="line">imgF.show()</span><br><span class="line">outF.show()</span><br><span class="line">conF.show()</span><br><span class="line">edgeF.show()</span><br></pre></td></tr></table></figure>
 <p>除此以外，ImageFilter模块还包括一些扩展性强的滤波器：更多详细内容可以参考：PIL/ImageFilter</p>
 <h2 id="图像增强"><a href="#图像增强" class="headerlink" title="图像增强"></a>图像增强</h2><p>图像增强也是图像预处理中的一个基本技术，Pillow中的图像增强函数主要在ImageEnhance模块下，通过该模块可以调节图像的颜色、对比度和饱和度和锐化等：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> ImageEnhance</span><br><span class="line"> </span><br><span class="line">imgE = Image.<span class="built_in">open</span>(<span class="string">&quot;E:/photoshop/lena.jpg&quot;</span>)</span><br><span class="line">imgEH = ImageEnhance.Contrast(imgE)</span><br><span class="line">imgEH.enhance(<span class="number">1.3</span>).show(<span class="string">&quot;30% more contrast&quot;</span>)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> PIL <span class="keyword">import</span> ImageEnhance</span><br><span class="line"> </span><br><span class="line">imgE = Image.open(<span class="string">"E:/photoshop/lena.jpg"</span>)</span><br><span class="line">imgEH = ImageEnhance.Contrast(imgE)</span><br><span class="line">imgEH.enhance(<span class="number">1.3</span>).show(<span class="string">"30% more contrast"</span>)</span><br></pre></td></tr></table></figure>
 <p>图像增强的详细内容可以参考：PIL/ImageEnhance</p>
 <p>除了以上介绍的内容外，Pillow还有很多强大的功能：</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PIL.Image.alpha_composite(im1, im2)</span><br><span class="line">PIL.Image.blend(im1, im2, alpha)</span><br><span class="line">PIL.Image.composite(image1, image2, mask)</span><br><span class="line">PIL.Image.<span class="built_in">eval</span>(image, *args)</span><br><span class="line">PIL.Image.fromarray(obj, mode=<span class="literal">None</span>)</span><br><span class="line">PIL.Image.frombuffer(mode, size, data, decoder_name=’raw’, *args)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PIL.Image.alpha_composite(im1, im2)</span><br><span class="line">PIL.Image.blend(im1, im2, alpha)</span><br><span class="line">PIL.Image.composite(image1, image2, mask)</span><br><span class="line">PIL.Image.eval(image, *args)</span><br><span class="line">PIL.Image.fromarray(obj, mode=<span class="literal">None</span>)</span><br><span class="line">PIL.Image.frombuffer(mode, size, data, decoder_name=’raw’, *args)</span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -404,7 +404,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2017/05/python-pil.html" title="Python之PIL基础">https://murphypei.github.io/blog/2017/05/python-pil.html</a>
@@ -438,8 +438,8 @@
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
               
-                <a href="/blog/2017/05/python-GIL.html" rel="next" title="CPython中的全局解释锁(GIL)">
-                  <i class="fa fa-chevron-left"></i> CPython中的全局解释锁(GIL)
+                <a href="/blog/2017/05/live-cherry.html" rel="next" title="cherry">
+                  <i class="fa fa-chevron-left"></i> cherry
                 </a>
               
             </div>
@@ -448,8 +448,8 @@
 
             <div class="post-nav-prev post-nav-item">
               
-                <a href="/blog/2017/05/python-stack.html" rel="prev" title="Python算法实践：栈">
-                  Python算法实践：栈 <i class="fa fa-chevron-right"></i>
+                <a href="/blog/2017/06/windows-glog.html" rel="prev" title="windows7 x64环境使用GLOG日志库">
+                  windows7 x64环境使用GLOG日志库 <i class="fa fa-chevron-right"></i>
                 </a>
               
             </div>
@@ -511,8 +511,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1540,17 +1540,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

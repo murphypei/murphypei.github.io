@@ -59,7 +59,7 @@
 </script>
 
   <meta name="description" content="关于CMake中不同变量的用法与总结">
-<meta name="keywords" content="C++,编译,链接,CMake,变量">
+<meta name="keywords" content="C++,CMake,编译,链接,变量">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CMake中变量总结">
 <meta property="og:url" content="https://murphypei.github.io/blog/2018/10/cmake-variable.html">
@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/10/cmake-variable.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -310,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>1.2k</span>
+              <span>1.1k</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -334,17 +334,17 @@
 
       
         <p>关于CMake中不同变量的用法与总结</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>CMake中的变量</p>
 <p>CMake中变量的类型有多种：通过set设置的普通变量和缓存变量、环境变量、数组变量等等，由于CMake在生成的过程中会加载缓存的关系，因此用法不一样。</p>
 <p>常用的变量设置语法：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set(&lt;variable&gt; &lt;value&gt;</span><br><span class="line">    [[CACHE &lt;type&gt; &lt;docstring&gt; [FORCE]] | PARENT_SCOPE])</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">set(&lt;variable&gt; &lt;value&gt;</span><br><span class="line">    [[CACHE &lt;type&gt; &lt;docstring&gt; [FORCE]] | PARENT_SCOPE])</span><br></pre></td></tr></table></figure>
 <h3 id="普通变量"><a href="#普通变量" class="headerlink" title="普通变量"></a>普通变量</h3><p>普通变量（normal variable）相当于编程中脚本内部变量，类似于脚本文件的局部变量，这种变量不能跨越CMakeLists.txt文档。普通变量定义方式如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set(var &quot;value&quot;)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set(var &quot;value&quot;)</span><br></pre></td></tr></table></figure>
 <p>设置一个普通变量var，值为value，引号的作用可以详见我的另一篇文章。</p>
 <p>和编程语言中局部变量的用法类似，这个变量会屏蔽CMake缓存中的同名变量，（类似局部变量屏蔽全局变量）。但是这条语句不会改变缓存中的var变量。</p>
 <h3 id="缓存变量"><a href="#缓存变量" class="headerlink" title="缓存变量"></a>缓存变量</h3><p>cache variable用于缓存变量，定义如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set(var &quot;value&quot; CACHE STRING &quot;&quot; FORCE)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set(var &quot;value&quot; CACHE STRING &quot;&quot; FORCE)</span><br></pre></td></tr></table></figure>
 <p>这条语句设置了一个CACHE语句，类型是STRING，说明信息为空字符串，上述都不能省略。</p>
 <p><strong>还有一种方法能够设置CACHE变量，就是通过cmake命令的-D选项，可以添加一个CACHE变量。</strong></p>
 <p>CACHE作用如下：</p>
@@ -359,9 +359,9 @@
 </ul>
 <p>缓存变量也可以设置只在本文件内生效，将STRING类型改为INTERNAL即可。</p>
 <h3 id="环境变量"><a href="#环境变量" class="headerlink" title="环境变量"></a>环境变量</h3><ul>
-<li><p>读取环境变量：<code>$ENV&#123;...&#125;</code></p>
+<li><p>读取环境变量：<code>$ENV{...}</code></p>
 </li>
-<li><p>设置环境变量：<code>set(ENV&#123;...&#125; ...)</code></p>
+<li><p>设置环境变量：<code>set(ENV{...} ...)</code></p>
 </li>
 </ul>
 <h3 id="option变量"><a href="#option变量" class="headerlink" title="option变量"></a>option变量</h3><ul>
@@ -384,7 +384,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2018/10/cmake-variable.html" title="CMake中变量总结">https://murphypei.github.io/blog/2018/10/cmake-variable.html</a>
@@ -404,11 +404,11 @@
             
               <a href="/tags/C/" rel="tag"># C++</a>
             
+              <a href="/tags/CMake/" rel="tag"># CMake</a>
+            
               <a href="/tags/编译/" rel="tag"># 编译</a>
             
               <a href="/tags/链接/" rel="tag"># 链接</a>
-            
-              <a href="/tags/CMake/" rel="tag"># CMake</a>
             
               <a href="/tags/变量/" rel="tag"># 变量</a>
             
@@ -493,8 +493,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1522,17 +1522,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

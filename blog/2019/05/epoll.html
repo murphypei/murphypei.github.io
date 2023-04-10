@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/05/epoll.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,10 +334,10 @@
 
       
         <p>IO 多路复用是 Linux 并发处理的一种技术，epoll 是目前常用的一种方式。</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>epoll 是在 2.6 内核中提出的，是之前的 select 和 poll 的增强版本。相对于 select 和 poll 来说，epoll 更加灵活，没有描述符限制。epoll 使用一个文件描述符管理多个描述符，将用户关系的文件描述符的事件存放到内核的一个事件表中，这样在用户空间和内核空间只需复制一次。</p>
 <h3 id="epoll-接口"><a href="#epoll-接口" class="headerlink" title="epoll 接口"></a>epoll 接口</h3><p>epoll 操作过程需要三个接口，分别如下：</p>
-<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;sys/epoll.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">epoll_create</span><span class="params">(<span class="type">int</span> size)</span></span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">epoll_ctl</span><span class="params">(<span class="type">int</span> epfd, <span class="type">int</span> op, <span class="type">int</span> fd, <span class="keyword">struct</span> epoll_event *event)</span></span>;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">epoll_wait</span><span class="params">(<span class="type">int</span> epfd, <span class="keyword">struct</span> epoll_event * events, <span class="type">int</span> maxevents, <span class="type">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;sys/epoll.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_create</span><span class="params">(<span class="keyword">int</span> size)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_ctl</span><span class="params">(<span class="keyword">int</span> epfd, <span class="keyword">int</span> op, <span class="keyword">int</span> fd, struct epoll_event *event)</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_wait</span><span class="params">(<span class="keyword">int</span> epfd, struct epoll_event * events, <span class="keyword">int</span> maxevents, <span class="keyword">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure>
 <h4 id="epoll-句柄创建"><a href="#epoll-句柄创建" class="headerlink" title="epoll 句柄创建"></a>epoll 句柄创建</h4><p><code>int epoll_create(int size);</code></p>
 <p>创建一个 epoll 的句柄，<code>size</code> 用来告诉内核需要监听的数目最多有多大，不过现在这个参数已经被废弃，内核会动态维护要监听事件的数目。这个参数不同于 <code>select()</code> 中的第一个参数（给出最大监听的 fd+1 的值）。需要注意的是，当创建好 <code>epoll</code> 句柄后，它会返回一个自身的描述符，因此也会占用一个 <code>fd</code> 值，在 Linux 下如果查看 <code>/proc/pid/fd/</code>，是能够看到这个 fd 的，所以<strong>在使用完 epoll 后，必须调用 close() 关闭，否则可能导致 fd 被耗尽</strong>。</p>
 <h4 id="epoll-事件管理"><a href="#epoll-事件管理" class="headerlink" title="epoll 事件管理"></a>epoll 事件管理</h4><p><code>int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);</code></p>
@@ -349,7 +349,7 @@
 </ul>
 <p>第三个参数是需要监听的 fd，第四个参数是告诉内核需要监听什么事。</p>
 <p><code>struct epoll_event</code> 表示 epoll 的事件，其结构如下：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">epoll_event</span> &#123;</span><br><span class="line">  <span class="type">__uint32_t</span> events;  <span class="comment">/* Epoll events */</span></span><br><span class="line">  <span class="type">epoll_data_t</span> data;  <span class="comment">/* User data variable */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">epoll_event</span> &#123;</span></span><br><span class="line">  <span class="keyword">__uint32_t</span> events;  <span class="comment">/* Epoll events */</span></span><br><span class="line">  <span class="keyword">epoll_data_t</span> data;  <span class="comment">/* User data variable */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>events 可以是以下几个宏的集合：</p>
 <ul>
 <li><code>EPOLLIN</code>：表示对应的文件描述符可以读（包括对端 socket 正常关闭）；</li>
@@ -368,9 +368,9 @@
 <li>ET 模式：当 <code>epoll_wait</code> 检测到描述符事件发生并将此事件通知应用程序，应用程序必须立即处理该事件。如果不处理，下次调用 <code>epoll_wait</code> 时，不会再次响应应用程序并通知此事件。</li>
 </ul>
 <p>ET 模式在很大程度上减少了 epoll 事件被重复触发的次数，因此效率要比 LT 模式高。<strong>epoll 工作在 ET 模式的时候，必须使用非阻塞套接口，以避免由于一个文件句柄的阻塞读/阻塞写操作把处理多个文件描述符的任务饿死</strong>。</p>
-<h3 id="epoll-示例"><a href="#epoll-示例" class="headerlink" title="epoll 示例"></a>epoll 示例</h3><p><a href="https://github.com/murphypei/linux-cpp-sweety/tree/master/socket_epoll">服务器回射程序 echo</a></p>
+<h3 id="epoll-示例"><a href="#epoll-示例" class="headerlink" title="epoll 示例"></a>epoll 示例</h3><p><a href="https://github.com/murphypei/linux-cpp-sweety/tree/master/socket_epoll" target="_blank" rel="noopener">服务器回射程序 echo</a></p>
 <h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><ul>
-<li><a href="https://www.cnblogs.com/Anker/p/3263780.html">https://www.cnblogs.com/Anker/p/3263780.html</a></li>
+<li><a href="https://www.cnblogs.com/Anker/p/3263780.html" target="_blank" rel="noopener">https://www.cnblogs.com/Anker/p/3263780.html</a></li>
 </ul>
 
     </div>
@@ -385,7 +385,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2019/05/epoll.html" title="IO 多路复用之 epoll 总结">https://murphypei.github.io/blog/2019/05/epoll.html</a>
@@ -492,8 +492,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1521,17 +1521,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

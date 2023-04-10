@@ -242,7 +242,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/01/batch-normalization.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -337,10 +337,10 @@
 
       
         <p>Batch Normalization，简称 BN，来源于《Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift》这篇论文。BN 对于深度学习领域是突破性的成果，直接改善了网络设计和训练的很多缺点，我认为有必要深入学习。我觉得可以从由浅入深好好说一说 BN 的由来的。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h3 id="Feature-Scaling"><a href="#Feature-Scaling" class="headerlink" title="Feature Scaling"></a>Feature Scaling</h3><p>特征缩放（feature scaling）是机器学习中非常重要的一个预处理。因为数据来源于自然界和人类社会，数据的数值必然有大有小，范围分布都不一致，虽然可以通过机器学习到不同大小的权重和偏差来纠正数据，最终拟合，但是学习的周期变长，甚至因此走入过拟合等不归路，因此将数据规范化是非常重要的一个处理步骤。特征缩放就是为了将数据规范化。一般来说都是将其做均值为 0，方差为 1 的标准化处理，这样能加速模型的收敛。</p>
 <p>这是一个具有两个特征的算法学习示意图。</p>
-<p><img src="/images/posts/dl/batch_normalization/feature_scaling.jpg" alt=""></p>
+<p><img src="/images/posts/dl/batch_normalization/feature_scaling.jpg" alt></p>
 <p>上图很好的反应了特征缩放的好处。左边是原始数据，学习的时候 loss 是范围极广，不同特征分布不均匀，我们必须使用很小的学习率小心的更新参数（因为一个特征的数据非常敏感，数值比较大，对结果影响大，所以在不同方向上梯度不一样）。反之，右边经过特征缩放，数值已经标准化了，所有方向上梯度都一样，因此很快就完成了学习，迅速收敛。</p>
 <h3 id="Internal-Covariate-Shift"><a href="#Internal-Covariate-Shift" class="headerlink" title="Internal Covariate Shift"></a>Internal Covariate Shift</h3><p>在深度学习中，由于问题的复杂性，我们往往会使用较深层数的网络进行训练。在这个过程中，我们需要去尝试不同的学习率、初始化参数方法（例如 Xavier 初始化）等方式来帮助我们的模型加速收敛。深度神经网络之所以如此难训练，其中一个重要原因就是网络中层与层之间存在高度的关联性与耦合性。</p>
 <p>网络中层与层之间的关联性会导致如下的状况：随着训练的进行，网络中的参数也随着梯度下降在不停更新。一方面，当底层网络中参数发生微弱变化时，由于每一层中的线性变换与非线性激活映射，这些微弱变化随着网络层数的加深而被放大（类似蝴蝶效应）；另一方面，参数的变化导致每一层的输入分布会发生改变，进而上层的网络需要不停地去适应这些分布变化，使得我们的模型训练变得困难。上述这一现象叫做 Internal Covariate Shift。</p>
@@ -362,7 +362,7 @@
 <h4 id="如何缓解-Internal-Covariate-Shift"><a href="#如何缓解-Internal-Covariate-Shift" class="headerlink" title="如何缓解 Internal Covariate Shift"></a>如何缓解 Internal Covariate Shift</h4><p>Internal Covariate Shift 产生的原因是每一层输入数据不断的变化，那么缓解的方法自然就是限制每一层输入数据的分布，让其不再剧烈变化甚至同分布。这自然就想到了数据规范化。数据归一化的方式有很多，比如 PCA 白化等等。但是由于计算成本以及保留原始数据的信息表达能力（这个也很重要）等原因，作者使用 batch normalization 这种方式。</p>
 <h3 id="Batch-Normalization"><a href="#Batch-Normalization" class="headerlink" title="Batch Normalization"></a>Batch Normalization</h3><p>思路很简单，就是对深度神经网络中每个层逐通道的做 normalization。比如输入的 blob 是 (N,C,H,W)，每个 normalization 参与的数据数量就是 N*H*W。</p>
 <p>Batch Normalization 的算法思路如下：</p>
-<p><img src="/images/posts/dl/batch_normalization/bn.jpg" alt=""></p>
+<p><img src="/images/posts/dl/batch_normalization/bn.jpg" alt></p>
 <p>规范化计算很简单：</p>
 <ol>
 <li>计算参与规范化的数据的均值</li>
@@ -401,7 +401,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2018/01/batch-normalization.html" title="Batch Normalization">https://murphypei.github.io/blog/2018/01/batch-normalization.html</a>
@@ -506,8 +506,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1535,17 +1535,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

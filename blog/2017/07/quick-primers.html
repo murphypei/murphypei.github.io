@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/07/quick-primers.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -310,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>820</span>
+              <span>780</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -334,11 +334,11 @@
 
       
         <p>快速求素数序列方法</p>
-<span id="more"></span>
+<a id="more"></a>
 <p><strong>定理：如果n不是素数，则n有一个素数因子d，并且满足： 1 &lt; d &lt;= sqrt(n)</strong></p>
 <p>证明：如果n不是素数, 则由定义，n有一个因子d满足： 1 &lt; d &lt; n，如果d大于sqrt(n), 则n/d是满足1&lt;n/d&lt;=sqrt(n)的一个因子，根据因式分解，如果d不是素数，则d可以分解，最终得到一个n的素数因子</p>
 <p>这样的话就可以直接定义一个素数序列来判断了，而不用逐一或者逐二（跳过偶数）来寻找因子</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;cstdio&quot;</span>  </span></span><br><span class="line">  </span><br><span class="line"><span class="meta">#<span class="keyword">define</span> N 50  </span></span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="type">int</span> primes[N];  </span><br><span class="line">    <span class="type">int</span> pc, m, k;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">//clrscr();  </span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;\n The first %d prime number are: \n&quot;</span>, N);  </span><br><span class="line">    <span class="comment">// 构造素数序列  </span></span><br><span class="line">    primes[<span class="number">0</span>] = <span class="number">2</span>;  </span><br><span class="line">    <span class="comment">// 计数器  </span></span><br><span class="line">    pc = <span class="number">1</span>;  </span><br><span class="line">    <span class="comment">// 从3开始寻找  </span></span><br><span class="line">    m = <span class="number">3</span>;  </span><br><span class="line">    <span class="keyword">while</span>(pc &lt; N)  </span><br><span class="line">    &#123;  </span><br><span class="line">        k = <span class="number">0</span>;  </span><br><span class="line">        <span class="comment">// m若不为素数，必有一个素数因子小于m，则这个因子一定在primes数组序列中  </span></span><br><span class="line">        <span class="keyword">while</span>(primes[k] * primes[k] &lt;= m)  </span><br><span class="line">        &#123;  </span><br><span class="line">            <span class="comment">// 找到一个素数，则m加2，跳过偶数  </span></span><br><span class="line">            <span class="keyword">if</span>(m % primes[k] == <span class="number">0</span>)  </span><br><span class="line">            &#123;  </span><br><span class="line">                m += <span class="number">2</span>;  </span><br><span class="line">                k = <span class="number">1</span>;  </span><br><span class="line">            &#125;  </span><br><span class="line">            <span class="keyword">else</span>  </span><br><span class="line">                k++;  </span><br><span class="line">        &#125;  </span><br><span class="line">        <span class="comment">// 找不到素数因子，则说明m是素数，添加入素数序列，然后m加2，继续寻找  </span></span><br><span class="line">        primes[pc++] = m;  </span><br><span class="line">        m += <span class="number">2</span>;  </span><br><span class="line">    &#125;  </span><br><span class="line">      </span><br><span class="line">    <span class="keyword">for</span>(k = <span class="number">0</span>; k &lt; pc; k++)  </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%4d&quot;</span>, primes[k]);  </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;\n\n Press any key to quit...\n &quot;</span>);  </span><br><span class="line">    <span class="built_in">getchar</span>();  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">"cstdio"</span>  </span></span><br><span class="line">  </span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> N 50  </span></span><br><span class="line">  </span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span>  </span></span><br><span class="line"><span class="function"></span>&#123;  </span><br><span class="line">    <span class="keyword">int</span> primes[N];  </span><br><span class="line">    <span class="keyword">int</span> pc, m, k;  </span><br><span class="line">  </span><br><span class="line">    <span class="comment">//clrscr();  </span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\n The first %d prime number are: \n"</span>, N);  </span><br><span class="line">    <span class="comment">// 构造素数序列  </span></span><br><span class="line">    primes[<span class="number">0</span>] = <span class="number">2</span>;  </span><br><span class="line">    <span class="comment">// 计数器  </span></span><br><span class="line">    pc = <span class="number">1</span>;  </span><br><span class="line">    <span class="comment">// 从3开始寻找  </span></span><br><span class="line">    m = <span class="number">3</span>;  </span><br><span class="line">    <span class="keyword">while</span>(pc &lt; N)  </span><br><span class="line">    &#123;  </span><br><span class="line">        k = <span class="number">0</span>;  </span><br><span class="line">        <span class="comment">// m若不为素数，必有一个素数因子小于m，则这个因子一定在primes数组序列中  </span></span><br><span class="line">        <span class="keyword">while</span>(primes[k] * primes[k] &lt;= m)  </span><br><span class="line">        &#123;  </span><br><span class="line">            <span class="comment">// 找到一个素数，则m加2，跳过偶数  </span></span><br><span class="line">            <span class="keyword">if</span>(m % primes[k] == <span class="number">0</span>)  </span><br><span class="line">            &#123;  </span><br><span class="line">                m += <span class="number">2</span>;  </span><br><span class="line">                k = <span class="number">1</span>;  </span><br><span class="line">            &#125;  </span><br><span class="line">            <span class="keyword">else</span>  </span><br><span class="line">                k++;  </span><br><span class="line">        &#125;  </span><br><span class="line">        <span class="comment">// 找不到素数因子，则说明m是素数，添加入素数序列，然后m加2，继续寻找  </span></span><br><span class="line">        primes[pc++] = m;  </span><br><span class="line">        m += <span class="number">2</span>;  </span><br><span class="line">    &#125;  </span><br><span class="line">      </span><br><span class="line">    <span class="keyword">for</span>(k = <span class="number">0</span>; k &lt; pc; k++)  </span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">"%4d"</span>, primes[k]);  </span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\n\n Press any key to quit...\n "</span>);  </span><br><span class="line">    getchar();  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -351,7 +351,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2017/07/quick-primers.html" title="快速求素数序列方法">https://murphypei.github.io/blog/2017/07/quick-primers.html</a>
@@ -454,8 +454,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1483,17 +1483,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

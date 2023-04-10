@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/08/tcp-ack-send-recv.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,7 +334,7 @@
 
       
         <p>本文整理了关于TCP数据传输过程中的消息确认、滑动窗口、发送和接收数据的缓冲区等知识。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="TCP的ACK"><a href="#TCP的ACK" class="headerlink" title="TCP的ACK"></a>TCP的ACK</h2><p>TCP数据包中的序列号（Sequence Number）不是以报文段来进行编号的，而是将连接生存周期内传输的所有数据当作一个字节流，序列号就是整个字节 流中每个字节的编号。一个TCP数据包中包含多个字节流的数据（即数据段），而且每个TCP数据包中的数据大小不一定相同。在建立TCP连接的三次握手 过程中，通信双方各自已确定了初始的序号x和y，TCP每次传送的报文段中的序号字段值表示所要传送本报文中的第一个字节的序号。</p>
 <p>TCP的报文到达确认（ACK），是对接收到的数据的最高序列号的确认，并向发送端返回一个下次接收时期望的TCP数据包的序列号（Ack Number）。例如， 主机A发送的当前数据序号是400，数据长度是100，则接收端收到后会返回一个确认号是501的确认号给主机A。</p>
 <p>TCP提供的确认机制，可以在通信过程中可以不对每一个TCP数据包发出单独的确认包（Delayed ACK机制），而是在传送数据时，顺便把确认信息传出， 这样可以大大提高网络的利用率和传输效率。同时，TCP的确认机制，也可以一次确认多个数据报，例如，接收方收到了201，301，401的数据报，则只 需要对401的数据包进行确认即可，对401的数据包的确认也意味着401之前的所有数据包都已经确认，这样也可以提高系统的效率。</p>
@@ -371,7 +371,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2017/08/tcp-ack-send-recv.html" title="TCP发送、接收和确认机制">https://murphypei.github.io/blog/2017/08/tcp-ack-send-recv.html</a>
@@ -478,8 +478,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1507,17 +1507,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

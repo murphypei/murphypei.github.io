@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/09/cblas-gemm-gemv.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,7 +334,7 @@
 
       
         <p>GEMM 是矩阵乘法最成熟的优化计算方式，也有很多现成的优化好的库可以调用。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="OpenBLAS-矩阵计算"><a href="#OpenBLAS-矩阵计算" class="headerlink" title="OpenBLAS 矩阵计算"></a>OpenBLAS 矩阵计算</h2><p>OpenBLAS 库实现成熟优化的矩阵与矩阵乘法的函数 <code>cblas_sgemm</code> 和矩阵与向量乘法函数 <code>cblas_sgemv</code>，二者使用方法基本相同，参数较多，所以对参数的使用做个记录。</p>
 <h4 id="矩阵与矩阵乘法"><a href="#矩阵与矩阵乘法" class="headerlink" title="矩阵与矩阵乘法"></a>矩阵与矩阵乘法</h4><p><code>cblas_sgemm</code> 计算的矩阵公式：<code>C=alpha*A*B+beta*C</code>，其中 <code>A</code>、<code>B</code>、<code>C</code> 都是矩阵，<code>C</code> 初始中存放的可以是偏置值。</p>
 <p><code>cblas_sgemm</code> 函数定义：</p>
@@ -347,7 +347,7 @@
 <li><code>LDA</code>，<code>LDB</code>，<code>LDC</code>：<strong>矩阵在 <code>trans</code> （如果需要转置）之前</strong>，在主维度方向的维度（如果是行主序，那这个参数就是列数）。</li>
 </ul>
 <p>示例代码：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;cblas.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="type">int</span> i, j;</span><br><span class="line">  <span class="type">float</span> a[<span class="number">6</span>]=&#123;<span class="number">1</span>,<span class="number">3</span>,<span class="number">5</span>,<span class="number">2</span>,<span class="number">7</span>,<span class="number">8</span>&#125;;</span><br><span class="line">  <span class="type">float</span> b[<span class="number">6</span>]=&#123;<span class="number">5</span>,<span class="number">3</span>,<span class="number">7</span>,<span class="number">2</span>,<span class="number">4</span>,<span class="number">2</span>&#125;;</span><br><span class="line">  <span class="type">float</span> c[<span class="number">6</span>]=&#123;<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>&#125;;</span><br><span class="line">  <span class="built_in">cblas_sgemm</span>(CblasRowMajor, CblasTrans, CblasTrans, <span class="number">3</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">1.0</span>, a, <span class="number">3</span>, b, <span class="number">2</span>, <span class="number">0.0</span>, c, <span class="number">3</span>);</span><br><span class="line">  <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; <span class="number">3</span>; ++i)&#123;</span><br><span class="line">    <span class="keyword">for</span>(j = <span class="number">0</span>; j &lt; <span class="number">3</span>; ++j)&#123;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">&quot;%f &quot;</span>, c[i*<span class="number">3</span>+j]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cblas.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">int</span> i, j;</span><br><span class="line">  <span class="keyword">float</span> a[<span class="number">6</span>]=&#123;<span class="number">1</span>,<span class="number">3</span>,<span class="number">5</span>,<span class="number">2</span>,<span class="number">7</span>,<span class="number">8</span>&#125;;</span><br><span class="line">  <span class="keyword">float</span> b[<span class="number">6</span>]=&#123;<span class="number">5</span>,<span class="number">3</span>,<span class="number">7</span>,<span class="number">2</span>,<span class="number">4</span>,<span class="number">2</span>&#125;;</span><br><span class="line">  <span class="keyword">float</span> c[<span class="number">6</span>]=&#123;<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>&#125;;</span><br><span class="line">  cblas_sgemm(CblasRowMajor, CblasTrans, CblasTrans, <span class="number">3</span>, <span class="number">3</span>, <span class="number">2</span>, <span class="number">1.0</span>, a, <span class="number">3</span>, b, <span class="number">2</span>, <span class="number">0.0</span>, c, <span class="number">3</span>);</span><br><span class="line">  <span class="keyword">for</span>(i = <span class="number">0</span>; i &lt; <span class="number">3</span>; ++i)&#123;</span><br><span class="line">    <span class="keyword">for</span>(j = <span class="number">0</span>; j &lt; <span class="number">3</span>; ++j)&#123;</span><br><span class="line">      <span class="built_in">printf</span>(<span class="string">"%f "</span>, c[i*<span class="number">3</span>+j]);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">"\n"</span>);</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <h4 id="矩阵与向量乘法"><a href="#矩阵与向量乘法" class="headerlink" title="矩阵与向量乘法"></a>矩阵与向量乘法</h4><p>矩阵与向量乘法本质也是矩阵与矩阵，只不过 <code>gemv</code> 比 <code>gemm</code> 要快一些，所以有时候也需要用 <code>gemv</code>。计算式：<code>C=alpha*A*b+beta*C</code></p>
 <p><code>cblas_sgemv</code> 函数定义：</p>
 <p><code>cblas_sgemv(layout, trans, M, N, alpha, A, LDA, b, 1, beta, C, 1)</code></p>
@@ -365,7 +365,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2019/09/cblas-gemm-gemv.html" title="OpenBLAS 中矩阵运算函数学习">https://murphypei.github.io/blog/2019/09/cblas-gemm-gemv.html</a>
@@ -472,8 +472,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1501,17 +1501,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

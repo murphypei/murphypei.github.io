@@ -59,7 +59,7 @@
 </script>
 
   <meta name="description" content="Linux下的多种IPC都需要使用类似xxget函数，通过一个key_t类型的值获取IPC对象id，这个key参数的传入有两种方式，一个是通过ftok调用生成，一个是IPC_PRIVATE，二者在使用上有一些区别。">
-<meta name="keywords" content="C++,Linux,IPC,网络编程,ftok,IPC_PRIVATE">
+<meta name="keywords" content="Linux,C++,IPC,网络编程,ftok,IPC_PRIVATE">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux IPC之IPC_PRIVATE和ftok的比较">
 <meta property="og:url" content="https://murphypei.github.io/blog/2018/05/ftok.html">
@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/05/ftok.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,9 +334,9 @@
 
       
         <p>Linux下的多种IPC都需要使用类似xxget函数，通过一个key_t类型的值获取IPC对象id，这个key参数的传入有两种方式，一个是通过ftok调用生成，一个是IPC_PRIVATE，二者在使用上有一些区别。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h3 id="ftok函数"><a href="#ftok函数" class="headerlink" title="ftok函数"></a>ftok函数</h3><p>ftok函数能够通过一个路径和子序号产生一个键值，函数调用如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt; sys/types.h&gt;</span><br><span class="line">#include &lt; sys/ipc.h&gt;</span><br><span class="line">key_t ftok(const char *pathname, int proj_id);</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">#include &lt; sys/types.h&gt;</span><br><span class="line">#include &lt; sys/ipc.h&gt;</span><br><span class="line">key_t ftok(const char *pathname, int proj_id);</span><br></pre></td></tr></table></figure>
 <p>其中：</p>
 <ul>
 <li><p>第一个参数pathname，是一个存在的文件或目录名，必须能够访问；</p>
@@ -346,7 +346,7 @@
 </ul>
 <p>在一般的UNIX实现中，是将文件的索引节点号取出，前面加上子序号得到key_t的返回值。如指定文件的索引节点号为65538，换算成16进制为 0x010002，而你指定的ID值为38，换算成16进制为0x26，则最后的key_t返回值为0x26010002。</p>
 <p>通过key值，IPC方法可以获取IPC对象的id，例如：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">int shmget( key_t key, size_t size, int flag);   // 共享内存</span><br><span class="line"></span><br><span class="line">int semget(key_t key, int nsems, int flag);  // 信号量</span><br><span class="line"></span><br><span class="line">int msgget(key_t key, int flag);    // 消息队列</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">int shmget( key_t key, size_t size, int flag);   // 共享内存</span><br><span class="line"></span><br><span class="line">int semget(key_t key, int nsems, int flag);  // 信号量</span><br><span class="line"></span><br><span class="line">int msgget(key_t key, int flag);    // 消息队列</span><br></pre></td></tr></table></figure>
 <p><strong>ftok使用有两个点需要注意：</strong></p>
 <ul>
 <li><p>使用 ftok创建共享内存，毫无关系的进程，可以通过得到同样的key，来操作同一个共享内存，对共享内存进行读写时，需要利用信号量进行同步或互斥。</p>
@@ -355,60 +355,8 @@
 </li>
 </ul>
 <h3 id="IPC-PRIVATE"><a href="#IPC-PRIVATE" class="headerlink" title="IPC_PRIVATE"></a>IPC_PRIVATE</h3><p>使用IPC_PRIVATE可以直接用于xxget函数中生成IPC对象的id，而不用ftok先生成key。其实IPC_PRIVATE表示的key为0，所以这个key和IPC对象的编号就没有了对应关系。这样毫无关系的进程，<strong>就不能通过key值来得到IPC对象的编号（因为这种方式创建的IPC对象的key值都是0）</strong>。因此，这种方式产生的IPC对象，和无名管道类似，不能用于毫无关系的进程间通信。但也不是一点用处都没有，仍然可以用于有亲缘关系的进程间通信，最常见的是父子进程。</p>
-<pre><code>#include &lt; stdio.h&gt;
-#include &lt; stdlib.h&gt;
-#include &lt; errno.h&gt;
-#include &lt; sys/ipc.h&gt;
-#include &lt; sys/types.h&gt;
-#include &lt; sys/shm.h&gt;
-#include &lt; string.h&gt;
-#define MAXSIZE 1024
-int main() &#123;
-    int shmid;
-    char *p = NULL;
-    pid_t pid;
-
-    if ((shmid = shmget(IPC_PRIVATE, MAXSIZE, 0666)) == -1) &#123;
-            perror(&quot;shmget&quot;);
-            exit(-1);
-    &#125;
-    if ((pid = fork()) == -1)  &#123;
-            perror(&quot;fork&quot;);
-            exit(-1);
-    &#125;
-    if (pid == 0)  &#123;
-        // 子进程
-        if ((p = shmat(shmid, NULL, 0)) == (void *)-1) &#123;
-            perror(&quot;shmat&quot;);
-            exit(-1);
-        &#125;
-        // 写入字符串
-        strcpy(p, &quot;hello\n&quot;);
-        system(&quot;ipcs -m&quot;);
-        if (shmdt(p) == -1) &#123;
-            perror(&quot;shmdt&quot;);
-            exit(-1);
-        &#125;
-        system(&quot;ipcs -m&quot;);
-    &#125;
-    else &#123;
-        // 父进程
-        getchar();
-        if ((p = shmat(shmid, NULL, 0)) == (void *)-1) &#123;
-            perror(&quot;shmat&quot;);
-            exit(-1);
-        &#125;
-        // 读取字符串
-        printf(&quot;%s\n&quot;, (char *)p);
-        if (shmctl(shmid, IPC_RMID, NULL) == -1) &#123;
-            perror(&quot;RM&quot;);
-            exit(-1);
-        &#125;
-    &#125;
-    return 0;
-&#125;
-`
-</code></pre><p>该程序中，父进程使用IPC_PRIVATE方式创建了共享内存，然后fork产生了子进程，由于子进程是复制父进程的方式产生的，因此，子进程也可以操作共享内存。子进程往共享内存里写了内容后，父进程可以读到。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">#include &lt; stdio.h&gt;</span><br><span class="line">#include &lt; stdlib.h&gt;</span><br><span class="line">#include &lt; errno.h&gt;</span><br><span class="line">#include &lt; sys/ipc.h&gt;</span><br><span class="line">#include &lt; sys/types.h&gt;</span><br><span class="line">#include &lt; sys/shm.h&gt;</span><br><span class="line">#include &lt; string.h&gt;</span><br><span class="line">#define MAXSIZE 1024</span><br><span class="line">int main() &#123;</span><br><span class="line">    int shmid;</span><br><span class="line">    char *p = NULL;</span><br><span class="line">    pid_t pid;</span><br><span class="line"></span><br><span class="line">    if ((shmid = shmget(IPC_PRIVATE, MAXSIZE, 0666)) == -1) &#123;</span><br><span class="line">            perror(&quot;shmget&quot;);</span><br><span class="line">            exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    if ((pid = fork()) == -1)  &#123;</span><br><span class="line">            perror(&quot;fork&quot;);</span><br><span class="line">            exit(-1);</span><br><span class="line">    &#125;</span><br><span class="line">    if (pid == 0)  &#123;</span><br><span class="line">        // 子进程</span><br><span class="line">        if ((p = shmat(shmid, NULL, 0)) == (void *)-1) &#123;</span><br><span class="line">            perror(&quot;shmat&quot;);</span><br><span class="line">            exit(-1);</span><br><span class="line">        &#125;</span><br><span class="line">        // 写入字符串</span><br><span class="line">        strcpy(p, &quot;hello\n&quot;);</span><br><span class="line">        system(&quot;ipcs -m&quot;);</span><br><span class="line">        if (shmdt(p) == -1) &#123;</span><br><span class="line">            perror(&quot;shmdt&quot;);</span><br><span class="line">            exit(-1);</span><br><span class="line">        &#125;</span><br><span class="line">        system(&quot;ipcs -m&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        // 父进程</span><br><span class="line">        getchar();</span><br><span class="line">        if ((p = shmat(shmid, NULL, 0)) == (void *)-1) &#123;</span><br><span class="line">            perror(&quot;shmat&quot;);</span><br><span class="line">            exit(-1);</span><br><span class="line">        &#125;</span><br><span class="line">        // 读取字符串</span><br><span class="line">        printf(&quot;%s\n&quot;, (char *)p);</span><br><span class="line">        if (shmctl(shmid, IPC_RMID, NULL) == -1) &#123;</span><br><span class="line">            perror(&quot;RM&quot;);</span><br><span class="line">            exit(-1);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line">`</span><br></pre></td></tr></table></figure>
+<p>该程序中，父进程使用IPC_PRIVATE方式创建了共享内存，然后fork产生了子进程，由于子进程是复制父进程的方式产生的，因此，子进程也可以操作共享内存。子进程往共享内存里写了内容后，父进程可以读到。</p>
 <p>需要注意的是，<code>int shmID=shmget(IPC_PRIVATE,len,IPC_CREAT|0600);</code> 需要在父子进程都可见的地方调用（即在创建子进程之前），这样父子进程中都有IPC对象，然后对IPC对象进行操作，否则不能实现内存的共享。</p>
 
     </div>
@@ -423,7 +371,7 @@ int main() &#123;
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2018/05/ftok.html" title="Linux IPC之IPC_PRIVATE和ftok的比较">https://murphypei.github.io/blog/2018/05/ftok.html</a>
@@ -441,9 +389,9 @@ int main() &#123;
           
           <div class="post-tags">
             
-              <a href="/tags/C/" rel="tag"># C++</a>
-            
               <a href="/tags/Linux/" rel="tag"># Linux</a>
+            
+              <a href="/tags/C/" rel="tag"># C++</a>
             
               <a href="/tags/IPC/" rel="tag"># IPC</a>
             
@@ -534,8 +482,8 @@ int main() &#123;
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1563,17 +1511,17 @@ int main() &#123;
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

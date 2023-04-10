@@ -59,7 +59,7 @@
 </script>
 
   <meta name="description" content="总结协程、线程和进程的概念">
-<meta name="keywords" content="Linux,进程,操作系统,线程">
+<meta name="keywords" content="Linux,线程,进程,操作系统">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Linux 中进程和线程">
 <meta property="og:url" content="https://murphypei.github.io/blog/2017/02/linux-process-thread.html">
@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/02/linux-process-thread.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,7 +334,7 @@
 
       
         <p>总结协程、线程和进程的概念</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>首先说说通用的进程、线程概念，顺便介绍一下协程</p>
 <h2 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h2><h3 id="进程"><a href="#进程" class="headerlink" title="进程"></a>进程</h3><p>进程之间不共享任何状态，进程的调度由操作系统完成，每个进程都有自己的独立的内存空间，进程间的通讯主要是通过信号传递的方式来实现的，实现的方式有多种，信号量，管道，事件等，<strong>任何一种方式的 IPC 通讯都需要通过内核，导致通讯效率比较低</strong>。由于是独立的内存空间，上下文切换的时候需要保存先调用栈的信息，CPU 各寄存器的信息，虚拟内存，以及打开的相关句柄等信息，<strong>所以导致上下文进程间切换开销很大</strong>，通讯麻烦。</p>
 <h3 id="线程"><a href="#线程" class="headerlink" title="线程"></a>线程</h3><p>线程之间共享变量，解决了通讯麻烦的问题，但<strong>对变量的访问需要锁</strong>，线程的调度主要也是有操作系统完成，一个进程可以拥有多个线程，但是其中<strong>每个线程会共享父进程向操作系统申请资源，这个包括虚拟内存，打开的文件句柄等</strong>，由于是共享资源，所以创建线程所需要的系统资源占用比进程小很多，相应的可创建的线程数量也变得相对多很多。线程时间的通讯除了可以使用进程之间通讯的方式之外还可以通过共享内存的方式进行通信，所以这个速度比通过内核要快很多。另外在调度方面也是由于内存是共享的，所以上下文切换的时候需要保存的东西就相对少一些，这样一来上下文切换也变得高效。<strong>线程只拥有自己独立的线程 ID、栈空间、寄存器、程序计数器，其余在一个进程内的线程都是共享的</strong></p>
@@ -369,7 +369,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2017/02/linux-process-thread.html" title="Linux 中进程和线程">https://murphypei.github.io/blog/2017/02/linux-process-thread.html</a>
@@ -389,11 +389,11 @@
             
               <a href="/tags/Linux/" rel="tag"># Linux</a>
             
+              <a href="/tags/线程/" rel="tag"># 线程</a>
+            
               <a href="/tags/进程/" rel="tag"># 进程</a>
             
               <a href="/tags/操作系统/" rel="tag"># 操作系统</a>
-            
-              <a href="/tags/线程/" rel="tag"># 线程</a>
             
           </div>
         
@@ -476,8 +476,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1505,17 +1505,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2020/01/assert-debug-release.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,15 +334,15 @@
 
       
         <p>在一次代码调试过程中，发现 Debug 和 Release 的结果不一致，由此引发的问题追溯…</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>因为 Debug 和 Release 不同，程序并没有报错，所以很容易想到是不是编译器做了什么操作导致编译的代码产生区别。</p>
 <p>说实话，这次调试的过程是非常痛苦的，完全找不到头绪，最后通过一步步代码回退发现是 assert 的调用导致了问题。大概原理如下：</p>
 <p>假设在一个循环中重复调用函数 <code>do_something</code>。这个函数在成功的情况下返回 0，失败则返回非 0 值。但是你完全不期望它在程序中<br>出现失败的情况。你可能会想这样写：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">100</span>; ++i)</span><br><span class="line">  <span class="built_in">assert</span> (<span class="built_in">do_something</span> () == <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">100</span>; ++i)</span><br><span class="line">  assert (do_something () == <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
 <p>不过，你可能发现这个运行时检查引入了不可承受的性能损失，并因此决定稍候指定 NDEBUG 以禁用运行时检测（Release 编译就等同于此）。这样做的结果是整个对 assert 的调用会被完全删除，也就是说，assert 宏的条件表达式将永远不会被执行，<code>do_something</code> 一次也不会被调用。因此，<strong>这样写才是正确的</strong>：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">100</span>; ++i) &#123;</span><br><span class="line">  <span class="type">int</span> status = <span class="built_in">do_something</span> ();</span><br><span class="line">  <span class="built_in">assert</span> (status == <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (i = <span class="number">0</span>; i &lt; <span class="number">100</span>; ++i) &#123;</span><br><span class="line">  <span class="keyword">int</span> status = do_something ();</span><br><span class="line">  assert (status == <span class="number">0</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>进一步查询发现，在 <code>&lt;cassert&gt;</code> 头文件中，assert 的定义为：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">ifdef</span> NDEBUG</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> assert(condition) ((void)0)</span></span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> assert(condition) <span class="comment">/*implementation defined*/</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> NDEBUG</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> assert(condition) ((void)0)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> assert(condition) <span class="comment">/*implementation defined*/</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
 <p>也就是说 <code>assert</code> 语句在 Release 模式下是失效的…虽然程序继续运行了，但是结果不对。</p>
 <p>这个问题弄了好久，但是说到底还是学艺不精，吃一堑长一智吧，记住 assert 的调用正确的写法，不过也可以牺牲部分性能定义一个检查的宏来代替 assert 的检查。</p>
 
@@ -358,7 +358,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2020/01/assert-debug-release.html" title="Assert 在 Debug 和 Release 引起的问题">https://murphypei.github.io/blog/2020/01/assert-debug-release.html</a>
@@ -465,8 +465,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1494,17 +1494,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

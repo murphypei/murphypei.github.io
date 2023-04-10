@@ -59,7 +59,7 @@
 </script>
 
   <meta name="description" content="关于CMake中引号用法的小结">
-<meta name="keywords" content="C++,编译,链接,CMake,引号">
+<meta name="keywords" content="C++,CMake,编译,链接,引号">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CMake中引号用法总结">
 <meta property="og:url" content="https://murphypei.github.io/blog/2018/10/cmake-quotes.html">
@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/10/cmake-quotes.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -310,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>1k</span>
+              <span>998</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -334,20 +334,20 @@
 
       
         <p>关于CMake中引号用法的小结</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="CMake中引号的用法"><a href="#CMake中引号的用法" class="headerlink" title="CMake中引号的用法"></a>CMake中引号的用法</h2><p>在CMake中定义和使用变量时，可以使用引号也可以不使用引号，并且它们会产生不同的结果。</p>
 <h3 id="定义变量时使用引号"><a href="#定义变量时使用引号" class="headerlink" title="定义变量时使用引号"></a>定义变量时使用引号</h3><p>例1：</p>
 <figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(TITLE learn cmake quotes!)</span><br><span class="line"><span class="keyword">message</span>(<span class="variable">$&#123;TITLE&#125;</span>)</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">learncmakequotes!</span><br></pre></td></tr></table></figure>
 <p>可以看到字符串中间的空格没了，实际上，当我们不用引号定义变量的时候，相当于我们定义了一个包含多个成员的字符串数组，对于例1是：learn, cmake和quotes!。于是，当我们使用message输出的时候，其实是挨着输出了这5个元素，结果就是learncmakequotes!了。我们也可以用foreach验证下这个结果：</p>
 <figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">foreach</span>(e <span class="variable">$&#123;TITLE&#125;</span>)</span><br><span class="line">    <span class="keyword">message</span>(<span class="variable">$&#123;e&#125;</span>)</span><br><span class="line"><span class="keyword">endforeach</span>()</span><br></pre></td></tr></table></figure>
-<h3 id="使用变量时使用引号"><a href="#使用变量时使用引号" class="headerlink" title="使用变量时使用引号"></a>使用变量时使用引号</h3><p>对于例1中<code>$&#123;TITLE&#125;</code>变量，如果使用引号，也会有不同的结果</p>
+<h3 id="使用变量时使用引号"><a href="#使用变量时使用引号" class="headerlink" title="使用变量时使用引号"></a>使用变量时使用引号</h3><p>对于例1中<code>${TITLE}</code>变量，如果使用引号，也会有不同的结果</p>
 <p>例2：</p>
-<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">message</span>(<span class="string">&quot;$&#123;TITLE&quot;</span>)</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">learn;cmake;quotes!</span><br></pre></td></tr></table></figure>
-<p>因为此时${TITLE}还是一个数组，我们用<code>&quot;$&#123;TITLE&#125;&quot;</code>这种形式的时候，表示要让CMake把这个数组的所有值当成一个整体，而不是分散的个体。于是，为了保持数组的含义，又提供一个整体的表达方式，CMake就会用;把这数组的多个值连接起来。无论是在CMake还是Shell里，用分号分割的字符串，形式上是一个字符串，但把它当成命令执行，就会被解析成多个用分号分割的部分。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">message</span>(<span class="string">"$&#123;TITLE"</span>)</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">learn;cmake;quotes!</span><br></pre></td></tr></table></figure>
+<p>因为此时${TITLE}还是一个数组，我们用<code>&quot;${TITLE}&quot;</code>这种形式的时候，表示要让CMake把这个数组的所有值当成一个整体，而不是分散的个体。于是，为了保持数组的含义，又提供一个整体的表达方式，CMake就会用;把这数组的多个值连接起来。无论是在CMake还是Shell里，用分号分割的字符串，形式上是一个字符串，但把它当成命令执行，就会被解析成多个用分号分割的部分。</p>
 <p>对于单一的字符串变量(不包含特殊字符)，用不用引号，结果都是一样的。</p>
 <h3 id="定义变量时使用引号，使用的时候不用"><a href="#定义变量时使用引号，使用的时候不用" class="headerlink" title="定义变量时使用引号，使用的时候不用"></a>定义变量时使用引号，使用的时候不用</h3><p><strong>当使用引号时，这个值就是普通的字符层，不再是数组了。</strong></p>
 <p>例3：</p>
-<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(TITLE <span class="string">&quot;learn cmake quotes!&quot;</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="variable">$&#123;TITLE&#125;</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">&quot;$&#123;TITLE&#125;&quot;</span>)</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">learn cmake quotes!</span><br><span class="line">learn cmake quotes!</span><br></pre></td></tr></table></figure>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(TITLE <span class="string">"learn cmake quotes!"</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="variable">$&#123;TITLE&#125;</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">"$&#123;TITLE&#125;"</span>)</span><br><span class="line"></span><br><span class="line">输出：</span><br><span class="line">learn cmake quotes!</span><br><span class="line">learn cmake quotes!</span><br></pre></td></tr></table></figure>
 <h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ul>
 <li>引号对于CMake中变量的定义，其功能主要是当有空格的时候，区别变量时一个数组还是纯粹的字符串；</li>
 <li>在使用的时候，对于普通字符串，加不加引号没什么区别，而对于数组，加引号会将数组以分号间隔输出，而不加引号则是直接拼接数组。</li>
@@ -365,7 +365,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2018/10/cmake-quotes.html" title="CMake中引号用法总结">https://murphypei.github.io/blog/2018/10/cmake-quotes.html</a>
@@ -385,11 +385,11 @@
             
               <a href="/tags/C/" rel="tag"># C++</a>
             
+              <a href="/tags/CMake/" rel="tag"># CMake</a>
+            
               <a href="/tags/编译/" rel="tag"># 编译</a>
             
               <a href="/tags/链接/" rel="tag"># 链接</a>
-            
-              <a href="/tags/CMake/" rel="tag"># CMake</a>
             
               <a href="/tags/引号/" rel="tag"># 引号</a>
             
@@ -474,8 +474,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1503,17 +1503,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2022/06/go-select-timeout.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -326,7 +326,7 @@
 
       
         <p>golang 中的协程使用非常方便，但是协程什么时候结束是一个控制问题，可以用 select 配合使用。</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>首先声明，golang 使用并不熟悉，本文仅仅是记录使用过程中遇到的一些坑。</p>
 <p>子协程和父协程的通信通常用 context 或者 chan。我遇到一个通常的使用场景，在子协程中尝试多次处理，父协程等待一段时间超时，我选择用 chan 实现。我以为 select 和 C++ 中 switch 类似，所以最开始代码类似如下：</p>
 <figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> &#123;</span><br><span class="line">    <span class="keyword">select</span> &#123;</span><br><span class="line">        <span class="keyword">case</span> &lt;-ctx.Done():</span><br><span class="line">            <span class="comment">// process ctx done</span></span><br><span class="line">        <span class="keyword">case</span> &lt;-time.After(time.Second * <span class="number">3</span>):</span><br><span class="line">            <span class="comment">// process after</span></span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="comment">// process code</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -337,7 +337,7 @@
 <li>上面说的阻塞是没有 default 的情况下，如果有 default，则执行 default，然后退出 select，也就是不会阻塞当前协程。</li>
 </ul>
 <p>回到上述代码，我这个 select 会一直不断的执行 default，<code>time.After</code> 生成的 chan 并不会被阻塞判断，所以根本无法完成我想要的效果。理解了之后重新修改代码：</p>
-<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">done := <span class="built_in">make</span>(char <span class="type">int</span>)</span><br><span class="line"><span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(c <span class="keyword">chan</span> <span class="type">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        <span class="comment">// process code</span></span><br><span class="line">        <span class="keyword">if</span> &#123;</span><br><span class="line">            c &lt;- <span class="number">1</span></span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    c &lt;- <span class="number">0</span></span><br><span class="line">&#125;(done)</span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> &lt;-ctx.Done():</span><br><span class="line">        <span class="comment">// process ctx done</span></span><br><span class="line">    <span class="keyword">case</span> &lt;-time.After(time.Second * <span class="number">3</span>):</span><br><span class="line">        <span class="comment">// process after</span></span><br><span class="line">    <span class="keyword">case</span> &lt;-done:</span><br><span class="line">        <span class="comment">// process code</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight golang"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">done := <span class="built_in">make</span>(char <span class="keyword">int</span>)</span><br><span class="line"><span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">(c <span class="keyword">chan</span> <span class="keyword">int</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">for</span> &#123;</span><br><span class="line">        <span class="comment">// process code</span></span><br><span class="line">        <span class="keyword">if</span> &#123;</span><br><span class="line">            c &lt;- <span class="number">1</span></span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    c &lt;- <span class="number">0</span></span><br><span class="line">&#125;(done)</span><br><span class="line"></span><br><span class="line"><span class="keyword">select</span> &#123;</span><br><span class="line">    <span class="keyword">case</span> &lt;-ctx.Done():</span><br><span class="line">        <span class="comment">// process ctx done</span></span><br><span class="line">    <span class="keyword">case</span> &lt;-time.After(time.Second * <span class="number">3</span>):</span><br><span class="line">        <span class="comment">// process after</span></span><br><span class="line">    <span class="keyword">case</span> &lt;-done:</span><br><span class="line">        <span class="comment">// process code</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>开一个新的协程去不断尝试，在外的三个 case 有一个满足，则会执行。但是这里有一个问题非常需要注意：<strong>子协程什么时候退出？</strong>。</p>
 <p>因为 gorountine 不能被强制 kill，所以在上述超时的情况下，select 语句执行 <code>case time.After</code> 之后退出，<code>done</code> 这个 chan 已经没有接受方了，因此既没有接受者，又没有缓冲区，结合 chan 的特性，则子协程会一直阻塞无法退出，所以本质上这个实现会导致子协程累积下去，也就是<strong>协程泄露</strong>，可能会使资源耗尽。</p>
 <p>如何避免上述问题呢？一个很简单的想法就是提供缓冲区，<code>done := make(char int, 1)</code>，这样即使没有接收方，子协程也能完成发送，不会被阻塞。</p>
@@ -363,7 +363,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2022/06/go-select-timeout.html" title="golang select 机制和超时">https://murphypei.github.io/blog/2022/06/go-select-timeout.html</a>
@@ -472,8 +472,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1501,17 +1501,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

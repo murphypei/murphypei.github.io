@@ -142,7 +142,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/08/zombie-orphan-process.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/08/vm-black-screen.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -156,20 +156,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/08/vm-black-screen.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2019/09/trt-useage.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2019/09/cuda-function-prefix.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
@@ -177,7 +163,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/09/python-logging.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/08/zombie-orphan-process.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2019/09/bind-cpu.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -191,7 +184,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/09/bind-cpu.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/09/trt-useage.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -212,7 +205,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/11/neural-network-quantization.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/12/entropy.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -226,14 +219,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/12/entropy.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2019/12/pca-repost.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/12/sigmoid-gradient.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -247,14 +233,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/12/sigmoid-gradient.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2020/01/assert-debug-release.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/09/python-logging.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -268,6 +247,13 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2020/01/assert-debug-release.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2020/02/linux-startup-scripts.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
@@ -275,14 +261,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2020/02/thread-local.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2020/02/right-reference.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/12/pca-repost.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -296,7 +275,21 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2020/02/thread-local.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2020/03/bayes-theorem.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2019/11/neural-network-quantization.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -310,6 +303,13 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2020/04/tf-serialize-format.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2020/04/memory-align.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
@@ -317,7 +317,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2020/04/tf-serialize-format.html</loc>
+    <loc>https://murphypei.github.io/blog/2020/02/right-reference.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -338,28 +338,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2020/09/entrogy-kld.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2020/09/pytorch-distributed.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2020/09/relu-dying.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2020/10/anchor-loss.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -373,6 +352,20 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2020/09/entrogy-kld.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2020/10/anchor-loss.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2021/03/git-symlink.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
@@ -380,7 +373,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2021/02/opengl-render.html</loc>
+    <loc>https://murphypei.github.io/blog/2020/09/pytorch-distributed.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -394,14 +387,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2021/03/malloc-new-diff.html</loc>
+    <loc>https://murphypei.github.io/blog/2021/05/torch-barrier-trap.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2021/05/torch-barrier-trap.html</loc>
+    <loc>https://murphypei.github.io/blog/2021/03/malloc-new-diff.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -422,7 +415,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/about/index.html</loc>
+    <loc>https://murphypei.github.io/blog/2021/02/opengl-render.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -430,6 +423,13 @@
   
   <url>
     <loc>https://murphypei.github.io/categories/index.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.217Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/about/index.html</loc>
     
     <lastmod>2021-10-13T04:13:08.217Z</lastmod>
     
@@ -450,14 +450,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/11/C++11-14-2.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/11/numpy-axis.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/11/numpy-axis.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/11/C++11-14-2.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -471,20 +471,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/01/batch-normalization.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2018/02/docker-image-container.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2018/03/now-feels.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
@@ -492,7 +478,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/03/python-env-manage.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/01/batch-normalization.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -506,14 +492,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/04/mysql-transcation.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/03/python-env-manage.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/04/linux-apt-apt-get.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/02/docker-image-container.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -527,7 +513,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/04/linux-redirect-pipe.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/04/linux-apt-apt-get.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -541,7 +527,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/05/ftok.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/04/mysql-transcation.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2018/04/linux-redirect-pipe.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -555,14 +548,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/06/pythom-memory-manage.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/07/kernel_method.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/07/kernel_method.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/05/ftok.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -597,7 +590,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/08/python-super.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/06/pythom-memory-manage.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -618,14 +611,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/08/cpp-right-reference.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/08/mxnet-install-ndarray.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/08/mxnet-install-ndarray.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/08/python-super.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -639,14 +632,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/08/mxnet-module.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/08/cpp-right-reference.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/08/mxnet-load-pretrained.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/08/mxnet-module.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -660,14 +653,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/09/map-calc.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2018/09/get-pid.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/08/mxnet-load-pretrained.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -675,6 +661,20 @@
   
   <url>
     <loc>https://murphypei.github.io/blog/2018/09/git-delete-submodule.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2018/10/cmake-quotes.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2018/09/get-pid.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -695,7 +695,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/10/cmake-quotes.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/09/map-calc.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2018/11/pip-upgrade-issue.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -716,14 +723,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/11/pip-upgrade-issue.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2018/11/awk-simple.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/12/cpp-cow.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -737,21 +737,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/12/cpp_interface.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2018/12/dl-momentum.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2018/12/cpp-cow.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/11/awk-simple.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -765,21 +751,21 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/12/cpp-macros-uitls.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2019/01/cpp-custom-iostream.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2019/01/jupyter-virtualenvs.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2018/12/dl-momentum.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2018/12/cpp-macros-uitls.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -793,14 +779,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/01/linux-heap.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/01/cpp-custom-iostream.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/02/python-copy-virtualenv.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/12/cpp_interface.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -808,6 +794,13 @@
   
   <url>
     <loc>https://murphypei.github.io/blog/2019/02/cpp-new-delete.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2019/02/python-copy-virtualenv.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -828,14 +821,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/03/bootstrap-bagging-boost.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2019/03/pca-math.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/03/hexo-render-mathjax.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -856,7 +842,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/03/hexo-render-mathjax.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-1.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -864,13 +850,6 @@
   
   <url>
     <loc>https://murphypei.github.io/blog/2019/03/virtualenv-tensorboard.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-1.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -891,14 +870,28 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-2.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/03/pca-math.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/valgrind-memory-leaky.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/03/bootstrap-bagging-boost.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2019/01/linux-heap.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-2.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -912,7 +905,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/cart-tree.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/05/epoll.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2019/04/valgrind-memory-leaky.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -926,21 +926,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/05/epoll.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2019/05/xgboost.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2019/05/thundernet.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/04/cart-tree.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -954,7 +940,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/06/struct-bit-field.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/05/thundernet.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -968,6 +954,13 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2019/06/link-sort.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2019/06/cpp-inl.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
@@ -975,7 +968,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/06/link-sort.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/05/xgboost.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
     
@@ -996,6 +989,13 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2019/06/struct-bit-field.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.213Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2019/07/thread-safe-reentrant-function.html</loc>
     
     <lastmod>2021-10-13T04:13:08.213Z</lastmod>
@@ -1010,21 +1010,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/02/cpp-inner-class.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2017/02/sensetime-interview.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2017/02/ipc.html</loc>
     
     <lastmod>2021-10-13T04:13:08.209Z</lastmod>
     
@@ -1045,7 +1031,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/03/cpp-object-memory-model.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/02/cpp-inner-class.html</loc>
     
     <lastmod>2021-10-13T04:13:08.209Z</lastmod>
     
@@ -1059,7 +1045,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/03/linux-io-multiplexing.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/02/ipc.html</loc>
     
     <lastmod>2021-10-13T04:13:08.209Z</lastmod>
     
@@ -1067,6 +1053,13 @@
   
   <url>
     <loc>https://murphypei.github.io/blog/2017/03/url-web.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2017/03/linux-io-multiplexing.html</loc>
     
     <lastmod>2021-10-13T04:13:08.209Z</lastmod>
     
@@ -1087,21 +1080,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/04/mysql-index.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2017/04/singleton-cpp.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2017/05/cpp-multi-threads.html</loc>
     
     <lastmod>2021-10-13T04:13:08.209Z</lastmod>
     
@@ -1115,7 +1094,21 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2017/03/cpp-object-memory-model.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2017/05/iterator-effectness.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2017/05/cpp-multi-threads.html</loc>
     
     <lastmod>2021-10-13T04:13:08.209Z</lastmod>
     
@@ -1129,28 +1122,14 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2017/04/mysql-index.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2017/05/vs-link-error1107.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2017/05/python-GIL.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2017/05/live-cherry.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2017/05/python-stack.html</loc>
     
     <lastmod>2021-10-13T04:13:08.209Z</lastmod>
     
@@ -1164,6 +1143,13 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2017/05/live-cherry.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2017/06/windows-glog.html</loc>
     
     <lastmod>2021-10-13T04:13:08.209Z</lastmod>
@@ -1171,14 +1157,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/06/qt-multithread.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/05/python-GIL.html</loc>
     
     <lastmod>2021-10-13T04:13:08.209Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/06/python-distributed-spider.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/05/python-stack.html</loc>
     
     <lastmod>2021-10-13T04:13:08.209Z</lastmod>
     
@@ -1192,7 +1178,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/07/permucation-stl.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/06/qt-multithread.html</loc>
     
     <lastmod>2021-10-13T04:13:08.209Z</lastmod>
     
@@ -1206,7 +1192,28 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2017/06/python-distributed-spider.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2017/08/java-antlr.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2017/08/storm-message-ack.html</loc>
+    
+    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2017/07/permucation-stl.html</loc>
     
     <lastmod>2021-10-13T04:13:08.209Z</lastmod>
     
@@ -1221,13 +1228,6 @@
   
   <url>
     <loc>https://murphypei.github.io/blog/2017/08/cpp11-multithread.html</loc>
-    
-    <lastmod>2021-10-13T04:13:08.209Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2017/08/storm-message-ack.html</loc>
     
     <lastmod>2021-10-13T04:13:08.209Z</lastmod>
     

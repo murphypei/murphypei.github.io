@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/09/cuda-function-prefix.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,7 +334,7 @@
 
       
         <p>CUDA 函数前缀作为 CUDA 编程中一种特殊的使用技巧，其具有一定的限制意义。</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>CUDA 使用 cu 作为文件类型后缀，而在文件中又存在几种前缀，如果在修改编写 .cu 文件时不注意，会出现问题，比如：</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">error : calling a __host__ <span class="keyword">function</span> from a __global__ <span class="keyword">function</span> is not allowed.</span><br></pre></td></tr></table></figure>
 <p>在 CUDA 中有三种常见的前缀：<code>__device__</code>， <code>__global__</code>，<code>__host__</code>，其分别代表不同的意思，而这三个单词其实也是 CUDA 中常见的三种运行场景：</p>
@@ -373,9 +373,9 @@
 <p>因为函数前缀设定了函数的运行环境，因此对函数内部实现也做出了一定的限制，具体来说就是，device 函数因为只能在 GPU 上执行，因此不能调用常见的一些 C/C++ 函数（没有 GPU 实现），global 函数虽然能在 CPU 上运行，但是也能在 GPU 上面运行，因此同理。host 函数则没有这个限制，可以调用普通函数实现。</p>
 <p>因此，在出现报错如：<code>error : calling a __host__ function from a __global__ function is not allowed.</code> 时候，即为将一个普通的函数错误地添加进入了 global 前缀定义函数，在 .cu 文件中是不允许的。</p>
 <p>注意，有时候一个函数可以同时被多个前缀修饰的，比如 CUDA 10 浮点数的转换：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__host__ ​ __device__ ​ __half 	__float2half ( <span class="type">const</span> <span class="type">float</span>  a ) <span class="keyword">throw</span> ( )</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__host__ ​ __device__ ​ __half 	__float2half ( <span class="keyword">const</span> <span class="keyword">float</span>  a ) <span class="keyword">throw</span> ( )</span><br></pre></td></tr></table></figure>
 <p>以上修饰这个函数可以在 host 端被调用，也可以在 device 端被调用。实际上这个函数在 CUDA 9.2 以后才允许在 host 端调用，其 CUDA 8.0 的版本：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__device__ ​ __half __float2half ( <span class="type">const</span> <span class="type">float</span>  a )</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">__device__ ​ __half __float2half ( <span class="keyword">const</span> <span class="keyword">float</span>  a )</span><br></pre></td></tr></table></figure>
 <p>因此，我们通过一个函数的前缀就可以判断这个函数的运行环境。</p>
 
     </div>
@@ -390,7 +390,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2019/09/cuda-function-prefix.html" title="CUDA 函数前缀">https://murphypei.github.io/blog/2019/09/cuda-function-prefix.html</a>
@@ -495,8 +495,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1524,17 +1524,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

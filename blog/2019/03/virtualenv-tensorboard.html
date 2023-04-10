@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/03/virtualenv-tensorboard.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -310,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>2.5k</span>
+              <span>2.4k</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -334,7 +334,7 @@
 
       
         <p>在 virtualenv 中安装 dmlc-tensorboard 的体验十分不友好，安装过程坑太多了，总结一下。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="清除安装环境"><a href="#清除安装环境" class="headerlink" title="清除安装环境"></a>清除安装环境</h2><p>这一步是<strong>非常必要的</strong>，因为 dmlc-tensorboard 的安装过程中涉及 bazel 以及 tensorflow 的安装，因此保证一个干净的环境是非常必要的，具体需要清除的是：</p>
 <ul>
 <li><code>pip uninstall dmlc-tensorboard</code><ul>
@@ -394,7 +394,7 @@
 <li>Python2 和 Python3 的 tensorboard 需要分开（最好这样），或者每次都要清除 tensorboard 文件夹，因为编译出来的安装文件不一样</li>
 <li>virtualenv 有一个 bug，安装完之后需要修改 tensorboard 的可执行文件 <code>~/.virtualenvs/py2/bin/tensorboard</code> 中的 <code>FindModuleSpace</code> 函数</li>
 </ul>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Find the runfiles tree</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">FindModuleSpace</span>():</span><br><span class="line">  <span class="comment"># Follow symlinks, looking for my module space</span></span><br><span class="line">  stub_filename = os.path.abspath(sys.argv[<span class="number">0</span>])</span><br><span class="line">  <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    <span class="comment"># Found it?</span></span><br><span class="line">    module_space = stub_filename + <span class="string">&#x27;.runfiles&#x27;</span></span><br><span class="line">    <span class="keyword">if</span> os.path.isdir(module_space):</span><br><span class="line">      <span class="keyword">break</span></span><br><span class="line">    <span class="comment">#package_path = site.getsitepackages()</span></span><br><span class="line">    <span class="comment"># In case this instance is a string</span></span><br><span class="line">    <span class="comment">#if not isinstance(package_path, list):</span></span><br><span class="line">    <span class="comment">#  package_path= [package_path]</span></span><br><span class="line">    <span class="comment">#user_path = site.getusersitepackages()</span></span><br><span class="line">    <span class="comment">#if not isinstance(user_path, list):</span></span><br><span class="line">    <span class="comment">#  user_path = [user_path]</span></span><br><span class="line">    <span class="comment">#package_path.extend(user_path)</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">hasattr</span>(site, <span class="string">&#x27;getsitepackages&#x27;</span>):</span><br><span class="line">      sitepackages = site.getsitepackages()</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">      <span class="keyword">from</span> distutils.sysconfig <span class="keyword">import</span> get_python_lib</span><br><span class="line">      sitepackages = [get_python_lib()]</span><br><span class="line">    <span class="keyword">for</span> mod <span class="keyword">in</span> sitepackages:</span><br><span class="line">      module_space = mod + <span class="string">&#x27;/tensorboard/tensorboard&#x27;</span> + <span class="string">&#x27;.runfiles&#x27;</span></span><br><span class="line">      <span class="keyword">if</span> os.path.isdir(module_space):</span><br><span class="line">        <span class="keyword">return</span> module_space</span><br><span class="line"></span><br><span class="line">    runfiles_pattern = <span class="string">&quot;(.*\.runfiles)/.*&quot;</span></span><br><span class="line">    <span class="keyword">if</span> IsWindows():</span><br><span class="line">      runfiles_pattern = <span class="string">&quot;(.*\.runfiles)\\.*&quot;</span></span><br><span class="line">    matchobj = re.<span class="keyword">match</span>(runfiles_pattern, os.path.abspath(sys.argv[<span class="number">0</span>]))</span><br><span class="line">    <span class="keyword">if</span> matchobj:</span><br><span class="line">      module_space = matchobj.group(<span class="number">1</span>)</span><br><span class="line">      <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">raise</span> AssertionError(<span class="string">&#x27;Cannot find .runfiles directory for %s&#x27;</span> %</span><br><span class="line">                         sys.argv[<span class="number">0</span>])</span><br><span class="line">  <span class="keyword">return</span> module_space</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># Find the runfiles tree</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">FindModuleSpace</span><span class="params">()</span>:</span></span><br><span class="line">  <span class="comment"># Follow symlinks, looking for my module space</span></span><br><span class="line">  stub_filename = os.path.abspath(sys.argv[<span class="number">0</span>])</span><br><span class="line">  <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    <span class="comment"># Found it?</span></span><br><span class="line">    module_space = stub_filename + <span class="string">'.runfiles'</span></span><br><span class="line">    <span class="keyword">if</span> os.path.isdir(module_space):</span><br><span class="line">      <span class="keyword">break</span></span><br><span class="line">    <span class="comment">#package_path = site.getsitepackages()</span></span><br><span class="line">    <span class="comment"># In case this instance is a string</span></span><br><span class="line">    <span class="comment">#if not isinstance(package_path, list):</span></span><br><span class="line">    <span class="comment">#  package_path= [package_path]</span></span><br><span class="line">    <span class="comment">#user_path = site.getusersitepackages()</span></span><br><span class="line">    <span class="comment">#if not isinstance(user_path, list):</span></span><br><span class="line">    <span class="comment">#  user_path = [user_path]</span></span><br><span class="line">    <span class="comment">#package_path.extend(user_path)</span></span><br><span class="line">    <span class="keyword">if</span> hasattr(site, <span class="string">'getsitepackages'</span>):</span><br><span class="line">      sitepackages = site.getsitepackages()</span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">      <span class="keyword">from</span> distutils.sysconfig <span class="keyword">import</span> get_python_lib</span><br><span class="line">      sitepackages = [get_python_lib()]</span><br><span class="line">    <span class="keyword">for</span> mod <span class="keyword">in</span> sitepackages:</span><br><span class="line">      module_space = mod + <span class="string">'/tensorboard/tensorboard'</span> + <span class="string">'.runfiles'</span></span><br><span class="line">      <span class="keyword">if</span> os.path.isdir(module_space):</span><br><span class="line">        <span class="keyword">return</span> module_space</span><br><span class="line"></span><br><span class="line">    runfiles_pattern = <span class="string">"(.*\.runfiles)/.*"</span></span><br><span class="line">    <span class="keyword">if</span> IsWindows():</span><br><span class="line">      runfiles_pattern = <span class="string">"(.*\.runfiles)\\.*"</span></span><br><span class="line">    matchobj = re.match(runfiles_pattern, os.path.abspath(sys.argv[<span class="number">0</span>]))</span><br><span class="line">    <span class="keyword">if</span> matchobj:</span><br><span class="line">      module_space = matchobj.group(<span class="number">1</span>)</span><br><span class="line">      <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">raise</span> AssertionError(<span class="string">'Cannot find .runfiles directory for %s'</span> %</span><br><span class="line">                         sys.argv[<span class="number">0</span>])</span><br><span class="line">  <span class="keyword">return</span> module_space</span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -407,7 +407,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2019/03/virtualenv-tensorboard.html" title="在 virtualenv 中安装 dmlc-tensorboard 的坑">https://murphypei.github.io/blog/2019/03/virtualenv-tensorboard.html</a>
@@ -514,8 +514,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1543,17 +1543,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

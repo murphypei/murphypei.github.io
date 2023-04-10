@@ -243,7 +243,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2020/06/why-resnet.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -338,7 +338,7 @@
 
       
         <p>ResNet 算是深度学习里程碑之作了，我平时接触也比较多，写一篇文章做一些记录总结。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="引言：为什么会有-ResNet？"><a href="#引言：为什么会有-ResNet？" class="headerlink" title="引言：为什么会有 ResNet？"></a>引言：为什么会有 ResNet？</h2><blockquote>
 <p>神经网络叠的越深，则学习出的效果就一定会越好吗？</p>
 </blockquote>
@@ -373,13 +373,13 @@
 <p>因此，可以认为 Residual Learning 的初衷，其实是让模型的内部结构至少有恒等映射的能力。以保证在堆叠网络的过程中，网络至少不会因为继续堆叠而产生退化！</p>
 <h2 id="深度残差学习（Deep-Residual-Learning）"><a href="#深度残差学习（Deep-Residual-Learning）" class="headerlink" title="深度残差学习（Deep Residual Learning）"></a>深度残差学习（Deep Residual Learning）</h2><h3 id="残差学习"><a href="#残差学习" class="headerlink" title="残差学习"></a>残差学习</h3><p>前面分析得出，如果深层网络后面的层都是是<strong>恒等映射</strong>，那么模型就可以转化为一个浅层网络。那现在的问题就是<strong>如何得到恒等映射</strong>了。但是要让一个神经网络你和 $H(x)=x$ 其实是非常困难的。于是 He 等人换了一个思路，把网络设计为 $H(x) = F(x) + x$，即直接把恒等映射作为网络的一部分<strong>。就可以把问题转化为</strong>学习一个残差函数 $F(x) = H(x) - x$。</p>
 <p>只要 $F(x)=0$，就构成了一个恒等映射 $H(x) = x$。 而且，拟合残差至少比拟合恒等映射容易得多。于是，就有了 Residual block 结构。</p>
-<p><img src="/images/posts/dl/resnet/residual_block.jpg" alt=""></p>
+<p><img src="/images/posts/dl/resnet/residual_block.jpg" alt></p>
 <p>图中右侧的曲线叫做跳接（shortcut connection），通过跳接在<strong>激活函数前，</strong>将上一层（或几层）<strong>之前的输出与本层</strong>计算的<strong>输出相加</strong>，将求和的结果输入到激活函数中做为本层的输出。</p>
 <p>用数学语言描述，假设 Residual Block 的输入为 $x$，则输出 $y$ 等于：$y=F(x, {W_i}) + x$。$F$ 就是我们要学习的目标，即输出和输入的残差 $y-x$ 。</p>
 <p>上图中的计算可以表示为：$F=W_2/ \sigma(W_1x)$。也就是经过两个权重层和一个激活层。这里需要注意，<strong>一个 Residual Block 必须至少含有两个权重层</strong>，否则没有意义：$y=(W_1x) + x = (W_1 + 1) + x$。相当于权重加 1，加了和没加一样。</p>
 <p>残差网络结构根据是否改变 feature map 大小又分为两种，也就是是否 down sample（空间减半，深度翻倍）。实际实现中就是在跳接过程中是否使用卷积进行维度和空间大小的改变。</p>
 <h3 id="What-the-question？"><a href="#What-the-question？" class="headerlink" title="What the question？"></a>What the question？</h3><p>残差学习解决了模型退化的问题，但是模型退化是一个现象问题，其本质原因或者说深度 CNN 的本质问题是什么呢？</p>
-<p><a href="https://link.zhihu.com/?target=https%3A//arxiv.org/abs/1702.08591">The Shattered Gradients Problem: If resnets are the answer, then what is the question?</a></p>
+<p><a href="https://link.zhihu.com/?target=https%3A//arxiv.org/abs/1702.08591" target="_blank" rel="noopener">The Shattered Gradients Problem: If resnets are the answer, then what is the question?</a></p>
 <p>论文大意是神经网络越来越深的时候，反传回来的梯度之间的相关性会越来越差，最后接近白噪声。因为我们知道图像是具备局部相关性的，那其实可以认为梯度也应该具备类似的相关性，这样更新的梯度才有意义，如果梯度接近白噪声，那梯度更新可能根本就是在做随机扰动。</p>
 <p>论文认为即使 BN 过后梯度的模稳定在了正常范围内，但<strong>梯度的相关性实际上是随着层数增加持续衰减的</strong>。而经过证明，ResNet 可以有效减少这种相关性的衰减。大概从 $\frac {1} {2^L}$ 减小到  $\frac {1} {\sqrt(L)}$ 。这也验证了 ResNet 论文本身的观点，网络训练难度随着层数增长的速度不是线性，而至少是多项式等级的增长（如果该论文属实，则可能是指数级增长的）。</p>
 <h2 id="后续"><a href="#后续" class="headerlink" title="后续"></a>后续</h2><p>在残差网络之后，跳接给网络的设计带来了很多新的思考。以 FPN（Feature Pyramid Network）为代表的跳接网络从语义的角度解决了深度网络的特征提取问题，那就是跳连接相加可以实现不同分辨率特征的组合，因为浅层容易有高分辨率但是低级语义的特征，而深层的特征有高级语义，但分辨率就很低了。</p>
@@ -397,7 +397,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2020/06/why-resnet.html" title="ResNet 原理剖析">https://murphypei.github.io/blog/2020/06/why-resnet.html</a>
@@ -504,8 +504,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1533,17 +1533,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

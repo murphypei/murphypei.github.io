@@ -59,7 +59,7 @@
 </script>
 
   <meta name="description" content="有时候需要将程序绑定到固定 CPU 的某个核心上运行。">
-<meta name="keywords" content="C++,Linux,CPU,sched_setaffinity">
+<meta name="keywords" content="Linux,C++,CPU,sched_setaffinity">
 <meta property="og:type" content="article">
 <meta property="og:title" content="程序绑定 CPU 核心">
 <meta property="og:url" content="https://murphypei.github.io/blog/2019/09/bind-cpu.html">
@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/09/bind-cpu.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -310,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>2.3k</span>
+              <span>2.2k</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -334,7 +334,7 @@
 
       
         <p>有时候需要将程序绑定到固定 CPU 的某个核心上运行。</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>我们知道多核 CPU 系统中，进程和线程的运行在哪个核心是由操作系统内核根据一定的调度算法进行调度的。但是实际软件开发过程中，我们出于一些目的，想要进程或者线程稳定运行在某个 CPU  核心上。比如我想测试两种算法的性能，因为服务器上有一些其他的进程干扰，测试的时间总是有波动，此时就需要将测试程序稳定在某个核心上测试。</p>
 <p>Linux 中有 CPU 亲和性这种说法（Windows 有没有我不知道，也不关心）。引用一下维基百科的说法：</p>
 <blockquote>
@@ -359,11 +359,11 @@
 </li>
 </ul>
 <p>因此，一个简易常见的将当前进程绑定到 CPU 某个核心（比如 6，CPU ID 从 0 开始）的示例如下：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">cpu_set_t</span> mask;</span><br><span class="line"><span class="type">cpu_set_t</span> get;</span><br><span class="line"><span class="built_in">CPU_ZERO</span>(&amp;mask);</span><br><span class="line"><span class="type">int</span> cpu_id = <span class="number">6</span>;</span><br><span class="line"><span class="built_in">CPU_SET</span>(cpu_id， &amp;mask);</span><br><span class="line"><span class="keyword">if</span> (<span class="built_in">sched_setaffinity</span>(<span class="number">0</span>， <span class="built_in">sizeof</span>(mask)， &amp;mask) == <span class="number">-1</span>)</span><br><span class="line">&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;WARNING: Could not set CPU Affinity， continuing。。。&quot;</span> &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Bind process to cpu id: &quot;</span> &lt;&lt; cpu_id &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cpu_set_t</span> mask;</span><br><span class="line"><span class="keyword">cpu_set_t</span> get;</span><br><span class="line">CPU_ZERO(&amp;mask);</span><br><span class="line"><span class="keyword">int</span> cpu_id = <span class="number">6</span>;</span><br><span class="line">CPU_SET(cpu_id， &amp;mask);</span><br><span class="line"><span class="keyword">if</span> (sched_setaffinity(<span class="number">0</span>， <span class="keyword">sizeof</span>(mask)， &amp;mask) == <span class="number">-1</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"WARNING: Could not set CPU Affinity， continuing。。。"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Bind process to cpu id: "</span> &lt;&lt; cpu_id &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>Linux 还提供了线程绑定核心的接口：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> <span class="title">threadBindCPU</span><span class="params">(std::thread &amp;thread, <span class="type">int</span> cpuID)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="type">unsigned</span> num_cpus = std::thread::<span class="built_in">hardware_concurrency</span>();</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;Launching &quot;</span> &lt;&lt; num_cpus &lt;&lt; <span class="string">&quot; threads\n&quot;</span>;</span><br><span class="line">    <span class="type">cpu_set_t</span> mask;</span><br><span class="line">    <span class="built_in">CPU_ZERO</span>(&amp;mask);</span><br><span class="line">    <span class="built_in">CPU_SET</span>(cpuID, &amp;mask);</span><br><span class="line"></span><br><span class="line">    <span class="type">int</span> rc = <span class="built_in">pthread_setaffinity_np</span>(thread.<span class="built_in">native_handle</span>(), <span class="built_in">sizeof</span>(<span class="type">cpu_set_t</span>), &amp;mask);</span><br><span class="line">    <span class="keyword">if</span> (rc != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        std::cerr &lt;&lt; <span class="string">&quot;Error calling pthread_setaffinity_np: &quot;</span> &lt;&lt; rc &lt;&lt; <span class="string">&quot;\n&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    std::cout &lt;&lt; <span class="string">&quot;thread id: &quot;</span> &lt;&lt; std::hash&lt;std::thread::id&gt;&#123;&#125;(thread.<span class="built_in">get_id</span>()) &lt;&lt; <span class="string">&quot;, cpu id: &quot;</span> &lt;&lt; cpuID &lt;&lt; std::endl;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">threadBindCPU</span><span class="params">(<span class="built_in">std</span>::thread &amp;thread, <span class="keyword">int</span> cpuID)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> num_cpus = <span class="built_in">std</span>::thread::hardware_concurrency();</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"Launching "</span> &lt;&lt; num_cpus &lt;&lt; <span class="string">" threads\n"</span>;</span><br><span class="line">    <span class="keyword">cpu_set_t</span> mask;</span><br><span class="line">    CPU_ZERO(&amp;mask);</span><br><span class="line">    CPU_SET(cpuID, &amp;mask);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> rc = pthread_setaffinity_np(thread.native_handle(), <span class="keyword">sizeof</span>(<span class="keyword">cpu_set_t</span>), &amp;mask);</span><br><span class="line">    <span class="keyword">if</span> (rc != <span class="number">0</span>)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">std</span>::<span class="built_in">cerr</span> &lt;&lt; <span class="string">"Error calling pthread_setaffinity_np: "</span> &lt;&lt; rc &lt;&lt; <span class="string">"\n"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"thread id: "</span> &lt;&lt; <span class="built_in">std</span>::hash&lt;<span class="built_in">std</span>::thread::id&gt;&#123;&#125;(thread.get_id()) &lt;&lt; <span class="string">", cpu id: "</span> &lt;&lt; cpuID &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>查看某个线程绑定的 CPU 核心，需要在线程内部调用：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sched_getcpu</span>()</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sched_getcpu()</span><br></pre></td></tr></table></figure>
 
     </div>
 
@@ -377,7 +377,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2019/09/bind-cpu.html" title="程序绑定 CPU 核心">https://murphypei.github.io/blog/2019/09/bind-cpu.html</a>
@@ -395,9 +395,9 @@
           
           <div class="post-tags">
             
-              <a href="/tags/C/" rel="tag"># C++</a>
-            
               <a href="/tags/Linux/" rel="tag"># Linux</a>
+            
+              <a href="/tags/C/" rel="tag"># C++</a>
             
               <a href="/tags/CPU/" rel="tag"># CPU</a>
             
@@ -482,8 +482,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1511,17 +1511,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

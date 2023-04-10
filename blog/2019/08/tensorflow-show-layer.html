@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/08/tensorflow-show-layer.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -310,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>1.7k</span>
+              <span>1.6k</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -334,11 +334,11 @@
 
       
         <p>TensorFlow 以静态图运行，因此想查看中间结果比较麻烦。本文以强化学习的 ppo 网络为例，结合代码注释提供一个思路。</p>
-<span id="more"></span>
+<a id="more"></a>
 <p>首先是训练过程中模型的保存：</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"></span><br><span class="line"><span class="comment"># graph.pbtxt</span></span><br><span class="line">tf.train.write_graph(sess.graph_def, path, filename, as_text)</span><br><span class="line"></span><br><span class="line"><span class="comment"># ckpt</span></span><br><span class="line">saver = tf.train.Saver(&#123;var <span class="keyword">for</span> var <span class="keyword">in</span> tf.global_variables()&#125;, max_to_keep=<span class="number">5</span>)</span><br><span class="line">saver.restore(sess, ckpt.model_checkpoint_path)</span><br><span class="line">saver.save(sess, checkpoint_path)</span><br></pre></td></tr></table></figure>
 <p>保存的模型应该有三个文件：<code>*.ckpt.index</code>，<code>*.ckpt.meta</code>，<code>*.ckpt.data-*</code>。之所以保存 <code>*.pbtxt</code>，是因为我们查看模型中间层的时候需要名字，<code>pbtxt</code> 是可以直接查看的模型结构文件，方便我们查看。然后如下调用进行 inference 和显示结果。</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#! -*-coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">    modelpath = <span class="string">r&#x27;../ppo/2/&#x27;</span>    <span class="comment"># 存放模型的地方</span></span><br><span class="line">    <span class="comment"># 加载模型和权重</span></span><br><span class="line">    saver = tf.train.import_meta_graph(modelpath + <span class="string">&#x27;model.ckpt.meta&#x27;</span>)</span><br><span class="line">    saver.restore(sess, tf.train.latest_checkpoint(modelpath))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 创建图</span></span><br><span class="line">    graph = tf.get_default_graph()</span><br><span class="line">    <span class="built_in">print</span>(<span class="string">&#x27;Successfully load the pre-trained model!&#x27;</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 加载测试数据</span></span><br><span class="line">    observation_data = np.array(np.load(<span class="string">&#x27;../ppo/2/observation.npy&#x27;</span>))</span><br><span class="line">    observation_data = observation.reshape((<span class="number">1</span>,<span class="number">197</span>,<span class="number">1</span>))</span><br><span class="line">    <span class="built_in">print</span>(observation_data.shape) </span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 设置输入 tensor</span></span><br><span class="line">    in_observation = graph.get_tensor_by_name(<span class="string">&quot;ppo/observation:0&quot;</span>) <span class="comment"># :0 表示 batch 中的第一个，如果 batch 是 1 就是全部结果了</span></span><br><span class="line">    <span class="built_in">print</span>(in_observation.shape)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 设置输出 tensor</span></span><br><span class="line">    out_neglogps = graph.get_tensor_by_name(<span class="string">&quot;ppo/neglogps:0&quot;</span>)   <span class="comment"># :0 同输入</span></span><br><span class="line">    out_actions = graph.get_tensor_by_name(<span class="string">&quot;ppo/actions:0&quot;</span>)</span><br><span class="line">    out_values = graph.get_tensor_by_name(<span class="string">&quot;ppo/values:0&quot;</span>)</span><br><span class="line">    out_fetches = [out_neglogps, out_actions, out_values]</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 需要输出的层，其实和输出 tensor 是一类的</span></span><br><span class="line">    mlp_fc0 = graph.get_tensor_by_name(<span class="string">&quot;ppo/model/vf/add:0&quot;</span>)</span><br><span class="line">    mid_fetches = [mlp_fc0]</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 要显示的 tensor</span></span><br><span class="line">    fetches = out_fetches + mid_fetches</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 运行图</span></span><br><span class="line">    output = sess.run(fetches, feed_dict=&#123;in_observation: observation_data&#125;)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 打印结果</span></span><br><span class="line">    <span class="keyword">for</span> out <span class="keyword">in</span> output:</span><br><span class="line">        <span class="built_in">print</span>(<span class="string">&quot;out: &quot;</span>, out)</span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#! -*-coding: utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> tensorflow <span class="keyword">as</span> tf</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> tf.Session() <span class="keyword">as</span> sess:</span><br><span class="line">    modelpath = <span class="string">r'../ppo/2/'</span>    <span class="comment"># 存放模型的地方</span></span><br><span class="line">    <span class="comment"># 加载模型和权重</span></span><br><span class="line">    saver = tf.train.import_meta_graph(modelpath + <span class="string">'model.ckpt.meta'</span>)</span><br><span class="line">    saver.restore(sess, tf.train.latest_checkpoint(modelpath))</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 创建图</span></span><br><span class="line">    graph = tf.get_default_graph()</span><br><span class="line">    print(<span class="string">'Successfully load the pre-trained model!'</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 加载测试数据</span></span><br><span class="line">    observation_data = np.array(np.load(<span class="string">'../ppo/2/observation.npy'</span>))</span><br><span class="line">    observation_data = observation.reshape((<span class="number">1</span>,<span class="number">197</span>,<span class="number">1</span>))</span><br><span class="line">    print(observation_data.shape) </span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 设置输入 tensor</span></span><br><span class="line">    in_observation = graph.get_tensor_by_name(<span class="string">"ppo/observation:0"</span>) <span class="comment"># :0 表示 batch 中的第一个，如果 batch 是 1 就是全部结果了</span></span><br><span class="line">    print(in_observation.shape)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 设置输出 tensor</span></span><br><span class="line">    out_neglogps = graph.get_tensor_by_name(<span class="string">"ppo/neglogps:0"</span>)   <span class="comment"># :0 同输入</span></span><br><span class="line">    out_actions = graph.get_tensor_by_name(<span class="string">"ppo/actions:0"</span>)</span><br><span class="line">    out_values = graph.get_tensor_by_name(<span class="string">"ppo/values:0"</span>)</span><br><span class="line">    out_fetches = [out_neglogps, out_actions, out_values]</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 需要输出的层，其实和输出 tensor 是一类的</span></span><br><span class="line">    mlp_fc0 = graph.get_tensor_by_name(<span class="string">"ppo/model/vf/add:0"</span>)</span><br><span class="line">    mid_fetches = [mlp_fc0]</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 要显示的 tensor</span></span><br><span class="line">    fetches = out_fetches + mid_fetches</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 运行图</span></span><br><span class="line">    output = sess.run(fetches, feed_dict=&#123;in_observation: observation_data&#125;)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 打印结果</span></span><br><span class="line">    <span class="keyword">for</span> out <span class="keyword">in</span> output:</span><br><span class="line">        print(<span class="string">"out: "</span>, out)</span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -351,7 +351,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2019/08/tensorflow-show-layer.html" title="TensorFlow 显示运行中间结果方法">https://murphypei.github.io/blog/2019/08/tensorflow-show-layer.html</a>
@@ -456,8 +456,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1485,17 +1485,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

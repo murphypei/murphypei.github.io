@@ -59,7 +59,7 @@
 </script>
 
   <meta name="description" content="位域(Bit field)为一种数据结构，可以把数据以位的形式紧凑的储存，并允许程序员对此结构的位进行操作。这种数据结构的一个好处是它可以使数据单元节省储存空间，当程序需要成千上万个数据单元时，这种方法就显得尤为重要。">
-<meta name="keywords" content="C++,struct,bit fields,位域">
+<meta name="keywords" content="struct,C++,bit fields,位域">
 <meta property="og:type" content="article">
 <meta property="og:title" content="C++ struct 位域">
 <meta property="og:url" content="https://murphypei.github.io/blog/2019/06/struct-bit-field.html">
@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/06/struct-bit-field.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -334,39 +334,39 @@
 
       
         <p>位域(Bit field)为一种数据结构，可以把数据以位的形式紧凑的储存，并允许程序员对此结构的位进行操作。这种数据结构的一个好处是它可以使数据单元节省储存空间，当程序需要成千上万个数据单元时，这种方法就显得尤为重要。</p>
-<span id="more"></span>
+<a id="more"></a>
 <h2 id="位域的声明"><a href="#位域的声明" class="headerlink" title="位域的声明"></a>位域的声明</h2><p>位域使用以下的结构声明 , 该结构声明为每个位域成员设置名称，并决定其宽度。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">bit_field_name</span></span><br><span class="line">&#123;</span><br><span class="line">    type member_name : width;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">bit_field_name</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    type member_name : width;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>例如声明如下一个位域:</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">_PRCODE</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> code1: <span class="number">2</span>;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> cdde2: <span class="number">2</span>;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> code3: <span class="number">8</span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">_PRCODE</span> prcode;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">PRCODE</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> code1: <span class="number">2</span>;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> cdde2: <span class="number">2</span>;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> code3: <span class="number">8</span>;</span><br><span class="line">&#125;;</span><br><span class="line"><span class="class"><span class="keyword">struct</span> _<span class="title">PRCODE</span> <span class="title">prcode</span>;</span></span><br></pre></td></tr></table></figure>
 <p>该定义使 <code>prcode</code> 包含 2 个 2 Bits 位域和 1 个 8 Bits 位域，我们可以使用结构体的成员运算符对其进行赋值：</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">prcode.code1 = <span class="number">0</span>;</span><br><span class="line">prcode.code2 = <span class="number">3</span>;</span><br><span class="line">procde.code3 = <span class="number">102</span>;</span><br></pre></td></tr></table></figure>
 <p>当然，赋值时要注意值的大小不能超过位域成员的容量，例如 <code>prcode.code3</code> 为 8 Bits 的位域成员，其容量为 2^8 = 256，即赋值范围应为 [0, 255]。</p>
 <p>我第一次见到这种写法的时候很奇怪，查询了才知道了位域的用法。一般来说位域都是为了更好的使用内存，实际成员占据的内存大小就是位域声明的大小，比如我们使用 int，但是实际数的范围很小，没必要用很多位，所以才会这样做，移动端特别注重。注意，冒号后面的数字表示这个成员变量占用多少 bit，但是这个大小不能超过这个数据类型应该的大小。比如下述的声明就无效，编译不通过。</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">bits_B</span> &#123;</span><br><span class="line">    <span class="type">int</span> a:<span class="number">64</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-<h2 id="位域的大小和对齐"><a href="#位域的大小和对齐" class="headerlink" title="位域的大小和对齐"></a>位域的大小和对齐</h2><h3 id="位域的大小"><a href="#位域的大小" class="headerlink" title="位域的大小"></a>位域的大小</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">box</span> </span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> a: <span class="number">1</span>;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span>  : <span class="number">3</span>;</span><br><span class="line">    <span class="type">unsigned</span> <span class="type">int</span> b: <span class="number">4</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">bits_B</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> a:<span class="number">64</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<h2 id="位域的大小和对齐"><a href="#位域的大小和对齐" class="headerlink" title="位域的大小和对齐"></a>位域的大小和对齐</h2><h3 id="位域的大小"><a href="#位域的大小" class="headerlink" title="位域的大小"></a>位域的大小</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">box</span> </span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> a: <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span>  : <span class="number">3</span>;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> b: <span class="number">4</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>该位域结构体中间有一个未命名的位域，占据 3 Bits，<strong>仅起填充作用，并无实际意义</strong>。 填充使得该结构总共使用了 8 Bits。但 C 语言使用 unsigned int 作为位域的基本单位，即使一个结构的唯一成员为 1 Bit 的位域，该结构大小也和一个 unsigned int 大小相同（满足struct 大小是最大的成员变量大小的整数倍规则）。 有些系统中，unsigned int 为 16 Bits，在 x86 系统中为 32 Bits。文章以下均默认 unsigned int 为 32 Bits。</p>
 <h3 id="位域的对齐"><a href="#位域的对齐" class="headerlink" title="位域的对齐"></a>位域的对齐</h3><p><strong>位域同样受 struct 的数据成员排列的规则限制（<code>sizeof</code> 的计算规则）</strong>，也会产生一些填充和对齐。</p>
 <p>比如上述说的，一个位域成员不允许跨越两个 unsigned int 的边界，如果成员声明的总位数超过了一个 unsigned int 的大小， 那么编辑器会自动移位位域成员，使其按照 unsigned int 的边界对齐。例如：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">stuff</span> </span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> field1: <span class="number">30</span>;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> field2: <span class="number">4</span>;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> field3: <span class="number">3</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">stuff</span> </span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> field1: <span class="number">30</span>;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> field2: <span class="number">4</span>;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> field3: <span class="number">3</span>;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p><code>field1</code> + <code>field2</code> = 34 Bits，超出 32 Bits, 编译器会将 <code>field2</code> 移位至下一个 unsigned int 单元存放， <code>stuff.field1</code> 和 <code>stuff.field2</code> 之间会留下一个 2 Bits 的空隙， <code>stuff.field3</code> 紧跟在 <code>stuff.field2</code> 之后，该结构现在大小为 2 * 32 = 64 Bits。</p>
 <p>这个空洞可以用之前提到的未命名的位域成员填充，我们也可以<strong>使用一个宽度为 0 的未命名位域成员令下一位域成员与下一个整数对齐</strong>，这个用法很常用，也就是<strong>将前后两个位域成员分开存在不同的基本类型内存中</strong>。例如:</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">stuff</span> </span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> field1: <span class="number">30</span>;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>       : <span class="number">2</span>;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> field2: <span class="number">4</span>;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span>       : <span class="number">0</span>;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> field3: <span class="number">3</span>; </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">stuff</span> </span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> field1: <span class="number">30</span>;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>       : <span class="number">2</span>;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> field2: <span class="number">4</span>;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span>       : <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> field3: <span class="number">3</span>; </span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>这里 <code>stuff.field1</code> 与 <code>stuff.field2</code> 之间有一个 2 Bits 的空隙，<code>stuff.field3</code> 则存储在下一个 unsigned int 中，该结构现在大小为 3 * 32 = 96 Bits。</p>
-<p>这个用法是非常常见的，特别是高性能的 cache 友好设计中，解决 cache 伪共享问题，关于 cache 相关，可以参阅<a href="http://www.broadview.com.cn/article/347">这篇文章</a>。</p>
+<p>这个用法是非常常见的，特别是高性能的 cache 友好设计中，解决 cache 伪共享问题，关于 cache 相关，可以参阅<a href="http://www.broadview.com.cn/article/347" target="_blank" rel="noopener">这篇文章</a>。</p>
 <h2 id="位域的初始化和位的重映射"><a href="#位域的初始化和位的重映射" class="headerlink" title="位域的初始化和位的重映射"></a>位域的初始化和位的重映射</h2><h3 id="位域的初始化"><a href="#位域的初始化" class="headerlink" title="位域的初始化"></a>位域的初始化</h3><p>位域的初始化与普通结构体初始化的方法相同，这里列举两种，如下:</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">stuff</span> s1= &#123;<span class="number">20</span>,<span class="number">8</span>,<span class="number">6</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">struct</span> <span class="title class_">stuff</span> s2;</span><br><span class="line">s2.field1 = <span class="number">20</span>;</span><br><span class="line">s2.field2 = <span class="number">8</span>;</span><br><span class="line">s2.field3 = <span class="number">4</span>;</span><br></pre></td></tr></table></figure>
-<h3 id="位域的重映射-Re-mapping"><a href="#位域的重映射-Re-mapping" class="headerlink" title="位域的重映射 (Re-mapping)"></a>位域的重映射 (Re-mapping)</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">box</span> &#123;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> ready:     <span class="number">2</span>;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> error:     <span class="number">2</span>;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> command:   <span class="number">4</span>;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">int</span> sector_no: <span class="number">24</span>;</span><br><span class="line">&#125;b1;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">stuff</span> <span class="title">s1</span>= &#123;</span><span class="number">20</span>,<span class="number">8</span>,<span class="number">6</span>&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">stuff</span> <span class="title">s2</span>;</span></span><br><span class="line">s2.field1 = <span class="number">20</span>;</span><br><span class="line">s2.field2 = <span class="number">8</span>;</span><br><span class="line">s2.field3 = <span class="number">4</span>;</span><br></pre></td></tr></table></figure>
+<h3 id="位域的重映射-Re-mapping"><a href="#位域的重映射-Re-mapping" class="headerlink" title="位域的重映射 (Re-mapping)"></a>位域的重映射 (Re-mapping)</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">box</span> &#123;</span></span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> ready:     <span class="number">2</span>;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> error:     <span class="number">2</span>;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> command:   <span class="number">4</span>;</span><br><span class="line">	<span class="keyword">unsigned</span> <span class="keyword">int</span> sector_no: <span class="number">24</span>;</span><br><span class="line">&#125;b1;</span><br></pre></td></tr></table></figure>
 <p>利用重映射将位域归零</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span>* p = (<span class="type">int</span> *) &amp;b1;  <span class="comment">// 将 &quot;位域结构体的地址&quot; 映射至 &quot;整形（int*) 的地址&quot; </span></span><br><span class="line">*p = <span class="number">0</span>;                <span class="comment">// 清除 s1，将各成员归零</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span>* p = (<span class="keyword">int</span> *) &amp;b1;  <span class="comment">// 将 "位域结构体的地址" 映射至 "整形（int*) 的地址" </span></span><br><span class="line">*p = <span class="number">0</span>;                <span class="comment">// 清除 s1，将各成员归零</span></span><br></pre></td></tr></table></figure>
 <h3 id="利用联合-union-将-32-Bits-位域-重映射至-unsigned-int-型"><a href="#利用联合-union-将-32-Bits-位域-重映射至-unsigned-int-型" class="headerlink" title="利用联合 (union) 将 32 Bits 位域 重映射至 unsigned int 型"></a>利用联合 (union) 将 32 Bits 位域 重映射至 unsigned int 型</h3><p>先简单介绍一下联合</p>
 <blockquote>
 <p>union 是一种特殊的类，也是一种构造类型的数据结构。在一个 union 内可以定义多种不同的数据类型， 一个被说明为该 union 类型的变量中，允许装入该 union 所定义的任何一种数据，这些数据共享同一段内存，以达到节省空间的目的。</p>
 <p>union 与 struct 有一些相似之处。但两者有本质上的不同。在结构中各成员有各自的内存空间， 一个结构变量的总长度是各成员长度之和（空结构除外，同时不考虑边界调整）。而在 union 中，各成员共享一段内存空间， 一个联合变量的长度等于各成员中最长的长度。应该说明的是，这里所谓的共享不是指把多个成员同时装入一个联合变量内， 而是指该联合变量可被赋予任一成员值，但每次只能赋一种值，<strong>赋入新值则冲去旧值</strong>。</p>
 </blockquote>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">union</span> <span class="title class_">u_box</span> &#123;</span><br><span class="line">  <span class="keyword">struct</span> <span class="title class_">box</span> st_box;     </span><br><span class="line">  <span class="type">unsigned</span> <span class="type">int</span> ui_box;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">union</span> u_box &#123;</span><br><span class="line">  <span class="class"><span class="keyword">struct</span> <span class="title">box</span> <span class="title">st_box</span>;</span>     </span><br><span class="line">  <span class="keyword">unsigned</span> <span class="keyword">int</span> ui_box;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 <p>x86 系统中 unsigned int 和 box 都为 32 Bits, 通过该联合使 st_box 和 ui_box 共享一块内存。具体位域中哪一位与 unsigned int 哪一位相对应，取决于编译器和硬件。利用联合将位域归零，代码如下：</p>
-<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">union</span> <span class="title class_">u_box</span> u;</span><br><span class="line">u.ui_box = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">union</span> u_box u;</span><br><span class="line">u.ui_box = <span class="number">0</span>;</span><br></pre></td></tr></table></figure>
     </div>
 
     
@@ -379,7 +379,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2019/06/struct-bit-field.html" title="C++ struct 位域">https://murphypei.github.io/blog/2019/06/struct-bit-field.html</a>
@@ -397,9 +397,9 @@
           
           <div class="post-tags">
             
-              <a href="/tags/C/" rel="tag"># C++</a>
-            
               <a href="/tags/struct/" rel="tag"># struct</a>
+            
+              <a href="/tags/C/" rel="tag"># C++</a>
             
               <a href="/tags/bit-fields/" rel="tag"># bit fields</a>
             
@@ -486,8 +486,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1515,17 +1515,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         

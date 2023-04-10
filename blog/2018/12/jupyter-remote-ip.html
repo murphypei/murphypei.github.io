@@ -239,7 +239,7 @@
     <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/12/jupyter-remote-ip.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="anonymous">
+      <meta itemprop="name" content="AngryBirds">
       <meta itemprop="description" content="虚怀若谷，大智若愚">
       <meta itemprop="image" content="/images/angry_bird_128.ico">
     </span>
@@ -310,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>759</span>
+              <span>739</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -334,8 +334,8 @@
 
       
         <p>jupyter 远程访问需要配置 ip 地址，配置 ip 地址过程中遇到了一个问题</p>
-<span id="more"></span>
-<p>jupyter 十分好用，如果想在服务器上运行 jupyter，然后本地进行访问，需要进行一些配置，官方配置教程如下：<a href="https://jupyter-notebook.readthedocs.io/en/stable/public_server.html">Running a public notebook server</a></p>
+<a id="more"></a>
+<p>jupyter 十分好用，如果想在服务器上运行 jupyter，然后本地进行访问，需要进行一些配置，官方配置教程如下：<a href="https://jupyter-notebook.readthedocs.io/en/stable/public_server.html" target="_blank" rel="noopener">Running a public notebook server</a></p>
 <p>按照教程配置就好了，我大概翻译一下。</p>
 <ol>
 <li><p>首先需要安装 jupyter</p>
@@ -362,7 +362,7 @@
 </ul>
 </li>
 </ol>
-<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">c.NotebookApp.ip=<span class="string">&#x27;*&#x27;</span></span><br><span class="line">c.NotebookApp.password = <span class="string">u&#x27;sha1:xxxxxx&#x27;</span></span><br><span class="line">c.NotebookApp.open_browser = <span class="literal">False</span></span><br><span class="line">c.NotebookApp.port = <span class="number">8888</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">c.NotebookApp.ip=<span class="string">'*'</span></span><br><span class="line">c.NotebookApp.password = <span class="string">u'sha1:xxxxxx'</span></span><br><span class="line">c.NotebookApp.open_browser = <span class="literal">False</span></span><br><span class="line">c.NotebookApp.port = <span class="number">8888</span></span><br></pre></td></tr></table></figure>
 <p>坑就出在这里，如果 <code>ip=&#39;*&#39;</code>，启动 jupyter notebook 就会报错，错误原因是 ip 地址错误，我看网上一堆教程，包括官网都是这么设置，我觉得原因是 Python 执行不认这个配置吧。<code>ip=&#39;*&#39;</code> 的意思是允许任意的电脑访问这个 notebook，当然了，需要密码。我尝试将其改为 <code>ip=&#39;0.0.0.0&#39;</code>，就可以了。果然，计算机编程原理都是类似的。</p>
 
     </div>
@@ -377,7 +377,7 @@
 <div>
 <ul class="post-copyright">
   <li class="post-copyright-author">
-    <strong>本文作者： </strong>anonymous</li>
+    <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
     <a href="https://murphypei.github.io/blog/2018/12/jupyter-remote-ip.html" title="jupyter远程配置的ip问题">https://murphypei.github.io/blog/2018/12/jupyter-remote-ip.html</a>
@@ -482,8 +482,8 @@
         <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
     <img class="site-author-image" itemprop="image"
       src="/images/angry_bird_128.ico"
-      alt="anonymous">
-  <p class="site-author-name" itemprop="name">anonymous</p>
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
   <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
 </div>
   <nav class="site-state motion-element">
@@ -1511,17 +1511,17 @@
   <span class="with-love" id="animate">
     <i class="fa fa-user"></i>
   </span>
-  <span class="author" itemprop="copyrightHolder">anonymous</span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">606k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">16:49</span>
 </div>
 
         
