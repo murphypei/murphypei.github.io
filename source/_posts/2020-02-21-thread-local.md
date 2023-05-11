@@ -279,12 +279,12 @@ void loopin_func(const std::string& thread_name) {
 ```c++
 create A
 thread[t1]: a.counter:0
-thread[t1]: a.counter:1
-thread[t1]: a.counter:2
+thread[t1]: a.counter:0
+thread[t1]: a.counter:0
 create A
 thread[t2]: a.counter:0
-thread[t2]: a.counter:1
-thread[t2]: a.counter:2
+thread[t2]: a.counter:0
+thread[t2]: a.counter:0
 
 ```
 
