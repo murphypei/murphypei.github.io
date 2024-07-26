@@ -15,6 +15,8 @@
     * `sudo npm install hexo-cli -g`
     * `npm install`
 
+[MacOS安装](https://medium.com/@chri100pher/start-blog-with-hexo-beff1399ec74)
+
 ### 运行
 
 * `hexo clean && hexo g && hexo s`
