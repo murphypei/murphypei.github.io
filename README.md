@@ -12,8 +12,8 @@
     * `npm config set registry https://registry.npm.taobao.org`
     * 验证: `npm config get registry`
 * 安装插件
-    * `sudo npm install hexo-cli -g`
-    * `npm install`
+    * `sudo npm install -g --unsafe-perm=true --allow-root hexo-cli`
+    * 进入项目根目录，`npm install`
 
 [MacOS安装](https://medium.com/@chri100pher/start-blog-with-hexo-beff1399ec74)
 
