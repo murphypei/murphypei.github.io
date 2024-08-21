@@ -10,7 +10,7 @@ RUN apt-get update && \
 
 # 添加 NodeSource 的官方 PPA，并安装 Node.js 和 npm
 WORKDIR /tmp
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && apt-get install -y nodejs
+RUN curl -sL https://deb.nodesource.com/setup_12.x | bash - && apt-get install -y nodejs
 
 COPY ./package.json /app/
 COPY ./package-lock.json /app/

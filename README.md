@@ -31,3 +31,11 @@
 #### 数学公式和 Markdown 渲染问题
 
 * https://murphypei.github.io/blog/2019/03/hexo-render-mathjax.html
+
+#### nodejs 问题
+
+亲测只能支持 nodejs 12.x 版本，一次注意 nodejs 的版本问题。
+
+#### Error: spawn git ENOENT
+
+没有安装 git 命令或者 git 的用户名密码没有配置好。
