@@ -1,7 +1,7 @@
 ---
 title: 大模型RLHF训练中的PPO算法细节
 date: 2024-07-25 17:15:51
-update: 2042-07-25 17:15:51
+update: 2024-07-25 17:15:51
 categories: LLM
 tags: [LLM, RLHF, PPO, 大模型]
 mathjax: true

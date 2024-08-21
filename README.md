@@ -4,24 +4,18 @@
 
 ### 安装
 
-`git clone --recursive https://github.com/murphypei/hexo-blog` 
+本仓库使用的nodejs、hexo、next主题的版本都比较老，不能直接使用最新的版本部署，因此推荐使用docker。
 
-* 安装 Nodejs
-    * `sudo apt install nodejs npm`
-* 配置 npm 淘宝库
-    * `npm config set registry https://registry.npm.taobao.org`
-    * 验证: `npm config get registry`
-* 安装插件
-    * `sudo npm install -g --unsafe-perm=true --allow-root hexo-cli`
-    * 进入项目根目录，`npm install`
+* 编译dockerfile（注意，在当前目录下编译）。
+* 运行docker，进入容器内，运行hexo命令。
 
-[MacOS安装](https://medium.com/@chri100pher/start-blog-with-hexo-beff1399ec74)
+> 发现docker中使用npm安装了依赖之后，运行会有问题，所以在dockerfile中注释了，可以挂载本地目录或者拷贝文件，然后进入docker容器内，手动运行`npm install .`安装依赖。
 
-### 运行
+**hexo运行测试**
 
 * `hexo clean && hexo g && hexo s`
 
-### 部署
+**hexo部署**
 
 * `hexo d`
 
