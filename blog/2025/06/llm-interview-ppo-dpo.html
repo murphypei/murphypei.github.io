@@ -1,0 +1,2016 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="已经接近 3 年没有更新博客了。今天立下一个 flag，开始准备 LLM 面试知识，主要是八股文为主，想到哪写到哪。第一篇没想到写啥，觉得对 PPO 和 DPO 比较了解，就先直接写这个吧。">
+<meta name="keywords" content="LLM,面试,rlhf,ppo,dpo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LLM 八股文：PPO 和 DPO">
+<meta property="og:url" content="https://murphypei.github.io/blog/2025/06/llm-interview-ppo-dpo.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="已经接近 3 年没有更新博客了。今天立下一个 flag，开始准备 LLM 面试知识，主要是八股文为主，想到哪写到哪。第一篇没想到写啥，觉得对 PPO 和 DPO 比较了解，就先直接写这个吧。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2025-06-25T08:15:16.815Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LLM 八股文：PPO 和 DPO">
+<meta name="twitter:description" content="已经接近 3 年没有更新博客了。今天立下一个 flag，开始准备 LLM 面试知识，主要是八股文为主，想到哪写到哪。第一篇没想到写啥，觉得对 PPO 和 DPO 比较了解，就先直接写这个吧。">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2025/06/llm-interview-ppo-dpo">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>LLM 八股文：PPO 和 DPO | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2025/06/llm-interview-ppo-dpo.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">LLM 八股文：PPO 和 DPO
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2025-06-24 20:44:51" itemprop="dateCreated datePublished" datetime="2025-06-24T20:44:51+08:00">2025-06-24</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-06-25 16:15:16" itemprop="dateModified" datetime="2025-06-25T16:15:16+08:00">2025-06-25</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/LLM/" itemprop="url" rel="index"><span itemprop="name">LLM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>7.6k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>13 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>已经接近 3 年没有更新博客了。今天立下一个 flag，开始准备 LLM 面试知识，主要是八股文为主，想到哪写到哪。第一篇没想到写啥，觉得对 PPO 和 DPO 比较了解，就先直接写这个吧。</p>
+<a id="more"></a>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>在大语言模型（LLM）的训练过程中，RLHF（Reinforcement Learning from Human Feedback）是一个重要的技术，它通过人类反馈来优化模型的行为。在RLHF中，PPO（Proximal Policy Optimization）和DPO（Direct Preference Optimization）是两种主流的算法。本文将详细介绍这两种算法的工作原理、数学推导以及它们之间的区别。</p>
+<h2 id="PPO（Proximal-Policy-Optimization）"><a href="#PPO（Proximal-Policy-Optimization）" class="headerlink" title="PPO（Proximal Policy Optimization）"></a>PPO（Proximal Policy Optimization）</h2><h3 id="PPO-基本原理"><a href="#PPO-基本原理" class="headerlink" title="PPO 基本原理"></a>PPO 基本原理</h3><p>PPO 是一种基于策略梯度的强化学习算法，它的核心思想是通过限制策略更新的步长来保证训练的稳定性。在RLHF中，PPO被用来优化语言模型，使其生成更符合人类偏好的回答。</p>
+<h3 id="PPO-的数学推导"><a href="#PPO-的数学推导" class="headerlink" title="PPO 的数学推导"></a>PPO 的数学推导</h3><h4 id="1-策略梯度定理"><a href="#1-策略梯度定理" class="headerlink" title="1. 策略梯度定理"></a>1. 策略梯度定理</h4><p>首先，我们回顾一下策略梯度定理。对于策略 $\pi_\theta$，目标函数为：</p>
+<script type="math/tex; mode=display">
+J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} [R(\tau)]</script><p>其中 $\tau$ 是轨迹，$R(\tau)$ 是轨迹的奖励。</p>
+<p><strong>策略梯度定理</strong>是强化学习中的一个核心定理，它告诉我们如何直接优化策略参数 $\theta$ 来最大化期望奖励。这个定理的重要性在于：</p>
+<ol>
+<li><strong>直接优化策略</strong>：不像价值函数方法需要先学习价值函数再推导策略，策略梯度方法直接优化策略参数</li>
+<li><strong>理论基础</strong>：为所有基于策略的强化学习算法提供了数学基础</li>
+<li><strong>适用性广</strong>：适用于连续动作空间和离散动作空间</li>
+</ol>
+<p>策略梯度定理告诉我们：</p>
+<script type="math/tex; mode=display">
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} [\nabla_\theta \log \pi_\theta(\tau) R(\tau)]</script><p>这个公式的含义是：</p>
+<ul>
+<li><strong>左侧</strong>：目标函数 $J(\theta)$ 关于参数 $\theta$ 的梯度</li>
+<li><strong>右侧</strong>：策略对数概率的梯度与奖励的乘积的期望</li>
+</ul>
+<p><strong>直观理解</strong>：</p>
+<ul>
+<li>如果某个轨迹 $\tau$ 的奖励 $R(\tau)$ 很高，我们就增加这个轨迹的概率</li>
+<li>如果某个轨迹 $\tau$ 的奖励 $R(\tau)$ 很低，我们就减少这个轨迹的概率</li>
+<li>$\nabla_\theta \log \pi_\theta(\tau)$ 告诉我们在参数空间中应该朝哪个方向移动</li>
+</ul>
+<p><strong>实际应用中的问题</strong>：</p>
+<ol>
+<li><strong>高方差</strong>：直接使用这个公式会导致训练不稳定</li>
+<li><strong>样本效率低</strong>：需要大量样本来估计期望</li>
+<li><strong>更新步长难以控制</strong>：可能导致策略更新过大或过小</li>
+</ol>
+<p>这就是为什么需要 PPO 等改进算法的原因。</p>
+<h4 id="2-PPO-的目标函数"><a href="#2-PPO-的目标函数" class="headerlink" title="2. PPO 的目标函数"></a>2. PPO 的目标函数</h4><p>PPO 通过引入一个比率项来限制策略更新的幅度：</p>
+<script type="math/tex; mode=display">
+r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}</script><p><strong>比率项的含义</strong>：</p>
+<ul>
+<li>$\pi_{\theta_{old}}(a_t|s_t)$ 是旧策略（更新前）在状态 $s_t$ 下选择动作 $a_t$ 的概率</li>
+<li>$\pi_\theta(a_t|s_t)$ 是新策略（更新后）在状态 $s_t$ 下选择动作 $a_t$ 的概率</li>
+<li>比率 $r_t(\theta)$ 衡量了新策略相对于旧策略的变化程度</li>
+</ul>
+<p><strong>为什么需要限制策略更新幅度</strong>：</p>
+<ol>
+<li><strong>防止策略崩溃</strong>：如果策略更新过大，可能导致某些动作的概率变为0，失去探索能力</li>
+<li><strong>保证训练稳定性</strong>：过大的更新步长会导致训练不稳定，甚至发散</li>
+<li><strong>避免灾难性遗忘</strong>：防止新策略完全偏离旧策略，丢失之前学到的有用知识</li>
+</ol>
+<p>PPO 的目标函数为：</p>
+<script type="math/tex; mode=display">
+L^{CLIP}(\theta) = \mathbb{E}_t [\min(r_t(\theta) A_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) A_t)]</script><p>这个公式的核心思想是：</p>
+<ul>
+<li>如果 $A_t &gt; 0$（好的动作），我们希望增加这个动作的概率，但最多只能增加到 $(1+\epsilon)$ 倍</li>
+<li>如果 $A_t &lt; 0$（坏的动作），我们希望减少这个动作的概率，但最多只能减少到 $(1-\epsilon)$ 倍</li>
+<li>$\epsilon$ 通常设置为 0.2，意味着策略更新幅度被限制在 ±20% 以内</li>
+</ul>
+<p>其中：</p>
+<ul>
+<li>$A_t$ 是优势函数（Advantage function）</li>
+<li>$\epsilon$ 是裁剪参数，通常设置为 0.2</li>
+<li>$\text{clip}(x, a, b)$ 函数将 $x$ 限制在 $[a, b]$ 范围内</li>
+</ul>
+<h4 id="3-优势函数"><a href="#3-优势函数" class="headerlink" title="3. 优势函数"></a>3. 优势函数</h4><p>优势函数衡量了某个动作相对于平均水平的优势：</p>
+<script type="math/tex; mode=display">
+A_t = Q(s_t, a_t) - V(s_t)</script><p>其中 $Q(s_t, a_t)$ 是动作价值函数，$V(s_t)$ 是状态价值函数。</p>
+<p><strong>价值函数的基本概念</strong>：</p>
+<p>在强化学习中，价值函数用于评估状态或状态-动作对的价值，帮助我们做出更好的决策。</p>
+<p><strong>状态价值函数 $V(s_t)$</strong>：</p>
+<ul>
+<li><strong>定义</strong>：在状态 $s_t$ 下，遵循策略 $\pi$ 的期望累积奖励</li>
+<li><strong>数学表达式</strong>：<script type="math/tex; mode=display">
+V^\pi(s_t) = \mathbb{E}_{\pi} [\sum_{k=0}^{\infty} \gamma^k R_{t+k} | S_t = s_t]</script></li>
+<li><strong>含义</strong>：表示从状态 $s_t$ 开始，按照策略 $\pi$ 行动，能够获得的期望总奖励</li>
+<li><strong>特点</strong>：只依赖于状态，不依赖于具体动作</li>
+</ul>
+<p><strong>动作价值函数 $Q(s_t, a_t)$</strong>：</p>
+<ul>
+<li><strong>定义</strong>：在状态 $s_t$ 下采取动作 $a_t$，然后遵循策略 $\pi$ 的期望累积奖励</li>
+<li><strong>数学表达式</strong>：<script type="math/tex; mode=display">
+Q^\pi(s_t, a_t) = \mathbb{E}_{\pi} [\sum_{k=0}^{\infty} \gamma^k R_{t+k} | S_t = s_t, A_t = a_t]</script></li>
+<li><strong>含义</strong>：表示在状态 $s_t$ 下采取动作 $a_t$，然后按照策略 $\pi$ 行动，能够获得的期望总奖励</li>
+<li><strong>特点</strong>：依赖于状态和动作的组合</li>
+</ul>
+<p><strong>优势函数 $A_t$ 的作用</strong>：</p>
+<ul>
+<li><strong>相对评估</strong>：优势函数衡量了某个动作相对于该状态下所有动作平均水平的优势</li>
+<li><strong>决策指导</strong>：<ul>
+<li>如果 $A_t &gt; 0$，说明动作 $a_t$ 比平均水平好，应该增加其概率</li>
+<li>如果 $A_t &lt; 0$，说明动作 $a_t$ 比平均水平差，应该减少其概率</li>
+<li>如果 $A_t = 0$，说明动作 $a_t$ 处于平均水平</li>
+</ul>
+</li>
+</ul>
+<p><strong>在PPO中的重要性</strong>：</p>
+<ol>
+<li><strong>减少方差</strong>：相比直接使用奖励，优势函数提供了更稳定的学习信号</li>
+<li><strong>基线作用</strong>：状态价值函数作为基线，减少了策略梯度的方差</li>
+<li><strong>相对比较</strong>：通过相对比较而不是绝对奖励，使得训练更加稳定</li>
+</ol>
+<p><strong>实际计算中的挑战</strong>：</p>
+<ul>
+<li>真实的价值函数通常是未知的，需要通过神经网络来估计</li>
+<li>这就是为什么PPO需要Critic模型来估计状态价值函数</li>
+<li>优势函数通常通过时序差分（TD）方法或其他技术来估计</li>
+</ul>
+<h3 id="PPO-在-RLHF-中的应用"><a href="#PPO-在-RLHF-中的应用" class="headerlink" title="PPO 在 RLHF 中的应用"></a>PPO 在 RLHF 中的应用</h3><p>在RLHF中，PPO需要四个模型：</p>
+<ol>
+<li><strong>Actor Model</strong>：被训练的策略模型</li>
+<li><strong>Critic Model</strong>：价值函数模型，用于估计状态价值</li>
+<li><strong>Reward Model</strong>：奖励模型，用于计算即时奖励</li>
+<li><strong>Reference Model</strong>：参考模型，用于防止策略偏离太远</li>
+</ol>
+<p>关于这 4 个模型，可以参考我之前的文章：<a href="https://murphypei.github.io/blog/2024/07/llm-rlhf-ppo.html">大模型RLHF训练中的PPO算法细节</a></p>
+<p><strong>四个模型的作用和特点</strong>：</p>
+<p><strong>Actor Model（策略模型）</strong>：</p>
+<ul>
+<li>这是我们要训练的主要模型，最终用于实际应用</li>
+<li>接收prompt，生成response</li>
+<li>在训练过程中，其参数会不断更新以优化策略</li>
+</ul>
+<p><strong>Critic Model（价值函数模型）</strong>：</p>
+<ul>
+<li>用于估计状态价值函数 $V(s_t)$</li>
+<li>通常用Reward Model初始化，架构与Actor相似</li>
+<li>在最后一层增加Value Head，输出单一的价值估计</li>
+<li>需要更新参数，因为价值估计能力需要不断提升</li>
+</ul>
+<p><strong>Reward Model（奖励模型）</strong>：</p>
+<ul>
+<li>计算即时奖励 $R_t$，评估当前response的好坏</li>
+<li>参数固定不更新，作为客观的评估标准</li>
+<li>只关心当前response的质量，不考虑长期影响</li>
+</ul>
+<p><strong>Reference Model（参考模型）</strong>：</p>
+<ul>
+<li>通常用SFT模型初始化，参数冻结</li>
+<li>主要作用是防止Actor”训歪”，避免过拟合到高分但无意义的回答</li>
+<li>通过KL散度约束，确保新策略与参考策略的输出分布相似</li>
+</ul>
+<p><strong>为什么需要四个模型</strong>：</p>
+<ol>
+<li><strong>Actor</strong>：学习生成符合人类偏好的回答</li>
+<li><strong>Critic</strong>：评估整体价值，减少训练方差</li>
+<li><strong>Reward</strong>：提供客观的即时评估标准</li>
+<li><strong>Reference</strong>：防止策略偏离太远，保持语言能力</li>
+</ol>
+<p>PPO 的损失函数包括三个部分：</p>
+<script type="math/tex; mode=display">
+L_{PPO} = L^{CLIP} - \alpha L^{KL} + \beta L^{VF}</script><p>其中：</p>
+<ul>
+<li>$L^{CLIP}$ 是 PPO 的主要损失，通过裁剪机制限制策略更新</li>
+<li>$L^{KL}$ 是 KL 散度损失，用于限制与参考模型的差异</li>
+<li>$L^{VF}$ 是价值函数损失，用于训练Critic模型</li>
+<li>$\alpha$ 和 $\beta$ 是权重参数，平衡不同损失项的重要性</li>
+</ul>
+<p><strong>训练流程</strong>：</p>
+<ol>
+<li>Actor接收prompt，生成response</li>
+<li>Reward Model计算即时奖励</li>
+<li>Critic Model估计状态价值</li>
+<li>计算优势函数 $A_t = R_t - V_t$</li>
+<li>使用PPO损失函数更新Actor和Critic参数</li>
+<li>通过KL散度约束确保与Reference Model的相似性</li>
+</ol>
+<h2 id="DPO（Direct-Preference-Optimization）"><a href="#DPO（Direct-Preference-Optimization）" class="headerlink" title="DPO（Direct Preference Optimization）"></a>DPO（Direct Preference Optimization）</h2><h3 id="DPO-基本原理"><a href="#DPO-基本原理" class="headerlink" title="DPO 基本原理"></a>DPO 基本原理</h3><p>DPO 是一种更直接的方法，它不需要显式的奖励模型，而是直接通过人类偏好数据来优化策略。DPO 的核心思想是将偏好学习问题转化为一个分类问题。</p>
+<p><strong>DPO的核心创新</strong>：</p>
+<ol>
+<li><strong>消除奖励模型</strong>：不需要单独训练奖励模型，简化了训练流程</li>
+<li><strong>直接偏好学习</strong>：直接从人类偏好数据中学习，避免了奖励建模的误差</li>
+<li><strong>理论等价性</strong>：证明了DPO与基于奖励模型的RLHF在理论上是等价的</li>
+</ol>
+<h3 id="DPO-的数学推导"><a href="#DPO-的数学推导" class="headerlink" title="DPO 的数学推导"></a>DPO 的数学推导</h3><h4 id="1-偏好学习问题"><a href="#1-偏好学习问题" class="headerlink" title="1. 偏好学习问题"></a>1. 偏好学习问题</h4><p>给定一个提示 $x$ 和两个回答 $y_w$（获胜）和 $y_l$（失败），我们的目标是学习一个策略 $\pi_\theta$，使得：</p>
+<script type="math/tex; mode=display">
+P(y_w \succ y_l | x) > P(y_l \succ y_w | x)</script><p><strong>偏好数据的含义</strong>：</p>
+<ul>
+<li>$y_w \succ y_l$ 表示在提示 $x$ 下，回答 $y_w$ 比 $y_l$ 更受人类偏好</li>
+<li>这种偏好关系反映了人类的价值判断，是RLHF的核心数据</li>
+</ul>
+<h4 id="2-Bradley-Terry-模型"><a href="#2-Bradley-Terry-模型" class="headerlink" title="2. Bradley-Terry 模型"></a>2. Bradley-Terry 模型</h4><p>DPO 使用 Bradley-Terry 模型来建模偏好。这个模型假设偏好概率与奖励函数之间存在以下关系：</p>
+<script type="math/tex; mode=display">
+P(y_w \succ y_l | x) = \frac{\exp(r_\theta(x, y_w))}{\exp(r_\theta(x, y_w)) + \exp(r_\theta(x, y_l))}</script><p>其中 $r_\theta(x, y)$ 是奖励函数。</p>
+<p><strong>Bradley-Terry模型的特点</strong>：</p>
+<ul>
+<li><strong>单调性</strong>：奖励越高，被偏好的概率越大</li>
+<li><strong>对称性</strong>：$P(y_w \succ y_l | x) + P(y_l \succ y_w | x) = 1$</li>
+<li><strong>温度控制</strong>：可以通过调整指数函数的温度参数来控制偏好强度</li>
+</ul>
+<h4 id="3-从奖励函数到策略的映射"><a href="#3-从奖励函数到策略的映射" class="headerlink" title="3. 从奖励函数到策略的映射"></a>3. 从奖励函数到策略的映射</h4><p>DPO的关键洞察是：我们可以将奖励函数表示为策略与参考策略的比值：</p>
+<script type="math/tex; mode=display">
+r_\theta(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{ref}(y|x)}</script><p>其中：</p>
+<ul>
+<li>$\pi_{ref}$ 是参考策略（通常是SFT模型）</li>
+<li>$\beta$ 是温度参数，控制奖励的强度</li>
+</ul>
+<p><strong>这个映射的物理意义</strong>：</p>
+<ul>
+<li>如果 $\pi_\theta(y|x) &gt; \pi_{ref}(y|x)$，说明新策略更倾向于生成回答 $y$，奖励为正</li>
+<li>如果 $\pi_\theta(y|x) &lt; \pi_{ref}(y|x)$，说明新策略不太倾向于生成回答 $y$，奖励为负</li>
+<li>$\beta$ 控制奖励的敏感度，值越大，策略差异对奖励的影响越明显</li>
+</ul>
+<h4 id="4-DPO-的目标函数"><a href="#4-DPO-的目标函数" class="headerlink" title="4. DPO 的目标函数"></a>4. DPO 的目标函数</h4><p>将奖励函数代入Bradley-Terry模型，得到DPO的目标函数：</p>
+<script type="math/tex; mode=display">
+L_{DPO} = -\mathbb{E}_{(x, y_w, y_l) \sim D} \left[\log \sigma\left(\beta \log \frac{\pi_\theta(y_w|x)}{\pi_{ref}(y_w|x)} - \beta \log \frac{\pi_\theta(y_l|x)}{\pi_{ref}(y_l|x)}\right)\right]</script><p>其中：</p>
+<ul>
+<li>$\sigma$ 是 sigmoid 函数：$\sigma(x) = \frac{1}{1 + e^{-x}}$</li>
+<li>$\beta$ 是温度参数，通常设置为0.1-0.5</li>
+<li>$\pi_{ref}$ 是参考策略（通常是 SFT 模型）</li>
+</ul>
+<p><strong>目标函数的直观理解</strong>：</p>
+<ul>
+<li>我们希望最大化偏好数据的对数似然</li>
+<li>对于偏好对 $(y_w, y_l)$，我们希望 $P(y_w \succ y_l | x)$ 尽可能大</li>
+<li>这等价于让 $\beta \log \frac{\pi_\theta(y_w|x)}{\pi_{ref}(y_w|x)} - \beta \log \frac{\pi_\theta(y_l|x)}{\pi_{ref}(y_l|x)}$ 尽可能大</li>
+<li>即让获胜回答相对于参考策略的提升幅度大于失败回答</li>
+</ul>
+<h4 id="5-奖励函数的推导"><a href="#5-奖励函数的推导" class="headerlink" title="5. 奖励函数的推导"></a>5. 奖励函数的推导</h4><p>通过 DPO 的训练，我们可以推导出隐含的奖励函数：</p>
+<script type="math/tex; mode=display">
+r_\theta(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{ref}(y|x)}</script><p>这个公式表明，DPO 实际上是在学习一个相对于参考策略的奖励函数。</p>
+<p><strong>奖励函数的性质</strong>：</p>
+<ol>
+<li><strong>相对性</strong>：奖励是相对于参考策略定义的，不是绝对奖励</li>
+<li><strong>可解释性</strong>：奖励直接反映了策略相对于参考策略的偏好程度</li>
+<li><strong>一致性</strong>：与人类偏好数据保持一致</li>
+</ol>
+<h3 id="DPO-的训练过程"><a href="#DPO-的训练过程" class="headerlink" title="DPO 的训练过程"></a>DPO 的训练过程</h3><p><strong>训练步骤</strong>：</p>
+<ol>
+<li><strong>数据准备</strong>：收集人类偏好数据 $(x, y_w, y_l)$</li>
+<li><strong>策略初始化</strong>：用SFT模型初始化 $\pi_\theta$ 和 $\pi_{ref}$</li>
+<li><strong>前向传播</strong>：计算 $\pi_\theta(y_w|x)$ 和 $\pi_\theta(y_l|x)$</li>
+<li><strong>损失计算</strong>：使用DPO损失函数计算梯度</li>
+<li><strong>参数更新</strong>：只更新 $\pi_\theta$，保持 $\pi_{ref}$ 固定</li>
+</ol>
+<p><strong>关键超参数</strong>：</p>
+<ul>
+<li><strong>$\beta$（温度参数）</strong>：控制策略更新的强度，值越大更新越激进</li>
+<li><strong>学习率</strong>：控制参数更新的步长</li>
+<li><strong>批次大小</strong>：影响训练的稳定性和效率</li>
+</ul>
+<h3 id="DPO-的优势和局限性"><a href="#DPO-的优势和局限性" class="headerlink" title="DPO 的优势和局限性"></a>DPO 的优势和局限性</h3><p><strong>优势</strong>：</p>
+<ol>
+<li><strong>训练简单</strong>：只需要两个模型，训练流程简单</li>
+<li><strong>数据效率高</strong>：直接使用偏好数据，避免了奖励建模的误差</li>
+<li><strong>理论保证</strong>：在理论上与基于奖励的RLHF等价</li>
+<li><strong>计算效率高</strong>：单轮训练，不需要复杂的优势估计</li>
+</ol>
+<p><strong>局限性</strong>：</p>
+<ol>
+<li><strong>依赖参考策略</strong>：奖励函数是相对于参考策略定义的</li>
+<li><strong>偏好数据质量</strong>：对偏好数据的质量要求较高</li>
+<li><strong>探索能力有限</strong>：可能无法探索到远离参考策略的新策略</li>
+<li><strong>温度参数敏感</strong>：$\beta$ 的选择对性能影响较大</li>
+</ol>
+<h3 id="DPO-与-PPO-的理论联系"><a href="#DPO-与-PPO-的理论联系" class="headerlink" title="DPO 与 PPO 的理论联系"></a>DPO 与 PPO 的理论联系</h3><p><strong>等价性的核心前提</strong>：</p>
+<p>DPO与PPO等价的核心前提是：<strong>奖励函数必须满足特定的形式</strong>。具体来说，奖励函数必须能够表示为：</p>
+<script type="math/tex; mode=display">
+r(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{ref}(y|x)}</script><p>这个前提条件意味着：</p>
+<ol>
+<li><strong>奖励函数与策略的耦合</strong>：奖励函数不能是任意的，必须与当前策略 $\pi_\theta$ 和参考策略 $\pi_{ref}$ 相关</li>
+<li><strong>相对性</strong>：奖励是相对于参考策略定义的，不是绝对奖励</li>
+<li><strong>策略依赖性</strong>：奖励函数会随着策略的更新而变化</li>
+</ol>
+<p><strong>为什么这个前提很重要</strong>：</p>
+<p>在实际的RLHF中，奖励函数通常是独立训练的，其形式为 $r(x, y) = f_\phi(x, y)$，其中 $f_\phi$ 是一个独立的神经网络。这种形式的奖励函数与DPO假设的形式完全不同。</p>
+<p><strong>等价性的假设前提</strong>：</p>
+<p>DPO与PPO的等价性是在以下关键假设下成立的：</p>
+<ol>
+<li><strong>奖励函数假设</strong>：奖励函数必须满足 $r(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{ref}(y|x)}$ 的形式</li>
+<li><strong>优势函数简化</strong>：忽略价值函数，直接使用奖励作为优势函数，即 $A_t = r_t$</li>
+<li><strong>策略约束方式</strong>：使用KL散度约束而不是PPO的裁剪约束</li>
+<li><strong>单步优化</strong>：假设每次更新都是单步的，不考虑多步交互</li>
+</ol>
+<p><strong>理论背景</strong>：</p>
+<p>这个等价性来自于<strong>奖励函数与策略之间的对偶关系</strong>。在强化学习中，存在一个重要的理论结果：对于任何奖励函数 $r(x, y)$，都存在一个最优策略 $\pi^*(y|x)$，使得：</p>
+<script type="math/tex; mode=display">
+\pi^*(y|x) \propto \pi_{ref}(y|x) \exp(\frac{r(x, y)}{\beta})</script><p>这个关系表明，奖励函数和策略之间存在一一对应的关系。DPO的关键洞察是：如果我们直接学习策略，就可以隐式地学习到对应的奖励函数。</p>
+<p><strong>等价性证明的局限性</strong>：</p>
+<p>需要注意的是，这种等价性有以下局限性：</p>
+<ol>
+<li><strong>奖励函数形式限制</strong>：只有在特定形式的奖励函数下才成立</li>
+<li><strong>忽略价值函数</strong>：实际PPO中价值函数的作用被简化了</li>
+<li><strong>约束方式不同</strong>：PPO的裁剪约束和DPO的KL散度约束在理论上不等价</li>
+<li><strong>训练稳定性</strong>：虽然理论等价，但实际训练中的稳定性可能不同</li>
+</ol>
+<p><strong>实际应用中的差异</strong>：</p>
+<p>尽管在理论上存在等价性，但在实际应用中：</p>
+<ol>
+<li><strong>PPO</strong>：通过显式奖励模型提供更直接的监督信号</li>
+<li><strong>DPO</strong>：通过偏好数据提供相对比较信号</li>
+<li><strong>训练稳定性</strong>：PPO的裁剪机制可能提供更好的训练稳定性</li>
+<li><strong>探索能力</strong>：PPO可能具有更好的探索能力</li>
+</ol>
+<p><strong>等价性证明</strong>：<br>DPO可以看作是PPO在特定条件下的简化版本。当PPO中的：</p>
+<ul>
+<li>奖励模型 $r(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{ref}(y|x)}$</li>
+<li>优势函数 $A_t = r_t$（忽略价值函数）</li>
+<li>策略约束通过KL散度实现</li>
+</ul>
+<p>此时，PPO的损失函数就退化为DPO的形式。</p>
+<p><strong>主要区别</strong>：</p>
+<ol>
+<li><strong>奖励建模</strong>：PPO需要显式奖励模型，DPO隐含在策略中</li>
+<li><strong>优势估计</strong>：PPO需要复杂的优势估计，DPO直接使用奖励</li>
+<li><strong>约束方式</strong>：PPO使用裁剪约束，DPO使用KL散度约束</li>
+</ol>
+<h2 id="PPO-和-DPO-的区别"><a href="#PPO-和-DPO-的区别" class="headerlink" title="PPO 和 DPO 的区别"></a>PPO 和 DPO 的区别</h2><h3 id="1-训练复杂度"><a href="#1-训练复杂度" class="headerlink" title="1. 训练复杂度"></a>1. 训练复杂度</h3><ul>
+<li><strong>PPO</strong>：需要四个模型（Actor、Critic、Reward、Reference），训练过程复杂</li>
+<li><strong>DPO</strong>：只需要两个模型（策略模型和参考模型），训练过程简单</li>
+</ul>
+<h3 id="2-数据需求"><a href="#2-数据需求" class="headerlink" title="2. 数据需求"></a>2. 数据需求</h3><ul>
+<li><strong>PPO</strong>：需要显式的奖励信号或奖励模型</li>
+<li><strong>DPO</strong>：只需要偏好数据（哪个更好），不需要显式奖励</li>
+</ul>
+<h3 id="3-计算效率"><a href="#3-计算效率" class="headerlink" title="3. 计算效率"></a>3. 计算效率</h3><ul>
+<li><strong>PPO</strong>：需要多轮交互和复杂的优势估计</li>
+<li><strong>DPO</strong>：单轮训练，计算效率更高</li>
+</ul>
+<h3 id="4-稳定性"><a href="#4-稳定性" class="headerlink" title="4. 稳定性"></a>4. 稳定性</h3><ul>
+<li><strong>PPO</strong>：通过裁剪机制保证训练稳定性</li>
+<li><strong>DPO</strong>：通过 KL 散度约束保证稳定性</li>
+</ul>
+<h3 id="5-适用场景"><a href="#5-适用场景" class="headerlink" title="5. 适用场景"></a>5. 适用场景</h3><ul>
+<li><strong>PPO</strong>：适用于有明确奖励信号或可以训练奖励模型的场景</li>
+<li><strong>DPO</strong>：适用于只有人类偏好数据的场景</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>PPO 和 DPO 都是 RLHF 中的重要算法，它们各有优缺点：</p>
+<ul>
+<li><strong>PPO</strong> 更加成熟和稳定，但训练复杂度高</li>
+<li><strong>DPO</strong> 更加简单和高效，但可能在某些场景下效果不如 PPO</li>
+</ul>
+<p>选择哪种算法主要取决于具体的应用场景和可用的数据。在实际应用中，可以根据需求选择合适的算法，或者将两种算法结合使用。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<li>Schulman, J., et al. “Proximal policy optimization algorithms.” arXiv preprint arXiv:1707.06347 (2017).</li>
+<li>Rafailov, R., et al. “Direct preference optimization: Your language model is secretly a reward model.” arXiv preprint arXiv:2305.18290 (2023).</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2025/06/llm-interview-ppo-dpo.html" title="LLM 八股文：PPO 和 DPO">https://murphypei.github.io/blog/2025/06/llm-interview-ppo-dpo.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+            
+              <a href="/tags/面试/" rel="tag"># 面试</a>
+            
+              <a href="/tags/rlhf/" rel="tag"># rlhf</a>
+            
+              <a href="/tags/ppo/" rel="tag"># ppo</a>
+            
+              <a href="/tags/dpo/" rel="tag"># dpo</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2024/07/aigc-ddpm.html" rel="next" title="图像生成基础-DDPM">
+                  <i class="fa fa-chevron-left"></i> 图像生成基础-DDPM
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PPO（Proximal-Policy-Optimization）"><span class="nav-number">2.</span> <span class="nav-text">PPO（Proximal Policy Optimization）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PPO-基本原理"><span class="nav-number">2.1.</span> <span class="nav-text">PPO 基本原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PPO-的数学推导"><span class="nav-number">2.2.</span> <span class="nav-text">PPO 的数学推导</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-策略梯度定理"><span class="nav-number">2.2.1.</span> <span class="nav-text">1. 策略梯度定理</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-PPO-的目标函数"><span class="nav-number">2.2.2.</span> <span class="nav-text">2. PPO 的目标函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-优势函数"><span class="nav-number">2.2.3.</span> <span class="nav-text">3. 优势函数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PPO-在-RLHF-中的应用"><span class="nav-number">2.3.</span> <span class="nav-text">PPO 在 RLHF 中的应用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#DPO（Direct-Preference-Optimization）"><span class="nav-number">3.</span> <span class="nav-text">DPO（Direct Preference Optimization）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DPO-基本原理"><span class="nav-number">3.1.</span> <span class="nav-text">DPO 基本原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DPO-的数学推导"><span class="nav-number">3.2.</span> <span class="nav-text">DPO 的数学推导</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-偏好学习问题"><span class="nav-number">3.2.1.</span> <span class="nav-text">1. 偏好学习问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Bradley-Terry-模型"><span class="nav-number">3.2.2.</span> <span class="nav-text">2. Bradley-Terry 模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-从奖励函数到策略的映射"><span class="nav-number">3.2.3.</span> <span class="nav-text">3. 从奖励函数到策略的映射</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-DPO-的目标函数"><span class="nav-number">3.2.4.</span> <span class="nav-text">4. DPO 的目标函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-奖励函数的推导"><span class="nav-number">3.2.5.</span> <span class="nav-text">5. 奖励函数的推导</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DPO-的训练过程"><span class="nav-number">3.3.</span> <span class="nav-text">DPO 的训练过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DPO-的优势和局限性"><span class="nav-number">3.4.</span> <span class="nav-text">DPO 的优势和局限性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#DPO-与-PPO-的理论联系"><span class="nav-number">3.5.</span> <span class="nav-text">DPO 与 PPO 的理论联系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PPO-和-DPO-的区别"><span class="nav-number">4.</span> <span class="nav-text">PPO 和 DPO 的区别</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-训练复杂度"><span class="nav-number">4.1.</span> <span class="nav-text">1. 训练复杂度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-数据需求"><span class="nav-number">4.2.</span> <span class="nav-text">2. 数据需求</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-计算效率"><span class="nav-number">4.3.</span> <span class="nav-text">3. 计算效率</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-稳定性"><span class="nav-number">4.4.</span> <span class="nav-text">4. 稳定性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-适用场景"><span class="nav-number">4.5.</span> <span class="nav-text">5. 适用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">6.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">176</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">455</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2025</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">618k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:10</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '0762ee8b03bd842f2f9e39b127d81897',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

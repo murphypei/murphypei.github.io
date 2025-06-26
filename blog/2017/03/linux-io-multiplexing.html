@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="Linux IO 模式总结并对 select、poll、epoll 的使用做介绍。">
+<meta name="keywords" content="Linux,IO复用,select,epoll">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux IO 模式及 select、poll、epoll 详解">
+<meta property="og:url" content="https://murphypei.github.io/blog/2017/03/linux-io-multiplexing.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="Linux IO 模式总结并对 select、poll、epoll 的使用做介绍。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/linux/block_io.png">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/linux/non_block_io.png">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/linux/io_multiplexing.png">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/linux/asynchronous_io.png">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/linux/io_model_compare.png">
+<meta property="og:updated_time" content="2025-06-25T02:00:03.694Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Linux IO 模式及 select、poll、epoll 详解">
+<meta name="twitter:description" content="Linux IO 模式总结并对 select、poll、epoll 的使用做介绍。">
+<meta name="twitter:image" content="https://murphypei.github.io/images/posts/linux/block_io.png">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2017/03/linux-io-multiplexing">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>Linux IO 模式及 select、poll、epoll 详解 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/03/linux-io-multiplexing.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">Linux IO 模式及 select、poll、epoll 详解
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2017-03-19 00:00:00" itemprop="dateCreated datePublished" datetime="2017-03-19T00:00:00+08:00">2017-03-19</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-06-25 10:00:03" itemprop="dateModified" datetime="2025-06-25T10:00:03+08:00">2025-06-25</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>8.5k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>14 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Linux IO 模式总结并对 select、poll、epoll 的使用做介绍。</p>
+<a id="more"></a>
+<h2 id="概念说明"><a href="#概念说明" class="headerlink" title="概念说明"></a>概念说明</h2><p>在进行解释之前，首先要说明几个概念：</p>
+<ul>
+<li>用户空间和内核空间</li>
+<li>进程切换</li>
+<li>进程的阻塞</li>
+<li>文件描述符</li>
+<li>缓存 I/O</li>
+</ul>
+<h3 id="用户空间与内核空间"><a href="#用户空间与内核空间" class="headerlink" title="用户空间与内核空间"></a>用户空间与内核空间</h3><p>现在操作系统都是采用虚拟存储器，那么对 32 位操作系统而言，它的寻址空间（虚拟存储空间）为 4G（2 的 32 次方）。操作系统的核心是内核，独立于普通的应用程序，可以访问受保护的内存空间，也有访问底层硬件设备的所有权限。为了保证用户进程不能直接操作内核（kernel），保证内核的安全，操心系统将虚拟空间划分为两部分，一部分为内核空间，一部分为用户空间。针对 Linux 操作系统而言，将最高的 1G 字节（从虚拟地址 0xC0000000 到 0xFFFFFFFF），供内核使用，称为内核空间，而将较低的 3G 字节（从虚拟地址 0x00000000 到 0xBFFFFFFF），供各个进程使用，称为用户空间。</p>
+<h3 id="进程切换"><a href="#进程切换" class="headerlink" title="进程切换"></a>进程切换</h3><p>为了控制进程的执行，内核必须有能力挂起正在 CPU 上运行的进程，并恢复以前挂起的某个进程的执行。这种行为被称为进程切换。因此可以说，任何进程都是在操作系统内核的支持下运行的，是与内核紧密相关的。从一个进程的运行转到另一个进程上运行，这个过程中经过下面这些变化：</p>
+<ul>
+<li>保存处理机上下文，包括程序计数器和其他寄存器中的数据。</li>
+<li>更新 PCB 信息。</li>
+<li>把进程的 PCB 移入相应的队列，如就绪、在某事件阻塞等队列。</li>
+<li>选择另一个进程执行，并更新其 PCB。</li>
+<li>更新内存管理的数据结构。</li>
+</ul>
+<p>可以看出，进程的切换很耗资源</p>
+<h3 id="进程阻塞"><a href="#进程阻塞" class="headerlink" title="进程阻塞"></a>进程阻塞</h3><p>正在执行的进程，由于期待的某些事件未发生，如请求系统资源失败、等待某种操作的完成、新数据尚未到达或无新工作做等，则由系统自动执行阻塞原语(Block)，使自己由运行状态变为阻塞状态。可见，<strong>进程的阻塞是进程自身的一种主动行为</strong>，也因此只有处于运行态的进程（获得 CPU），才可能将其转为阻塞状态。<strong>当进程进入阻塞状态，是不占用 CPU 资源的。</strong></p>
+<h3 id="文件描述符-fd"><a href="#文件描述符-fd" class="headerlink" title="文件描述符 fd"></a>文件描述符 fd</h3><p>文件描述符（file descriptor）是计算机科学中的一个术语，是一个用于表述指向文件的引用的抽象化概念。</p>
+<p>文件描述符在形式上是一个非负整数。实际上，它是一个索引值，指向内核为每一个进程所维护的该进程打开文件的记录表。当程序打开一个现有文件或者创建一个新文件时，内核向进程返回一个文件描述符。在程序设计中，一些涉及底层的程序编写往往会围绕着文件描述符展开。但是文件描述符这一概念往往只适用于 UNIX、Linux 这样的操作系统。</p>
+<h3 id="缓存-I-O"><a href="#缓存-I-O" class="headerlink" title="缓存 I/O"></a>缓存 I/O</h3><p>缓存 I/O 又被称作标准 I/O，大多数文件系统的默认 I/O 操作都是缓存 I/O。在 Linux 的缓存 I/O 机制中，操作系统会将 I/O 的数据缓存在文件系统的页缓存（ page cache ）中，也就是说，<strong>数据会先被拷贝到操作系统内核的缓冲区中，然后才会从操作系统内核的缓冲区拷贝到应用程序的地址空间。</strong> 这也导致<strong>数据在传输过程中需要在应用程序地址空间和内核进行多次数据拷贝操作，这些数据拷贝操作所带来的 CPU 以及内存开销是非常大的。</strong></p>
+<h2 id="IO-模式"><a href="#IO-模式" class="headerlink" title="IO 模式"></a>IO 模式</h2><p>刚才说了，对于一次 IO 访问（以 read 举例），数据会先被拷贝到操作系统内核的缓冲区中，然后才会从操作系统内核的缓冲区拷贝到应用程序的地址空间。所以说，当一个 read 操作发生时，它会经历两个阶段：</p>
+<ol>
+<li>等待数据准备（Waiting for the data to be ready）</li>
+<li>将数据从内核拷贝到进程中（Copying the data from the kernel to the process）</li>
+</ol>
+<p>因为这两个阶段，Linux 系统产生了下面五种网络模式的方案。</p>
+<ul>
+<li>阻塞 I/O（blocking IO）</li>
+<li>非阻塞 I/O（nonblocking IO）</li>
+<li>I/O 多路复用（IO multiplexing）</li>
+<li>信号驱动 I/O（signal driven IO）</li>
+<li>异步 I/O（asynchronous IO）</li>
+</ul>
+<p>注：由于 signal driven IO 在实际中并不常用，所以我这只提及剩下的四种 IO Model。</p>
+<h3 id="阻塞-IO"><a href="#阻塞-IO" class="headerlink" title="阻塞 IO"></a>阻塞 IO</h3><p>在 Linux 中，默认情况下所有的 socket 都是 blocking，一个典型的读操作流程大概是这样：</p>
+<p><img src="/images/posts/linux/block_io.png" alt="阻塞型IO模型"></p>
+<p>当用户进程调用了 <code>recvfrom</code> 这个系统调用，kernel 就开始了 IO 的第一个阶段：准备数据（对于网络 IO 来说，很多时候数据在一开始还没有到达。比如，还没有收到一个完整的 UDP 包。这个时候 kernel 就要等待足够的数据到来）。这个过程需要等待，也就是说数据被拷贝到操作系统内核的缓冲区中是需要一个过程的。而<strong>在用户进程这边，整个进程会被阻塞（当然，是进程自己选择的阻塞）</strong>。当 kernel 一直等到数据准备好了，然后 kernel 返回结果，用户进程才解除 block 的状态，重新运行起来，也就是开始第二个阶段，将数据从 kernel 中拷贝到用户内存。</p>
+<p>所以，<strong>blocking IO 的特点就是在 IO 执行的两个阶段都被 block 了</strong>。</p>
+<h3 id="非阻塞-I-O（nonblocking-IO）"><a href="#非阻塞-I-O（nonblocking-IO）" class="headerlink" title="非阻塞 I/O（nonblocking IO）"></a>非阻塞 I/O（nonblocking IO）</h3><p>Linux 下，可以通过设置 socket 标志位使其变为 non-blocking。当对一个 non-blocking socket 执行读操作时，流程是这个样子：</p>
+<p><img src="/images/posts/linux/non_block_io.png" alt="非阻塞型IO模型"></p>
+<p>当用户进程发出 <code>read</code> 操作时，如果 kernel 中的数据还没有准备好，那么它并不会 block 用户进程，而是立刻返回一个 error。<strong>从用户进程角度讲 ，它发起一个 <code>read</code> 操作后，并不需要等待，而是马上就得到了一个结果</strong>。用户进程判断结果是一个 error 时，它就知道数据还没有准备好，于是它可以选择通过轮询的方式查看数据是否准备好，一旦kernel中的数据准备好了，并且用户进程发送了 <code>read</code> 操作，kernel 再次收到了用户进程的 <code>system call</code>，那么它马上就将数据拷贝到了用户内存，然后返回。</p>
+<p>所以，<strong>non-blocking IO 的特点是用户进程需要不断的主动询问 kernel 数据好了没有（轮询）</strong>。</p>
+<p><strong>上述两种 IO 方式都是同步的。注意，同步是针对内核从内核拷贝数据到用户进程空间</strong>， 而阻塞和非阻塞是针对用户进程是否等待一次 IO 操作请求的成功返回。</p>
+<h3 id="I-O-多路复用（IO-multiplexing）"><a href="#I-O-多路复用（IO-multiplexing）" class="headerlink" title="I/O 多路复用（IO multiplexing）"></a>I/O 多路复用（IO multiplexing）</h3><p>IO multiplexing 就是我们说的 <code>select</code>，<code>poll</code>，<code>epoll</code>，有些地方也称这种 IO 方式为事件驱动型（event driven）IO。使用 IO 复用的好处就在于单个 process 就可以同时处理多个网络连接的 IO。<strong>它的基本原理就是 <code>select</code>，<code>poll</code>，<code>epoll</code> 这个function 会不断的轮询所负责的所有 socket，当某个 socket 有数据到达了，就通知用户进程</strong>。</p>
+<p><img src="/images/posts/linux/io_multiplexing.png" alt="IO多路复用模型"></p>
+<p><strong>当用户进程调用了 <code>select</code>，那么整个进程（<code>select</code> 进程）会被block，而同时，kernel 会监视所有 <code>select</code> 负责的 socket，当任何一个 socket 中的数据准备好了，<code>select</code> 就会返回。这个时候用户进程再调用 <code>read</code> 操作，将数据从 kernel 拷贝到用户进程。</strong></p>
+<p>所以，I/O 多路复用的特点是通过一种机制<strong>一个进程能同时等待多个文件描述符</strong>，而这些文件描述符（套接字描述符）其中的任意一个进入读（写）就绪状态，<code>select</code> 函数就可以返回。</p>
+<p>上述这个图和 blocking IO 的图其实并没有太大的不同，事实上，还更差一些。因为这里需要使用两个 system call（<code>select</code> 和 <code>recvfrom</code>），而 blocking IO 只调用了一个 system call（<code>recvfrom</code>）。但是，<strong>用 <code>select</code> 的优势在于它可以同时处理多个 connection</strong>。</p>
+<p>所以，如果处理的连接数不是很高的话，使用 <code>select</code> 或者 <code>epoll</code> 的 web server 不一定比使用 multi-threading + blocking IO 的 web server 性能更好，可能延迟还更大。<code>select</code> 和 <code>epoll</code> 的优势并不是对于单个连接能处理得更快，而是在于能处理更多的连接。</p>
+<p>在 IO multiplexing Model 中，实际中，对于每一个 socket，一般都设置成为 non-blocking，但是，如上图所示，整个用户进程其实是一直被 block 的。<strong>只不过进程阻塞在 <code>select</code> 这个函数处，而不是被 socket IO 处。</strong></p>
+<h3 id="异步-I-O（asynchronous-IO）"><a href="#异步-I-O（asynchronous-IO）" class="headerlink" title="异步 I/O（asynchronous IO）"></a>异步 I/O（asynchronous IO）</h3><p>Linux 下的 asynchronous IO 其实用得很少。先看一下它的流程：</p>
+<p><img src="/images/posts/linux/asynchronous_io.png" alt="异步IO模型"></p>
+<p>用户进程发起 <code>read</code> 操作之后，立刻就可以开始去做其它的事。而另一方面，从 kernel 的角度，当它收到一个 <code>asynchronous read</code> 调用之后，首先它会立刻返回，所以不会对用户进程产生任何 block。然后，kernel 会等待数据准备完成，然后将数据拷贝到用户内存，当这一切都完成之后，kernel 会给用户进程发送一个 signal，告诉它 read 操作完成了。</p>
+<p>总结来说，<strong>异步 IO 就是在内核拷贝数据回用户进程的这一操作中，用户进程不会阻塞在 copy 的过程中，而对于同步IO来说，copy 的过程中，用户进程是阻塞的（等待 IO 数据准备可阻塞可不阻塞）。</strong></p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p><strong>阻塞和非阻塞的区别</strong></p>
+<p>调用 blocking IO 会一直 block 住对应的进程直到操作完成，而 non-blocking IO 在 kernel 数据还没准备好的情况下会立刻返回。</p>
+<p><strong>同步和异步的区别</strong></p>
+<p>在说明 synchronous（同步） IO 和 asynchronous（异步） IO 的区别之前，需要先给出两者的定义。POSIX 的定义是这样子的：</p>
+<ul>
+<li>A synchronous I/O operation causes the requesting process to be blocked until that I/O operation completes;</li>
+<li>An asynchronous I/O operation does not cause the requesting process to be blocked;</li>
+<li>同步 IO 做 IO operation 的时候会将进程阻塞。按照这个定义，之前所述的 blocking IO，non-blocking IO，都属于同步 IO。</li>
+</ul>
+<p>有人会说，non-blocking IO 并没有被 block 啊。这里有个非常“狡猾”的地方，定义中所指的”IO operation”是指真实的 IO 操作，就是例子中的 <code>recvfrom</code> 这个 system call。non-blocking IO 在执行 <code>recvfrom</code> 这个 system call的时候，如果 kernel 的数据没有准备好，这时候不会 block 进程。但是，当 kernel 中数据准备好的时候，<code>recvfrom</code> 会将数据从 kernel 拷贝到用户内存中，这个时候进程是被 block 了，在这段时间内，进程是被 block 的。</p>
+<p>异步 IO 则不一样，当进程发起 IO 操作之后，就直接返回再也不理睬了，直到 kernel 发送一个信号，告诉进程说 IO 完成。在这整个过程中，进程完全没有被 block。</p>
+<p>各个 IO Model 的比较如图所示：</p>
+<p><img src="/images/posts/linux/io_model_compare.png" alt="IO模型比较"></p>
+<p>通过上面的图片，可以发现 non-blocking IO 和 asynchronous IO 的区别还是很明显的。在 non-blocking IO 中，虽然进程大部分时间都不会被 block，但是它仍然要求进程去主动的 check，并且当数据准备完成以后，也需要进程主动的再次调用 <code>recvfrom</code> 来将数据拷贝到用户内存。而 asynchronous IO 则完全不同。它就像是用户进程将整个 IO 操作交给了他人（kernel）完成，然后他人做完后发信号通知。在此期间，用户进程不需要去检查 IO 操作的状态，也不需要主动的去拷贝数据。</p>
+<h2 id="IO-多路复用之-select、poll、epoll-详解"><a href="#IO-多路复用之-select、poll、epoll-详解" class="headerlink" title="IO 多路复用之 select、poll、epoll 详解"></a>IO 多路复用之 select、poll、epoll 详解</h2><p><code>select</code>，<code>poll</code>，<code>epoll</code> 都是 IO 多路复用的机制。IO 多路复用就是通过一种机制，一个进程可以监视多个描述符，一旦某个描述符就绪（一般是读就绪或者写就绪），能够通知程序进行相应的读写操作。但 <code>select</code>，<code>poll</code>，<code>epoll</code> 本质上都是同步 IO，因为他们都需要在读写事件就绪后自己负责进行读写，也就是说这个读写过程是阻塞的，而异步 IO 则无需自己负责进行读写，异步 IO 的实现会负责把数据从内核拷贝到用户空间。</p>
+<h3 id="select"><a href="#select" class="headerlink" title="select"></a>select</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">select</span> <span class="params">(<span class="keyword">int</span> n, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout)</span></span>;</span><br></pre></td></tr></table></figure>
+<p><code>select</code> 函数监视的文件描述符分 3 类，分别是 <code>writefds</code>、<code>readfds</code> 和 <code>exceptfds</code>。调用后 <code>select</code> 函数会阻塞，直到有描述副就绪（有数据 可读、可写、或者有 <code>except</code>），或者超时（<code>timeout</code> 指定等待时间，如果立即返回设为 null 即可），函数返回。当 <code>select</code> 函数返回后，可以通过遍历 <code>fdset</code>，来找到就绪的描述符。</p>
+<p><code>select</code> 目前几乎在所有的平台上支持，其良好跨平台支持也是它的一个优点。<code>select</code> 的一个缺点在于<strong>单个进程能够监视的文件描述符的数量存在最大限制，在 Linux 上一般为 1024，可以通过修改宏定义甚至重新编译内核的方式提升这一限制，但是这样也会造成效率的降低</strong>。</p>
+<h3 id="poll"><a href="#poll" class="headerlink" title="poll"></a>poll</h3><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">poll</span> <span class="params">(struct pollfd *fds, <span class="keyword">unsigned</span> <span class="keyword">int</span> nfds, <span class="keyword">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>不同与 <code>select</code> 使用三个位图来表示三种 <code>fdset</code> 的方式，<code>poll</code> 使用一个 <code>pollfd</code> 的指针实现。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">pollfd</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> fd;         <span class="comment">/* file descriptor */</span></span><br><span class="line">    <span class="keyword">short</span> events;   <span class="comment">/* requested events to watch */</span></span><br><span class="line">    <span class="keyword">short</span> revents;  <span class="comment">/* returned events witnessed */</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p><code>pollfd</code> 结构包含了要监视的 event 和发生的 event，不再使用 select 那样“参数-值”传递的方式。同时，<code>pollfd</code> 并没有最大数量限制（但是数量过大后性能也是会下降）。 和 <code>select</code> 函数一样，<code>poll</code> 返回后，需要轮询 <code>pollfd</code> 来获取就绪的描述符。</p>
+<p>从上面看，<strong><code>select</code> 和 <code>poll</code> 都需要在返回后，将所有监控的描述符拷贝到内核空间，通过遍历文件描述符来获取已经就绪的 fd</strong>。事实上，同时连接的大量客户端在一时刻可能只有很少的处于就绪状态，因此随着监视的描述符数量的增长，其效率也会线性下降。</p>
+<h3 id="epoll"><a href="#epoll" class="headerlink" title="epoll"></a>epoll</h3><p><code>epoll</code> 操作过程需要三个接口，分别如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int epoll_create(int size)；//创建一个epoll的句柄，size用来告诉内核这个监听的数目一共有多大</span><br><span class="line">int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)；</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">epoll_wait</span><span class="params">(<span class="keyword">int</span> epfd, struct epoll_event * events, <span class="keyword">int</span> maxevents, <span class="keyword">int</span> timeout)</span></span>;</span><br></pre></td></tr></table></figure>
+<h4 id="epoll-create"><a href="#epoll-create" class="headerlink" title="epoll_create"></a>epoll_create</h4><p>创建一个 <code>epoll</code> 的句柄，<code>size</code> 用来告诉内核这个监听的数目一共有多大，这个参数不同于 <code>select</code> 中的第一个参数（给出最大监听的 fd+1 的值），参数 <code>size</code> 并不是限制了 <code>epoll</code> 所能监听的描述符最大个数，只是对内核初始分配内部数据结构的一个建议。当创建好 <code>epoll</code> 句柄后，它就会占用一个 fd 值，在 Linux 下如果查看 <code>/proc/进程id/fd/</code>，是能够看到这个 fd 的，所以在使用完 <code>epoll</code> 后，必须调用 <code>close()</code> 关闭，否则可能导致 fd 被耗尽。</p>
+<h4 id="epoll-ctl"><a href="#epoll-ctl" class="headerlink" title="epoll_ctl"></a>epoll_ctl</h4><p>函数是对指定描述符 fd 执行 op 操作。</p>
+<ul>
+<li><code>epfd</code>：是 <code>epoll_create()</code> 的返回值。</li>
+<li><code>op</code>：表示 op 操作，用三个宏来表示：添加 <code>EPOLL_CTL_ADD</code>，删除 <code>EPOLL_CTL_DEL</code>，修改 <code>EPOLL_CTL_MOD</code>。分别添加、删除和修改对fd的监听事件。</li>
+<li><code>fd</code>：是需要监听的 fd（文件描述符）。</li>
+<li><code>epoll_event</code>：是告诉内核需要监听什么事，<code>struct epoll_event</code> 结构如下：</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">epoll_event</span> &#123;</span></span><br><span class="line">  <span class="keyword">__uint32_t</span> events;  <span class="comment">/* Epoll events */</span></span><br><span class="line">  <span class="keyword">epoll_data_t</span> data;  <span class="comment">/* User data variable */</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// events可以是以下几个宏的集合</span></span><br><span class="line"><span class="comment">// EPOLLIN ：表示对应的文件描述符可以读（包括对端SOCKET正常关闭）；</span></span><br><span class="line"><span class="comment">// EPOLLOUT：表示对应的文件描述符可以写；</span></span><br><span class="line"><span class="comment">// EPOLLPRI：表示对应的文件描述符有紧急的数据可读（这里应该表示有带外数据到来）；</span></span><br><span class="line"><span class="comment">// EPOLLERR：表示对应的文件描述符发生错误；</span></span><br><span class="line"><span class="comment">// EPOLLHUP：表示对应的文件描述符被挂断；</span></span><br><span class="line"><span class="comment">// EPOLLET： 将EPOLL设为边缘触发(Edge Triggered)模式，这是相对于水平触发(Level Triggered)来说的。</span></span><br><span class="line"><span class="comment">// EPOLLONESHOT：只监听一次事件，当监听完这次事件之后，如果还需要继续监听这个socket的话，需要再次把这个socket加入到EPOLL队列里</span></span><br></pre></td></tr></table></figure>
+<p><code>epoll()</code> 的事件注册函数，它不同与 <code>select()</code> 是在监听事件时告诉内核要监听什么类型的事件，而是在这里先注册要监听的事件类型。当事件发生时，会触发回调，返回给用户进程。</p>
+<h4 id="epoll-wait"><a href="#epoll-wait" class="headerlink" title="epoll_wait"></a>epoll_wait</h4><p>等待 <code>epfd</code> 上的 IO 事件，最多返回 <code>maxevents</code> 个事件。<br>参数 <code>events</code> 用来从内核得到事件的集合，<code>maxevents</code> 告之内核这个 <code>events</code> 有多大，这个 <code>maxevents</code> 的值不能大于创建 <code>epoll_create()</code> 时的 size，参数 <code>timeout</code> 是超时时间（毫秒，0 会立即返回，-1 将不确定，也有说法说是永久阻塞）。该函数返回需要处理的事件数目，如返回 0 表示已超时。</p>
+<h4 id="epoll-工作模式"><a href="#epoll-工作模式" class="headerlink" title="epoll 工作模式"></a>epoll 工作模式</h4><p><code>epoll</code> 对文件描述符的操作有两种模式：LT（level trigger）和 ET（edge trigger）。LT 模式是默认模式，LT 模式与 ET 模式的区别如下：</p>
+<ul>
+<li><p>LT 模式：当 <code>epoll_wait()</code> 检测到描述符事件发生并将此事件通知应用程序，<strong>应用程序可以不立即处理该事件。下次调用 <code>epoll_wait()</code> 时，会再次响应应用程序并通知此事件</strong>。</p>
+<ul>
+<li>LT(level triggered) 是缺省的工作方式，并且同时支持 block 和 no-block socket.在这种做法中，内核告诉你一个文件描述符是否就绪了，然后你可以对这个就绪的 fd 进行 IO 操作。如果你不作任何操作，内核还是会继续通知你的。</li>
+</ul>
+</li>
+<li><p>ET 模式：当 <code>epoll_wait()</code> 检测到描述符事件发生并将此事件通知应用程序，<strong>应用程序必须立即处理该事件。如果不处理，下次调用 <code>epoll_wait()</code> 时，不会再次响应应用程序并通知此事件</strong>。</p>
+<ul>
+<li>ET(edge-triggered) 是高速工作方式，只支持 no-block socket。在这种模式下，当描述符从未就绪变为就绪时，内核通过 <code>epoll</code> 告诉你。然后它会假设你知道文件描述符已经就绪，并且不会再为那个文件描述符发送更多的就绪通知，直到你做了某些操作导致那个文件描述符不再为就绪状态了（比如，你在发送，接收或者接收请求，或者发送接收的数据少于一定量时导致了一个 EWOULDBLOCK 错误）。但是请注意，如果一直不对这个 fd 作 IO 操作（从而导致它再次变成未就绪），内核不会发送更多的通知（only once）</li>
+<li>ET 模式在很大程度上减少了 <code>epoll</code> 事件被重复触发的次数，因此效率要比 LT 模式高。<code>epoll</code> 工作在 ET 模式的时候，必须使用非阻塞套接口，以避免由于一个文件句柄的阻塞读/阻塞写操作把处理多个文件描述符的任务饿死。</li>
+</ul>
+</li>
+</ul>
+<h4 id="epoll-机制"><a href="#epoll-机制" class="headerlink" title="epoll 机制"></a>epoll 机制</h4><p>在 <code>select</code>/<code>poll</code> 中，进程只有在调用一定的方法后，内核才对所有监视的文件描述符进行扫描，而 <code>epoll</code> 事先通过 <code>epoll_ctl()</code> 来注册一个文件描述符，<strong>一旦基于某个文件描述符就绪时，内核会采用类似 callback 的回调机制，迅速激活这个文件描述符，当进程调用 <code>epoll_wait()</code> 时便得到通知。(此处去掉了遍历文件描述符，而是通过监听回调的的机制。这正是 <code>epoll</code> 的魅力所在)</strong>。</p>
+<p><code>epoll</code> 的优点主要是一下几个方面：</p>
+<ul>
+<li>监视的描述符数量不受限制，它所支持的 fd 上限是最大可以打开文件的数目，这个数字一般远大于 2048，举个例子，在 1GB 内存的机器上大约是 10 万左右，具体数目可以 <code>cat /proc/sys/fs/file-max</code> 察看,一般来说这个数目和系统内存关系很大。<code>select</code> 的最大缺点就是进程打开的 fd 是有数量限制的。这对于连接数量比较大的服务器来说根本不能满足。虽然也可以选择多进程的解决方案（Apache 就是这样实现的），不过虽然 Linux 上面创建进程的代价比较小，但仍旧是不可忽视的，加上进程间数据同步远比不上线程间同步的高效，所以也不是一种完美的方案。</li>
+<li>IO 的效率不会随着监视 fd 的数量的增长而下降。<code>epoll</code> 不同于 <code>select</code> 和 <code>poll</code> 轮询的方式，而是通过每个 fd 定义的回调函数来实现的。只有就绪的 fd 才会执行回调函数。</li>
+<li>如果没有大量的 <code>idle-connection</code> 或者 <code>dead-connection</code>，<code>epoll</code> 的效率并不会比 <code>select/poll</code> 高很多，但是当遇到大量的 <code>idle-connection</code>，就会发现 <code>epoll</code> 的效率大大高于 <code>select</code>/<code>poll</code>。</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2017/03/linux-io-multiplexing.html" title="Linux IO 模式及 select、poll、epoll 详解">https://murphypei.github.io/blog/2017/03/linux-io-multiplexing.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+            
+              <a href="/tags/IO复用/" rel="tag"># IO复用</a>
+            
+              <a href="/tags/select/" rel="tag"># select</a>
+            
+              <a href="/tags/epoll/" rel="tag"># epoll</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2017/03/get-post-different.html" rel="next" title="GET 和 POST 的区分">
+                  <i class="fa fa-chevron-left"></i> GET 和 POST 的区分
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2017/03/url-web.html" rel="prev" title="浏览器根据 URL 请求页面过程">
+                  浏览器根据 URL 请求页面过程 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#概念说明"><span class="nav-number">1.</span> <span class="nav-text">概念说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#用户空间与内核空间"><span class="nav-number">1.1.</span> <span class="nav-text">用户空间与内核空间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#进程切换"><span class="nav-number">1.2.</span> <span class="nav-text">进程切换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#进程阻塞"><span class="nav-number">1.3.</span> <span class="nav-text">进程阻塞</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#文件描述符-fd"><span class="nav-number">1.4.</span> <span class="nav-text">文件描述符 fd</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓存-I-O"><span class="nav-number">1.5.</span> <span class="nav-text">缓存 I/O</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IO-模式"><span class="nav-number">2.</span> <span class="nav-text">IO 模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#阻塞-IO"><span class="nav-number">2.1.</span> <span class="nav-text">阻塞 IO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#非阻塞-I-O（nonblocking-IO）"><span class="nav-number">2.2.</span> <span class="nav-text">非阻塞 I/O（nonblocking IO）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#I-O-多路复用（IO-multiplexing）"><span class="nav-number">2.3.</span> <span class="nav-text">I/O 多路复用（IO multiplexing）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#异步-I-O（asynchronous-IO）"><span class="nav-number">2.4.</span> <span class="nav-text">异步 I/O（asynchronous IO）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">2.5.</span> <span class="nav-text">总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#IO-多路复用之-select、poll、epoll-详解"><span class="nav-number">3.</span> <span class="nav-text">IO 多路复用之 select、poll、epoll 详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#select"><span class="nav-number">3.1.</span> <span class="nav-text">select</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#poll"><span class="nav-number">3.2.</span> <span class="nav-text">poll</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#epoll"><span class="nav-number">3.3.</span> <span class="nav-text">epoll</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#epoll-create"><span class="nav-number">3.3.1.</span> <span class="nav-text">epoll_create</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#epoll-ctl"><span class="nav-number">3.3.2.</span> <span class="nav-text">epoll_ctl</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#epoll-wait"><span class="nav-number">3.3.3.</span> <span class="nav-text">epoll_wait</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#epoll-工作模式"><span class="nav-number">3.3.4.</span> <span class="nav-text">epoll 工作模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#epoll-机制"><span class="nav-number">3.3.5.</span> <span class="nav-text">epoll 机制</span></a></li></ol></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">176</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">455</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2025</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">618k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:10</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '7a73210841bac66444ab5af522ac17d2',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

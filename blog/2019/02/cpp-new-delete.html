@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="C++的new和delete是一种特殊的表达式。">
+<meta name="keywords" content="C++,delete,new">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ new和delete探究">
+<meta property="og:url" content="https://murphypei.github.io/blog/2019/02/cpp-new-delete.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="C++的new和delete是一种特殊的表达式。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/cplusplus/new_delete/new_a_object_work.jpeg">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/cplusplus/new_delete/delete_a_object_work.jpeg">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/cplusplus/new_delete/new_array_work.jpeg">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/cplusplus/new_delete/delete_array_work.jpeg">
+<meta property="og:updated_time" content="2025-06-25T02:00:03.870Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++ new和delete探究">
+<meta name="twitter:description" content="C++的new和delete是一种特殊的表达式。">
+<meta name="twitter:image" content="https://murphypei.github.io/images/posts/cplusplus/new_delete/new_a_object_work.jpeg">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2019/02/cpp-new-delete">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>C++ new和delete探究 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/02/cpp-new-delete.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">C++ new和delete探究
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-02-11 09:19:44" itemprop="dateCreated datePublished" datetime="2019-02-11T09:19:44+08:00">2019-02-11</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-06-25 10:00:03" itemprop="dateModified" datetime="2025-06-25T10:00:03+08:00">2025-06-25</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>3.8k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>6 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>C++的new和delete是一种特殊的表达式。</p>
+<a id="more"></a>
+<h2 id="new-和-delete-到底是什么？"><a href="#new-和-delete-到底是什么？" class="headerlink" title="new 和 delete 到底是什么？"></a>new 和 delete 到底是什么？</h2><p>我们都知道C++中<code>sizeof</code>不是函数，并且可以举出一堆的理由来证明<code>sizeof</code>不是函数。和<code>sizeof</code>类似，<code>new</code>和<code>delete</code>也不是函数，它们都是<strong>C++定义的关键字</strong>，通过特定的语法可以组成表达式。和<code>sizeof</code>不同的是，<code>sizeof</code>在编译时候就可以确定其返回值，<code>new</code>和<code>delete</code>背后的机制则比较复杂。</p>
+<p>首先我们应该搞清楚，<code>new</code>应该要做些什么？也许你第一反应是，<code>new</code>不就和C语言中的<code>malloc</code>函数一样嘛，就用来动态申请空间的。你只答对了一半，看看下面语句：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span> *ps = <span class="keyword">new</span> <span class="built_in">string</span>(<span class="string">"hello world"</span>);</span><br></pre></td></tr></table></figure>
+<p>你就可以看出<code>new</code>和<code>malloc</code>还是有点不同的，<code>malloc</code>申请完空间之后不会对内存进行必要的初始化，而<code>new</code>可以。所以 <code>new</code>表达式背后要做的事情不是你想象的那么简单。在我用实例来解释<code>new</code>背后的机制之前，你需要先知道 <code>operator new</code> 和 <code>operator delete</code>。</p>
+<h3 id="operator-new-和-operator-delete"><a href="#operator-new-和-operator-delete" class="headerlink" title="operator new 和 operator delete"></a>operator new 和 operator delete</h3><p>不同与一般的<code>operator***</code>形式的操作符重载函数，<code>operator new</code> 和 <code>operator delete</code>这两个函数其实是 C++ 语言标准库的库函数，原型分别如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> *<span class="keyword">operator</span> <span class="title">new</span><span class="params">(<span class="keyword">size_t</span>)</span></span>;       <span class="comment">//allocate an object</span></span><br><span class="line"><span class="function"><span class="keyword">void</span> *<span class="keyword">operator</span> <span class="title">delete</span><span class="params">(<span class="keyword">void</span> *)</span></span>;    <span class="comment">//free an object</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">void</span> *<span class="keyword">operator</span> <span class="keyword">new</span>[](<span class="keyword">size_t</span>);       <span class="comment">//allocate an array</span></span><br><span class="line"><span class="keyword">void</span> *<span class="keyword">operator</span> <span class="keyword">delete</span>[](<span class="keyword">void</span> *);    <span class="comment">//free an array</span></span><br></pre></td></tr></table></figure>
+<p>后面两个你可以先不看，表示数组的<code>new</code>和<code>delete</code>，后面再介绍。前面两个均是C++标准库函数，你可能会觉得这是函数吗？请不要怀疑，这就是函数。<strong>因为<code>new</code>和<code>delete</code>是不允许重载的</strong>。</p>
+<p>两个函数和C语言中的<code>malloc</code>和<code>free</code>函数有点像了，都是用来申请和释放内存的，并且<code>operator new</code>申请内存之后不对内存进行初始化，直接返回申请内存的指针。</p>
+<p>我们可以直接在我们的程序中使用这几个函数。</p>
+<h3 id="new-和-delete-背后机制"><a href="#new-和-delete-背后机制" class="headerlink" title="new 和 delete 背后机制"></a>new 和 delete 背后机制</h3><p>知道上面两个函数之后，我们用一个实例来解释<code>new</code>和<code>delete</code>背后的机制：</p>
+<p>我们不用简单的C++内置类型来举例，使用复杂一点的类类型，定义一个类A：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span></span><br><span class="line"><span class="class">&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    A(<span class="keyword">int</span> v) : var(v)</span><br><span class="line">    &#123;</span><br><span class="line">        fopen_s(&amp;file, <span class="string">"test"</span>, <span class="string">"r"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    ~A()</span><br><span class="line">    &#123;</span><br><span class="line">        fclose(file);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">int</span> var;</span><br><span class="line">    FILE *file;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>很简单，类A中有两个私有成员，有一个构造函数和一个析构函数，构造函数中初始化私有变量<code>var</code>以及打开一个文件，析构函数关闭打开的文件。</p>
+<p>我们创建一个类的对象，返回其指针<code>pA</code>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> *<span class="title">pA</span> = <span class="title">new</span> <span class="title">A</span>(10);</span></span><br></pre></td></tr></table></figure>
+<p>如下图所示 <code>new</code> 背后完成的工作：</p>
+<p><img src="/images/posts/cplusplus/new_delete/new_a_object_work.jpeg" alt></p>
+<p>简单总结一下：</p>
+<ul>
+<li><p>首先需要调用上面提到的 <code>operator new</code> 标准库函数，传入的参数为<code>class A</code>的大小，这里为 8 个字节，也就是一个int类型成员变量和一个指针成员变量的大小，而且没有虚函数的那些东西。这样函数返回的是分配内存的起始地址，这里假设是0x007da290。</p>
+</li>
+<li><p>上面分配的内存是未初始化的，也是未类型化的，第二步就在这一块原始的内存上对类对象进行初始化，调用的是相应的构造函数，这里是调用<code>A:A(10)</code>; 这个函数，从图中也可以看到对这块申请的内存进行了初始化，<code>var=10</code>, <code>file</code>指向打开的文件。</p>
+</li>
+<li><p>最后一步就是返回新分配并构造好的对象的指针，这里<code>pA</code>就指向<code>0x007da290</code>这块内存，<code>pA</code>的类型为类A对象的指针。</p>
+</li>
+</ul>
+<p>同理，那么 <code>delete</code> 都干了什么呢？还是接着上面的例子，如果这时想释放掉申请的类的对象怎么办？当然我们可以使用下面的语句来完成：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> pA;</span><br></pre></td></tr></table></figure>
+<p><code>delete</code> 所做的事情如下图所示：</p>
+<p><img src="/images/posts/cplusplus/new_delete/delete_a_object_work.jpeg" alt></p>
+<p><code>delete</code>就做了两件事情：</p>
+<p>调用<code>pA</code>指向对象的析构函数，对打开的文件进行关闭。</p>
+<p>通过上面提到的标准库函数<code>operator delete</code>来释放该对象的内存，传入函数的参数为<code>pA</code>的值，也就是0x007d290。</p>
+<p>好了，解释完了<code>new</code>和<code>delete</code>背后所做的事情了，是不是觉得也很简单？不就多了一个构造函数和析构函数的调用嘛。</p>
+<h2 id="new-和-delete-与数组"><a href="#new-和-delete-与数组" class="headerlink" title="new 和 delete 与数组"></a>new 和 delete 与数组</h2><p>如何申请和释放一个数组？我们经常要用到动态分配一个数组，也许是这样的：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">string</span> *psa = <span class="keyword">new</span> <span class="built_in">string</span>[<span class="number">10</span>];      <span class="comment">//array of 10 empty strings</span></span><br><span class="line"><span class="keyword">int</span> *pia = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">10</span>];            <span class="comment">//array of 10 uninitialized ints</span></span><br></pre></td></tr></table></figure></p>
+<p>上面在申请一个数组时都用到了<code>new []</code>这个表达式来完成，按照我们上面讲到的<code>new</code>和<code>delete</code>知识，第一个数组是<code>string</code>类型，分配了保存对象的内存空间之后，将调用<code>string</code>类型的默认构造函数依次初始化数组中每个元素；第二个是申请具有内置类型的数组，分配了存储10个<code>int</code>对象的内存空间，但并没有初始化。</p>
+<p>如果我们想释放空间了，可以用下面两条语句：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> [] psa;</span><br><span class="line"><span class="keyword">delete</span> [] pia;</span><br></pre></td></tr></table></figure></p>
+<p>都用到<code>delete []</code> 表达式，注意这地方的<code>[]</code>一般情况下不能漏掉！我们也可以想象这两个语句分别干了什么：第一个对 10 个<code>string</code>对象分别调用析构函数，然后再释放掉为对象分配的所有内存空间；第二个因为是内置类型不存在析构函数，直接释放为10个<code>int</code>型分配的所有内存空间。</p>
+<p>这里对于第一种情况就有一个问题了：我们如何知道<code>psa</code>指向对象的数组的大小？怎么知道调用几次析构函数？</p>
+<p>这个问题直接导致我们需要在 <code>new []</code> 一个对象数组时，需要保存数组的维度，C++ 的做法是<strong>在分配数组空间时多分配了4个字节的大小，专门保存数组的大小（这4个字节一般位于数组首地址的前面，紧挨着数组），在 <code>delete []</code> 时就可以取出这个保存的数，就知道了需要调用析构函数多少次了</strong>。</p>
+<p>还是用图来说明比较清楚，我们定义了一个类A，但不具体描述类的内容，这个类中有显示的构造函数、析构函数等。那么当我们调用</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> *<span class="title">pAa</span> = <span class="title">new</span> <span class="title">A</span>[3];</span></span><br></pre></td></tr></table></figure>
+<p>时需要做的事情如下：</p>
+<p><img src="/images/posts/cplusplus/new_delete/new_array_work.jpeg" alt></p>
+<p>从这个图中我们可以看到申请时在数组对象的上面还多分配了4个字节用来保存数组的大小，但是最终返回的是对象数组的指针，而不是所有分配空间的起始地址。</p>
+<p>这样的话，释放就很简单了：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">delete</span> []pAa;</span><br></pre></td></tr></table></figure>
+<p><img src="/images/posts/cplusplus/new_delete/delete_array_work.jpeg" alt></p>
+<p>这里要注意的两点是：</p>
+<ul>
+<li>调用析构函数的次数是从数组对象指针前面的 4 个字节中取出；</li>
+<li>传入 <code>operator delete</code>[] 函数的参数不是数组对象的指针 pAa，而是 pAa 的值减 4。</li>
+</ul>
+<p>为什么 <code>new</code>和<code>delete</code> 、<code>new []</code>和<code>delete []</code> 要配对使用？</p>
+<p>从上面解释的你应该懂了 <code>new</code> / <code>delete</code>、<code>new []</code> / <code>delete []</code>的工作原理了，因为它们之间有差别，所以需要配对使用。但偏偏问题不是这么简单，这也是我遇到的问题，如下这段代码：<br><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> *pia = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">10</span>];</span><br><span class="line"><span class="keyword">delete</span> []pia;</span><br></pre></td></tr></table></figure></p>
+<p>这肯定是没问题的，但如果把 <code>delete []pia</code>换成 <code>delete pia</code>的话，会出问题吗？</p>
+<p>这就涉及到上面一节没提到的问题了。上面我提到了在<code>new []</code>时多分配 4 个字节的缘由，因为析构时需要知道数组的大小，但如果不调用析构函数呢（如内置类型，这里的<code>int</code>数组）？我们在 <code>new []</code>时就没必要多分配那4个字节， <code>delete []</code>时直接到第二步释放为<code>int</code>数组分配的空间。如果这里使用 <code>delete pia</code>;那么将会调用 <code>operator delete</code> 函数，传入的参数是分配给数组的起始地址，所做的事情就是释放掉这块内存空间。不存在问题的。</p>
+<p><strong>这里说的使用 <code>new []</code> 用 <code>delete</code> 来释放对象的提前是：对象的类型是内置类型或者是无自定义的析构函数的类类型！最好别这么做，因为如果没有正确地调用构造函数，类似有指针成员的类很容易造成内存泄露！</strong></p>
+<p>我们看看如果是带有自定义析构函数的类类型，用 <code>new []</code> 来创建类对象数组，而用 <code>delete</code> 来释放会发生什么？用上面的例子来说明：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span> *<span class="title">pAa</span> = <span class="title">new</span> <span class="title">class</span> <span class="title">A</span>[3];</span></span><br><span class="line"><span class="keyword">delete</span> pAa;</span><br></pre></td></tr></table></figure>
+<p>那么<code>delete pAa</code>做了两件事：</p>
+<ul>
+<li>调用一次<code>pAa</code>指向的对象的析构函数；</li>
+<li>调用 <code>operator delete(pAa)</code>释放内存。</li>
+</ul>
+<p>显然，这里只对数组的第一个类对象调用了析构函数，后面的两个对象均没调用析构函数，如果类对象中申请了大量的内存需要在析构函数中释放，而你却在销毁数组对象时少调用了析构函数，这会造成内存泄漏。</p>
+<p>上面的问题你如果说没关系的话，那么第二点就是致命的了！直接释放<code>pAa</code>指向的内存空间，这个总是会造成严重的段错误，程序必然会奔溃！因为分配的空间的起始地址是<code>pAa</code>指向的地方减去 4 个字节的地方。你应该传入参数设为那个地址！</p>
+<p>同理，你可以分析如果使用<code>new</code>来分配，用 <code>delete []</code>来释放会出现什么问题？是不是总会导致程序错误？</p>
+<p>总的来说，记住一点即可：<code>new</code>和<code>delete</code>、<code>new []</code>和<code>delete []</code> 要配套使用总是没错的！</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><ul>
+<li><a href="https://www.cnblogs.com/hazir/p/`new`_and_`delete`.html" target="_blank" rel="noopener">https://www.cnblogs.com/hazir/p/`new`_and_`delete`.html</a></li>
+<li>C++ primer 5th</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2019/02/cpp-new-delete.html" title="C++ new和delete探究">https://murphypei.github.io/blog/2019/02/cpp-new-delete.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/C/" rel="tag"># C++</a>
+            
+              <a href="/tags/delete/" rel="tag"># delete</a>
+            
+              <a href="/tags/new/" rel="tag"># new</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2019/02/python-copy-virtualenv.html" rel="next" title="Python拷贝虚拟环境的方法">
+                  <i class="fa fa-chevron-left"></i> Python拷贝虚拟环境的方法
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2019/02/vsftpd.html" rel="prev" title="vsftpd 虚拟多用户多目录配置">
+                  vsftpd 虚拟多用户多目录配置 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#new-和-delete-到底是什么？"><span class="nav-number">1.</span> <span class="nav-text">new 和 delete 到底是什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#operator-new-和-operator-delete"><span class="nav-number">1.1.</span> <span class="nav-text">operator new 和 operator delete</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#new-和-delete-背后机制"><span class="nav-number">1.2.</span> <span class="nav-text">new 和 delete 背后机制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#new-和-delete-与数组"><span class="nav-number">2.</span> <span class="nav-text">new 和 delete 与数组</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">2.0.1.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">176</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">455</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2025</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">618k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:10</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '2cc32346fdfcaf007cbd38169657e123',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

@@ -1,0 +1,1743 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="本文对CMake中库的打包，安装，导出以及支持find_package，使其能够很简单的应用到其他的项目中进行详细的总结。">
+<meta name="keywords" content="C++,CMake,编译,链接,打包,find_package">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMake库打包以及支持find_package">
+<meta property="og:url" content="https://murphypei.github.io/blog/2018/11/cmake-install-find-package.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="本文对CMake中库的打包，安装，导出以及支持find_package，使其能够很简单的应用到其他的项目中进行详细的总结。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2025-06-25T02:00:03.830Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CMake库打包以及支持find_package">
+<meta name="twitter:description" content="本文对CMake中库的打包，安装，导出以及支持find_package，使其能够很简单的应用到其他的项目中进行详细的总结。">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2018/11/cmake-install-find-package">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>CMake库打包以及支持find_package | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/11/cmake-install-find-package.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">CMake库打包以及支持find_package
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2018-11-04 16:46:46" itemprop="dateCreated datePublished" datetime="2018-11-04T16:46:46+08:00">2018-11-04</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-06-25 10:00:03" itemprop="dateModified" datetime="2025-06-25T10:00:03+08:00">2025-06-25</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>9.7k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>16 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本文对CMake中库的打包，安装，导出以及支持find_package，使其能够很简单的应用到其他的项目中进行详细的总结。</p>
+<a id="more"></a>
+<h2 id="CMake打包库"><a href="#CMake打包库" class="headerlink" title="CMake打包库"></a>CMake打包库</h2><p>假设我们的库的结构如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">- include/</span><br><span class="line">  - my_library/</span><br><span class="line">    - header-a.hpp</span><br><span class="line">	- header-b.hpp</span><br><span class="line">	- config.hpp</span><br><span class="line">	- ...</span><br><span class="line">- src/</span><br><span class="line">  - source-a.cpp</span><br><span class="line">  - source-b.cpp</span><br><span class="line">  - config.hpp.in</span><br><span class="line">  - ...</span><br><span class="line">  - CMakeLists.txt</span><br><span class="line">- example/</span><br><span class="line">  - example-a.cpp</span><br><span class="line">  - ...</span><br><span class="line">  - CMakeLists.txt</span><br><span class="line">- tool/</span><br><span class="line">  - tool.cpp</span><br><span class="line">  - CMakeLists.txt</span><br><span class="line">- test/</span><br><span class="line">  - test.cpp</span><br><span class="line">  - CMakeLists.txt</span><br><span class="line">- CMakeLists.txt</span><br><span class="line">- ...</span><br></pre></td></tr></table></figure></p>
+<p>在这个库中包含了不同的头文件和源文件，还包含一些例子，工具和单元测试模块。对于库、示例和单元测试，每个模块分别拥有自己的<code>CMakeLists.txt</code>，在其中定义了编译的目标并且在子目录中包含了相关的代码。而项目的根目录的<code>CMakeLists.txt</code>则定义了配置选项，并将这些子模块的加入编译中去。</p>
+<p>库的相关配置在<code>config.hpp.in</code>中被定义，然后这个文件会被CMake预处理为<code>config_impl.hpp</code>，然后被<code>config.hpp</code>包含到项目中去（<code>#include &quot;config_impl.hpp&quot;</code>）。</p>
+<blockquote>
+<p>这种方法非常重要，能够让我们对不同的CMake配置文件进行分离，比如一些不相干的配置的宏等等</p>
+</blockquote>
+<p><strong>项目根目录的<code>CMakeLists.txt</code>文件：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">cmake_minimum_required(VERSION 3.0)</span><br><span class="line">project(MY_LIBRARY)</span><br><span class="line"></span><br><span class="line"># define library version (update: apparently you can also do it in project()!)</span><br><span class="line">set(MY_LIBRARY_VERSION_MAJOR 1 CACHE STRING &quot;major version&quot; FORCE)</span><br><span class="line">set(MY_LIBRARY_VERSION_MINOR 0 CACHE STRING &quot;minor version&quot; FORCE)</span><br><span class="line">set(MY_LIBRARY_VERSION $&#123;MY_LIBRARY_VERSION_MAJOR&#125;.$&#123;MY_LIBRARY_VERSION_MINOR&#125; CACHE STRING &quot;version&quot; FORCE)</span><br><span class="line"></span><br><span class="line"># some options</span><br><span class="line">option(MY_LIBRARY_USE_FANCY_NEW_CLASS &quot;whether or not to use fancy new class&quot; ON)</span><br><span class="line">option(MY_LIBRARY_DEBUG_MODE &quot;whether or not debug mode is activated&quot; OFF)</span><br><span class="line"></span><br><span class="line"># add subdiretories</span><br><span class="line">add_subdirectory(src)</span><br><span class="line">add_subdirectory(example)</span><br><span class="line">add_subdirectory(tool)</span><br><span class="line">add_subdirectory(test)</span><br></pre></td></tr></table></figure>
+<p>这个文件中有一些<code>option</code>操作，这些配置选项能够讲相关配置写入到<code>config.hpp.in</code>中，我们需要在<code>config.hpp.in</code>定义这些选项，类似这种形式：<code>#cmakedefine01</code></p>
+<blockquote>
+<p>注意，库的版本号我们使用了<code>force</code>，这个就阻止了用户在<code>CMakeCache.txt</code>中更改这个版本号</p>
+</blockquote>
+<p><strong>库模块的<code>src/CMakeLists.txt</code>文件：</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"># set headers</span><br><span class="line">set(header_path &quot;$&#123;MY_LIBRARY_SOURCE_DIR&#125;/include/my_library&quot;)</span><br><span class="line">set(header $&#123;header_path&#125;/header-a.hpp</span><br><span class="line">		   $&#123;header_path&#125;/header-b.hpp</span><br><span class="line">		   $&#123;header_path&#125;/config.hpp</span><br><span class="line">		   ...)</span><br><span class="line"></span><br><span class="line"># set source files</span><br><span class="line">set(src source-a.cpp</span><br><span class="line">		source-b.cpp</span><br><span class="line">		...)</span><br><span class="line">		</span><br><span class="line"># configure config.hpp.in</span><br><span class="line">configure_file(&quot;config.hpp.in&quot; &quot;$&#123;CMAKE_CURRENT_BINARY_DIR&#125;/config_impl.hpp&quot;)</span><br><span class="line"></span><br><span class="line"># define library target</span><br><span class="line">add_library(my_library $&#123;header&#125; $&#123;src&#125;)</span><br><span class="line">target_include_directories(my_library PUBLIC $&#123;MY_LIBRARY_SOURCE_DIR&#125;/include</span><br><span class="line">											 $&#123;CMAKE_CURRENT_BINARY_DIR&#125;)</span><br></pre></td></tr></table></figure>
+<p>首先，我们定义了头文件和源文件的列表，方便后续使用。</p>
+<blockquote>
+<p>注意头文件的路径变量<code>header_path</code>，这个变量在不同的CMake子文件中是不同的，而源文件因为在同一目录中，则可以直接定义。</p>
+</blockquote>
+<p>这个CMake文件同样能够生成<code>config_impl.hpp</code>，并保存在当前定义的库生成的二进制目录中（<code>${CMAKE_CURRENT_BINARY_DIR}</code>），然后被包含在<code>config.hpp</code>中，最终在库被使用能够被找到。</p>
+<p><code>target_include_directories</code>指定了这个库要用到的头文件，<code>PUBLIC</code>制定的包含目录包括了<code>include/</code>的子目录和当前<code>CMake</code>的二进制目录（为了包含<code>config_impl.hpp</code>）。</p>
+<p><strong>其余模块的的<code>CMakeLists.txt</code>类似</strong></p>
+<p>到这一步，其余的用户就能够通过<code>add_subdirtectory()</code>来添加库的目录，然后调用<code>target_link_libraries(my_target PUBLIC my_library)</code>来链接库，并且需要设置<code>include_directories</code>来包含相关的头文件，从而能够调用我们的库。</p>
+<h2 id="CMake安装库"><a href="#CMake安装库" class="headerlink" title="CMake安装库"></a>CMake安装库</h2><p>我们需要安装的东西包括：头文件，可执行的工具以及已经编译好的库。这些都能够直接使用<code>install()</code>命令来直接安装。当我们使用<code>cmake install（make install）</code>这类命令时，会拷贝这些文件到<code>${CMAKE_INSTALL_PREFIX}</code>中（Linux下默认是<code>/usr/local</code>）。</p>
+<p>首先，我们在项目的<strong>根<code>CMakeLists.txt</code>中</strong>定义相关的位置和变量：<br><code>set(tool_dest &quot;bin&quot;)</code><br><code>set(include_dest &quot;include/my_library-&quot;${MY_LIBRARY_VERSION}&quot;)</code><br><code>set(main_lib_dest &quot;lib/my_library-&quot;${MY_LIBRARY_VERSION}&quot;)</code></p>
+<p>然后我们配置<code>install()</code>命令：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># in tool/CMakeLists.txt</span><br><span class="line">install(TARGETS my_library_tool DESTINATION &quot;$&#123;tool_dest&#125;&quot;)</span><br><span class="line"></span><br><span class="line"># in src/CMakeLists.txt</span><br><span class="line">install(TARGETS my_library DESTINATION &quot;$&#123;main_lib_dest&#125;&quot;)</span><br><span class="line">install(FILES $&#123;header&#125; DESTINATION &quot;$&#123;include_dest&#125;&quot;)</span><br><span class="line">install(FILES $&#123;CMAKE_CURRENT_BINARY_DIR&#125;/config_impl.hpp DESTINATION &quot;$&#123;include_dest&#125;&quot;)</span><br></pre></td></tr></table></figure></p>
+<p>这会将可执行工具安装到<code>${CMAKE_INSTALL_PREFIX}/bin</code>上，头文件安装到<code>${CMAKE_INSTALL_PREFIX}/include/my_library-1.0</code>，库安装到<code>${CMAKE_INSTALL_PREFIX}/lib/my_library-1.0</code>。现在就已经满足了我们的一个目标了：不同版本的库不会产生冲突，因为版本号成为了安装路径的一部分。</p>
+<blockquote>
+<p>对于工具<code>tool</code>，我们假设其能够具有很好的兼容性，并且将其直接放到<code>bin/</code>文件夹中，这样其能够直接在终端运行，如果你有需求，你应该对这部分做一些自定义的调整。</p>
+</blockquote>
+<p>但是目前仍然没有解决一个问题：<strong>每个编译出来的库可以拥有不同的配置</strong>。因为现在只有一个配置文件。我们当然也能通过配置不同的识别名称来区别不同的配置，就像利用不同的版本号一样，但是这对于大多数文件是不需要，因此我们不必采用这种方案。</p>
+<p>再次忽略掉<code>tool</code>，那么就只剩下两个文件需要依赖不同的配置：编译得到的库和生成的<code>config_impl.hpp</code>文件。因为其中包含了对于库的一些宏的操作，因此我们需要根据配置的不同，将这两个文件放在不同的位置。</p>
+<p>但是我们怎么去区分呢？</p>
+<p>可以使用编译类型<code>${CMAKE_BUILD_TYPE}</code>这个变量。通过指示<code>Debug</code>，<code>Release</code>，<code>MinSizeRel</code>以及<code>RelWithDebInfo</code>，来指示不同的配置选项。</p>
+<blockquote>
+<p>我们也可以定义自己的编译类型以及相对应的一些编译选项操作。</p>
+</blockquote>
+<p>现在我们可以在项目的根<code>CmakeLists.txt</code>中添加一个新的变量了<code>lib_dest</code>：</p>
+<p><code>set(lib_dest ${main_lib_dest}/${CMAKE_BUILD_TYPE}&quot;)</code></p>
+<p>并且需要更改<code>config_impl.hpp</code>和库目标的路径，将其安装到<code>lib_dest</code>中，这样对于不同的编译类型（也就是不同的配置），我们就会得到不同的<code>config_impl.hpp</code>和库文件。</p>
+<p>现在，经过这些配置，我们已经能够区别不同版本和不同配置的库，将其安装到不同的目标路径中，比如<code>${CMAKE_INSTALL_PREFIX}/lib/my_library-1.0/Debug</code>。</p>
+<h2 id="CMake导出库"><a href="#CMake导出库" class="headerlink" title="CMake导出库"></a>CMake导出库</h2><p>经过上述步骤，我们已经安装了我们库的所有东西，现在其他用户可以通过<code>include_directories</code>和<code>add_libraries</code>以及制定链接的目标等相应操作来使用我们的库，但是我们希望能够像OpenCV一样，让我们的库的CMake整合到别人的项目中去。</p>
+<p>为此，CMake提供了目标导出的功能。导出一个目标能够让我们重复利用一个CMake工程，比如一些变量等等，就像用户自己定义的一样，最常见的就是OpenCV和NDK这类的工程。</p>
+<p>为了使用导出功能，需要创建一个<code>my_library.cmake</code>文件，其中包含了所有编译和安装目标的引用，用户只需要包含这个文件就可以使用前面编译和安装的库。为了能够导出<code>my_library</code>库，我们需要做两件事：</p>
+<ul>
+<li><p>首先，对于每个目标，需要指明其是否导出。这个可以通过在<code>install(TARGET)</code>命令中添加<code>EXPORT my_library</code>选项，像下面这样：</p>
+<ul>
+<li><code>install(TARGETS my_library EXPORT my_library DESTINATION &quot;${lib_dest}&quot;)</code></li>
+</ul>
+</li>
+<li><p>其次，导出的目标也需要安装，这个可以通过在根目录下的<code>CMakeLists.txt</code>中的<code>install(EXPORT)</code>命令完成。因为我们的编译类型和<code>config_impl.hpp</code>的位置以及库的目标位置有关，二者会被安装到<code>${lib_dest}</code>，因此，安装命令如下：</p>
+<ul>
+<li><code>install(EXPORT my_library DESTINATION &#39;${lib_dest}&#39;)</code></li>
+</ul>
+</li>
+</ul>
+<p>现在还有一个小问题：我们的目标库设定了<code>target_include_directories()</code>，这个设置会将我们要构建的目标（<code>add_library</code>或者<code>add_executable</code>所指定的生成目标）所使用的头文件目录传递给目标，并且安装时也是依据这个来安装目标对象的头文件，这就导致构建和安装的时候，必须使用同一个include目录。而且这个目录是不能随意更改的，否则在构建的时候会出现问题。</p>
+<blockquote>
+<p>这里有个额外的知识，我们知道<code>target_include_directories()</code>指定了对象的include目录，当这个target T 被其他的target通过<code>target_link_libraries()</code>链接的时候，T中通过<code>target_include_directories()</code>指定的<code>PUBLIC</code>和<code>INTERFACE</code>目录，会被自动导入到其他的target的include_directories中。这也是<code>target_include_directories()</code>在项目的多模块引用时的一个用法。</p>
+</blockquote>
+<p>CMake有一个特性可以支持修复上述的问题，就是生成器表达式，这个特性可以允许设定目标对象在构建和安装时，使用不同的include目录，我们需要将<code>target_include_directories()</code>调用改为如下的格式：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">target_include_directories(my_library PUBLIC</span><br><span class="line">        $&lt;BUILD_INTERFACE:$&#123;MY_LIBRARY_SOURCE_DIR&#125;/include&gt; # for headers when building</span><br><span class="line">        $&lt;BUILD_INTERFACE:$&#123;CMAKE_CURRENT_BINARY_DIR&#125;&gt; # for config_impl.hpp when building</span><br><span class="line">        $&lt;INSTALL_INTERFACE:$&#123;include_dest&#125;&gt; # for client in install mode</span><br><span class="line">        $&lt;INSTALL_INTERFACE:$&#123;lib_dest&#125;&gt; # for config_impl.hpp in install mode)</span><br></pre></td></tr></table></figure></p>
+<p>这样我们就有了一个<code>my_library.cmake</code>，当需要用到<code>my_library</code>库的时候，只需要通过<code>include(/path/to/installation/my_library-1.0/Debug/my_library.cmake)</code>来直接引用，而不比再搞一大堆类似lib的路径，include的路径等等操作了。</p>
+<p>但是现在还不是最终形式，我们前面说了，要搞成类似OpenCV那种支持自动find的形式，接着就是最后的支持包搜索了。</p>
+<h2 id="支持find-package"><a href="#支持find-package" class="headerlink" title="支持find_package"></a>支持find_package</h2><p>CMake支持<code>find_package()</code>，相信大家在Linux上面用OpenCV，很多都是直接用这条命令。</p>
+<p>当我们用<code>find_package(my_library ...)</code>这条命令时，它去<code>${CMAKE_INSTALL_PREFIX}/lib</code>目录下一个名为<code>my_library*</code>的文件夹中自动去寻找一个类似<code>my_library-config.cmake</code>的文件，而我们的安装命名就是符合这个规则的，<code>lib/my_library-[major].[minor] - ${main_lib_dest}</code>。所以现在我们只需要提供<code>my_library-config.cmake</code>文件。</p>
+<p>这个文件的内容是能够被<code>find_package()</code>直接调用的脚本，通常包含了定义目标的代码，而这些代码我们已经通过<code>install(EXPORT)</code>命令生成在<code>my_library.cmake</code>文件中了，因此我们只需要在<code>my_library-config.cmake</code>文件中<code>include()</code>这个文件。包含的时候也要匹配相应的版本号和编译类型<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># my_library-config.cmake - package configuration file</span><br><span class="line"></span><br><span class="line">get_filename_component(SELF_DIR &quot;$&#123;CMAKE_CURRENT_LIST_FILE&#125;&quot; PATH)</span><br><span class="line">include($&#123;SELF_DIR&#125;/$&#123;CMAKE_BUILD_TYPE&#125;/my_library.cmake)</span><br></pre></td></tr></table></figure></p>
+<p>这个文件同样能够存储在我们的库中，必须记住在安装的时候顺便将其安装了：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">install(FILES my_library-config.cmake DESTINATION $&#123;main_lib_dest&#125;)</span><br><span class="line">install(EXPORT ...)</span><br></pre></td></tr></table></figure></p>
+<p>现在，用户只需要在自己的CMake项目中调用<code>find_package(my_library REQUIRED)</code>，这个库就会被自动搜索和找到（如果该库的${CMAKE_BUILD_TYPE}类型已经被安装了），并且导出所有的对象，然后方便用户直接链接：<code>target_link_libraries(client_target PUBLIC my_library)</code>，能够直接链接到正确的版本和构建类型。</p>
+<blockquote>
+<p><code>REQUIRED</code>并非必须，但是在引用目标的时候就必须附加相应的变量。</p>
+</blockquote>
+<h3 id="版本控制"><a href="#版本控制" class="headerlink" title="版本控制"></a>版本控制</h3><p><code>find_package()</code>同样支持版本控制，你可以传入版本号作为第二个参数。</p>
+<p><code>find_package()</code>的版本控制是通过一个类似名为<code>my_library-config-version.cmake</code>文件完成的，和<code>my_library-config.cmake</code>类似，你需要在库中提供并安装它。</p>
+<p>这个版本控制文件接受<code>${PACKAGE_FIND_VERSION_MAJOR/MINOR}</code>格式的版本号，并设置相应的合适版本号变量<code>${PACKAGE_VERSION_EXACT/COMPATIBLE/UNSUITABLE}</code>，以及完整的版本号<code>${PACKAGE_VERSION}</code>。但是仅仅设置版本号相关的变量还没有解决一个问题：到底哪个版本的库将会被安装。为此，我们需要在安装之前通过引用根目录的<code>CMakeLists.txt</code>中的版本号相关的变量来进行安装的配置。</p>
+<p>这里有一个简单的脚本，需要一个指定的大版本号以及必须大于等于的小版本号：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># my_library-config-version.cmake - checks version: major must match, minor must be less than or equal</span><br><span class="line"></span><br><span class="line">set(PACKAGE_VERSION @MY_LIBRARY_VERSION@)</span><br><span class="line"></span><br><span class="line">if(&quot;$&#123;PACKAGE_FIND_VERSION_MAJOR&#125;&quot; EQUAL &quot;@MY_LIBRARY_VERSION_MAJOR@&quot;)</span><br><span class="line">    if (&quot;$&#123;PACKAGE_FIND_VERSION_MINOR&#125;&quot; EQUAL &quot;@MY_LIBRARY_VERSION_MINOR@&quot;)</span><br><span class="line">        set(PACKAGE_VERSION_EXACT TRUE)</span><br><span class="line">    elseif(&quot;$&#123;PACKAGE_FIND_VERSION_MINOR&#125;&quot; LESS &quot;@MY_LIBRARY_VERSION_MINOR@&quot;)</span><br><span class="line">        set(PACKAGE_VERSION_COMPATIBLE TRUE)</span><br><span class="line">    else()</span><br><span class="line">        set(PACKAGE_VERSION_UNSUITABLE TRUE)</span><br><span class="line">    endif()</span><br><span class="line">else()</span><br><span class="line">    set(PACKAGE_VERSION_UNSUITABLE TRUE)</span><br><span class="line">endif()</span><br></pre></td></tr></table></figure></p>
+<p>可以在根目录的<code>CMakeLists.txt</code>中配置相应的版本（通过替换@中的版本变量为相应的正确版本号）和完成安装。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">configure_file(my_library-config-version.cmake.in $&#123;CMAKE_CURRENT_BINARY_DIR&#125;/my_library-config-version.cmake @ONLY)</span><br><span class="line"></span><br><span class="line">install(FILES my_library-config.cmake $&#123;CMAKE_CURRENT_BINARY_DIR&#125;/my_library-config-version.cmake DESTINATION $&#123;main_lib_dest&#125;)</span><br><span class="line">install(EXPORT ...)</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>这里<code>@NOLY</code>主要是为了不符合CMake的变量命名方式。</p>
+</blockquote>
+<p>现在调用<code>find_package(my_library 1.0 REQUIRED)</code>这种形式，可以寻找1.0或者相兼容版本（如果你设置了兼容的版本号）的库。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>总结来看，为了在CMake中支持库的安装和<code>find_package()</code>，我们需要：</p>
+<ul>
+<li><p>改变库目标的<code>target_include_directories()</code>，使用<code>$&lt;BUILD_INTERFACE:&gt;</code>和<code>$&lt;INSTALL_INTERFACE:&gt;</code>生成器表达式来设置正确的include目录。在安装模式下，就是把库的头文件将会被安装的位置。（看下一条）</p>
+</li>
+<li><p>通过<code>install(FILES)</code>安装头文件到<code>include/my_library-[major].[minor]</code>中。</p>
+</li>
+<li><p>通过<code>install(FILES)</code>安装相应的配置头文件（或者其他依赖于构建类型（build type）的头文件）到<code>lib/my_library-[major].[minor]/${CMAKE_BUILD_TYPE}/</code>中。</p>
+</li>
+<li><p>通过<code>install(TARGET target EXPORT my_library ...)</code>安装库文件到<code>lib/my_library-[major].[minor]/${CMAKE_BUILD_TYPE}/</code>中，这条命令也将目标加入导出集合中。</p>
+</li>
+<li><p>定义一个命名为<code>my_library-config.cmake</code>的文件，其中包含了相应的<code>my_library.cmake</code>文件。还需要定义一个<code>my_library-config-version.cmake.in</code>配置文件，和上述一样，用于版本兼容性检查和控制。</p>
+</li>
+<li><p>通过<code>configure_file(...)</code>来配置正确的版本安装的文件，然后通过<code>install(FILES)</code>安装相应版本控制文件和<code>my_library-config.cmake</code>文件到<code>lib/my_library-[major].[minor]/</code>中。</p>
+</li>
+<li><p>通过<code>install(EXPORT)</code>安装导出集合中的的库文件到<code>lib/my_library-[major].[minor]/${CMAKE_BUILD_TYPE}/</code>。</p>
+</li>
+</ul>
+<p>现在，用户只需要通过如下方式来调用：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">find_package(my_library 1.0 REQUIRED)</span><br><span class="line">target_link_libraries(client_target PUBLIC my_library)</span><br></pre></td></tr></table></figure></p>
+<p>这样就能够自动地寻找合适版本的库进行链接。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><ul>
+<li>本文翻译自： <a href="https://foonathan.net/blog/2016/03/03/cmake-install.html" target="_blank" rel="noopener">https://foonathan.net/blog/2016/03/03/cmake-install.html</a></li>
+<li>项目的源码地址： <a href="https://github.com/foonathan/memory" target="_blank" rel="noopener">https://github.com/foonathan/memory</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2018/11/cmake-install-find-package.html" title="CMake库打包以及支持find_package">https://murphypei.github.io/blog/2018/11/cmake-install-find-package.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/C/" rel="tag"># C++</a>
+            
+              <a href="/tags/CMake/" rel="tag"># CMake</a>
+            
+              <a href="/tags/编译/" rel="tag"># 编译</a>
+            
+              <a href="/tags/链接/" rel="tag"># 链接</a>
+            
+              <a href="/tags/打包/" rel="tag"># 打包</a>
+            
+              <a href="/tags/find-package/" rel="tag"># find_package</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2018/10/cmake-variable.html" rel="next" title="CMake中变量总结">
+                  <i class="fa fa-chevron-left"></i> CMake中变量总结
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2018/11/pip-upgrade-issue.html" rel="prev" title="pip升级之后出现的问题">
+                  pip升级之后出现的问题 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#CMake打包库"><span class="nav-number">1.</span> <span class="nav-text">CMake打包库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CMake安装库"><span class="nav-number">2.</span> <span class="nav-text">CMake安装库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CMake导出库"><span class="nav-number">3.</span> <span class="nav-text">CMake导出库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#支持find-package"><span class="nav-number">4.</span> <span class="nav-text">支持find_package</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#版本控制"><span class="nav-number">4.1.</span> <span class="nav-text">版本控制</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">5.0.1.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">176</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">455</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2025</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">618k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:10</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: 'a84c6ef44b175bfa07b3fdab5ded2b19',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

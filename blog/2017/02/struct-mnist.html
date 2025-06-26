@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="在编程中，对于数据操作最常见的就是字符流和字节流操作，本文以解析 MNIST 数据集为例，对 Python 中如何操作字节流进行总结。">
+<meta name="keywords" content="Python,字节,mnist,struct">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python 操作字节流以及 struct 模块简易教程">
+<meta property="og:url" content="https://murphypei.github.io/blog/2017/02/struct-mnist.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="在编程中，对于数据操作最常见的就是字符流和字节流操作，本文以解析 MNIST 数据集为例，对 Python 中如何操作字节流进行总结。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2025-06-25T02:00:03.570Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python 操作字节流以及 struct 模块简易教程">
+<meta name="twitter:description" content="在编程中，对于数据操作最常见的就是字符流和字节流操作，本文以解析 MNIST 数据集为例，对 Python 中如何操作字节流进行总结。">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2017/02/struct-mnist">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>Python 操作字节流以及 struct 模块简易教程 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/02/struct-mnist.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">Python 操作字节流以及 struct 模块简易教程
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2017-02-25 00:00:00" itemprop="dateCreated datePublished" datetime="2017-02-25T00:00:00+08:00">2017-02-25</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-06-25 10:00:03" itemprop="dateModified" datetime="2025-06-25T10:00:03+08:00">2025-06-25</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>5k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>8 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>在编程中，对于数据操作最常见的就是字符流和字节流操作，本文以解析 MNIST 数据集为例，对 Python 中如何操作字节流进行总结。</p>
+<a id="more"></a>
+<p>利用 Caffe 训练 MNIST 数据集，发现数据集是 IDX 文件格式，需要进行二进制的读取操作。网上查了一些利用 Python 进行字节流操作的教程，整理了 struct 模块的简易教程。</p>
+<blockquote>
+<p>一般认为：二进制流 == 字节流 == 二进制数组 == 字节数组</p>
+</blockquote>
+<h3 id="struct-模块简介"><a href="#struct-模块简介" class="headerlink" title="struct 模块简介"></a>struct 模块简介</h3><p>struct 模块中最重要的三个函数是 <code>pack()</code>, <code>unpack()</code>, <code>calcsize()</code></p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 按照给定的格式化字符串，把数据封装成字符串(实际上是类似于c结构体的字节流)</span></span><br><span class="line">string = struct.pack(fmt, v1, v2, ...)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 按照给定的格式(fmt)解析字节流string，返回解析出来的tuple</span></span><br><span class="line">tuple = unpack(fmt, string)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算给定的格式(fmt)占用多少字节的内存</span></span><br><span class="line">offset = calcsize(fmt)</span><br></pre></td></tr></table></figure>
+<p><strong>struct 中支持的格式如下表：</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Format</th>
+<th style="text-align:center">C Type</th>
+<th style="text-align:center">Python</th>
+<th style="text-align:center">字节数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">x</td>
+<td style="text-align:center">pad byte</td>
+<td style="text-align:center">no value</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">c</td>
+<td style="text-align:center">char</td>
+<td style="text-align:center">string of length 1</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">b</td>
+<td style="text-align:center">signed char</td>
+<td style="text-align:center">integer</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">B</td>
+<td style="text-align:center">unsigned char</td>
+<td style="text-align:center">integer</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">?</td>
+<td style="text-align:center">_Bool</td>
+<td style="text-align:center">bool</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">h</td>
+<td style="text-align:center">short</td>
+<td style="text-align:center">integer</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">H</td>
+<td style="text-align:center">unsigned short</td>
+<td style="text-align:center">integer</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">i</td>
+<td style="text-align:center">int</td>
+<td style="text-align:center">integer</td>
+<td style="text-align:center">4</td>
+</tr>
+<tr>
+<td style="text-align:center">I</td>
+<td style="text-align:center">unsigned int</td>
+<td style="text-align:center">integer or lon</td>
+<td style="text-align:center">4</td>
+</tr>
+<tr>
+<td style="text-align:center">l</td>
+<td style="text-align:center">long</td>
+<td style="text-align:center">integer</td>
+<td style="text-align:center">4</td>
+</tr>
+<tr>
+<td style="text-align:center">L</td>
+<td style="text-align:center">unsigned long</td>
+<td style="text-align:center">long</td>
+<td style="text-align:center">4</td>
+</tr>
+<tr>
+<td style="text-align:center">q</td>
+<td style="text-align:center">long</td>
+<td style="text-align:center">long    long</td>
+<td style="text-align:center">8</td>
+</tr>
+<tr>
+<td style="text-align:center">Q</td>
+<td style="text-align:center">unsigned long</td>
+<td style="text-align:center">long    long</td>
+<td style="text-align:center">8</td>
+</tr>
+<tr>
+<td style="text-align:center">f</td>
+<td style="text-align:center">float</td>
+<td style="text-align:center">float</td>
+<td style="text-align:center">4</td>
+</tr>
+<tr>
+<td style="text-align:center">d</td>
+<td style="text-align:center">double</td>
+<td style="text-align:center">float</td>
+<td style="text-align:center">8</td>
+</tr>
+<tr>
+<td style="text-align:center">s</td>
+<td style="text-align:center">char[]</td>
+<td style="text-align:center">string</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">p</td>
+<td style="text-align:center">char[]</td>
+<td style="text-align:center">string</td>
+<td style="text-align:center">1</td>
+</tr>
+<tr>
+<td style="text-align:center">P</td>
+<td style="text-align:center">void *</td>
+<td style="text-align:center">long</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>需要注意的一些问题：</strong></p>
+<ul>
+<li>q 和 Q 只在机器支持 64 位操作时有意义</li>
+<li>每个格式前可以有一个数字，表示个数</li>
+<li>s 格式表示一定长度的字符串，4s 表示长度为 4 的字符串，但是 p 表示的是 pascal 字符串</li>
+<li>P 用来转换一个指针，其长度和机器字长相关</li>
+<li>最后一个可以用来表示指针类型的，占 4 个字节</li>
+</ul>
+<p>为了同 C 中的结构体交换数据，还要考虑有的 C/C++ 编译器使用了字节对齐，通常是以 4 个字节为单位的 32 位系统，故而 struct 根据本地机器字节顺序转换。可以用格式中的第一个字符来改变对齐方式。定义如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">Character</th>
+<th style="text-align:center">Byte order</th>
+<th style="text-align:center">Size and alignment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">@</td>
+<td style="text-align:center">native    native</td>
+<td style="text-align:center">凑够4个字节</td>
+</tr>
+<tr>
+<td style="text-align:center">=</td>
+<td style="text-align:center">native    standard</td>
+<td style="text-align:center">按原字节数</td>
+</tr>
+<tr>
+<td style="text-align:center">&lt;</td>
+<td style="text-align:center">little-endian    standard</td>
+<td style="text-align:center">按原字节</td>
+</tr>
+<tr>
+<td style="text-align:center">&gt;</td>
+<td style="text-align:center">big-endian    standard</td>
+<td style="text-align:center">按原字节数</td>
+</tr>
+<tr>
+<td style="text-align:center">!</td>
+<td style="text-align:center">network (= big-endian)    standard</td>
+<td style="text-align:center">按原字节数</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>使用方法是放在 fmt 的第一个位置，就像 <code>@5s6sif</code></strong></p>
+<h3 id="利用-struct-解析-MNIST-数据集"><a href="#利用-struct-解析-MNIST-数据集" class="headerlink" title="利用 struct 解析 MNIST 数据集"></a>利用 struct 解析 MNIST 数据集</h3><p>MNIST 数据集从官网下载解压，得到四个 IDX 数据文件</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">t10k-images.idx3-ubyte</span><br><span class="line">t10k-labels-idx1-ubyte</span><br><span class="line">train-images.idx3-ubyte</span><br><span class="line">train-labels.idx1-ubyte</span><br></pre></td></tr></table></figure>
+<p><strong>解析并保存数据：</strong></p>
+<figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding=utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">解析MNIST数据集的IDX格式文件</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="keyword">import</span> scipy.misc</span><br><span class="line"><span class="keyword">import</span> numpy <span class="keyword">as</span> np</span><br><span class="line"><span class="keyword">import</span> struct</span><br><span class="line"><span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt</span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"></span><br><span class="line"><span class="comment"># 数据集存放目录</span></span><br><span class="line">dataset_path = <span class="string">"/home/ryancrj/data/mnist-dataset/"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 训练数据集文件</span></span><br><span class="line">train_image_idx_ubyte_file = <span class="string">'train-images.idx3-ubyte'</span></span><br><span class="line">train_labels_idx_ubyte_file = <span class="string">'train-labels.idx1-ubyte'</span></span><br><span class="line"></span><br><span class="line">save_train_images_path = <span class="string">"train_images"</span></span><br><span class="line">save_train_labels_file= <span class="string">"train_labels.txt"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 测试数据集文件</span></span><br><span class="line">test_image_idx_ubyte_file = <span class="string">'t10k-images.idx3-ubyte'</span></span><br><span class="line">test_labels_idx_ubyte_file = <span class="string">'t10k-labels.idx1-ubyte'</span></span><br><span class="line"></span><br><span class="line">save_test_images_path = <span class="string">"test_images"</span></span><br><span class="line">save_test_labels_file = <span class="string">"test_labels.txt"</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">decode_idx3_ubyte</span><span class="params">(idx3_ubyte_file, save_path)</span>:</span></span><br><span class="line">    <span class="string">'''</span></span><br><span class="line"><span class="string">    解析idx3文件</span></span><br><span class="line"><span class="string">    :param idx3_ubyte_file: idx3文件路径</span></span><br><span class="line"><span class="string">    :return: 解析得到的数据集</span></span><br><span class="line"><span class="string">    '''</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 读取二进制数据</span></span><br><span class="line">    bin_data = open(idx3_ubyte_file, <span class="string">'rb'</span>).read()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 解析文件头信息：魔术数，图片数量，图片高，宽</span></span><br><span class="line">    offset = <span class="number">0</span> </span><br><span class="line">    fmt_header = <span class="string">'&gt;iiii'</span>    <span class="comment"># 大端读取，4个整数类型</span></span><br><span class="line">    magic_number, num_images, num_rows, num_cols = struct.unpack_from(</span><br><span class="line">        fmt_header, bin_data, offset)</span><br><span class="line">    <span class="keyword">print</span> <span class="string">'魔术数: &#123;&#125;，图片数量: &#123;&#125;，图片大小: &#123;&#125; * &#123;&#125;'</span>.format(</span><br><span class="line">        magic_number, num_images, num_rows, num_cols)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 解析数据集</span></span><br><span class="line">    image_size = num_rows * num_cols</span><br><span class="line">    offset += struct.calcsize(fmt_header)</span><br><span class="line">    fmt_image = <span class="string">'&gt;'</span> + str(image_size) + <span class="string">'B'</span>     <span class="comment"># 从大端开始读取图像尺寸大小的无符号字节流</span></span><br><span class="line">    images = np.empty((num_images, num_rows, num_cols))</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(num_images):</span><br><span class="line">        <span class="keyword">if</span> (i + <span class="number">1</span>) % <span class="number">10000</span> == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">print</span> <span class="string">"已经解析 %d"</span> %(i+<span class="number">1</span>) + <span class="string">" 张"</span></span><br><span class="line">        images[i] = np.array(struct.unpack_from(fmt_image, bin_data, offset)</span><br><span class="line">                            ).reshape((num_rows, num_cols))</span><br><span class="line">        offset += struct.calcsize(fmt_image)      <span class="comment"># 计算给定格式所占用空间大小</span></span><br><span class="line">        <span class="comment"># 保存图片</span></span><br><span class="line">        scipy.misc.imsave(os.path.join(save_path, <span class="string">'&#123;&#125;.jpg'</span>.format(i+<span class="number">1</span>)), images[i])  </span><br><span class="line">    <span class="keyword">return</span> images</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">decode_idx1_ubyte</span><span class="params">(idx1_ubyte_file, save_file)</span>:</span></span><br><span class="line">    <span class="string">'''</span></span><br><span class="line"><span class="string">    解析idx1文件</span></span><br><span class="line"><span class="string">    :param idx1_ubyte_file: idx1文件路径</span></span><br><span class="line"><span class="string">    :return: 解析得到的数据集</span></span><br><span class="line"><span class="string">    '''</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># 读取二进制数据</span></span><br><span class="line">    bin_data = open(idx1_ubyte_file, <span class="string">'rb'</span>).read()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 解析文件头信息：魔术数，标签数量</span></span><br><span class="line">    offset = <span class="number">0</span> </span><br><span class="line">    fmt_header = <span class="string">'&gt;ii'</span>   </span><br><span class="line">    magic_number, num_labels = struct.unpack_from(fmt_header, bin_data, offset)</span><br><span class="line">    <span class="keyword">print</span> <span class="string">'魔术数: &#123;&#125;，标签数量: &#123;&#125;'</span>.format(magic_number, num_labels)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 解析数据集</span></span><br><span class="line">    offset += struct.calcsize(fmt_header)</span><br><span class="line">    fmt_label = <span class="string">'&gt;B'</span>    </span><br><span class="line">    labels = np.empty(num_labels)</span><br><span class="line">    fout = open(save_file, <span class="string">'w'</span>)</span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(num_labels):</span><br><span class="line">        <span class="keyword">if</span> (i + <span class="number">1</span>) % <span class="number">10000</span> == <span class="number">0</span>:</span><br><span class="line">            <span class="keyword">print</span> <span class="string">"已经解析 %d"</span> %(i+<span class="number">1</span>) + <span class="string">" 个"</span></span><br><span class="line">        labels[i] = np.array(struct.unpack_from(fmt_label, bin_data, offset))[<span class="number">0</span>]</span><br><span class="line">        offset += struct.calcsize(fmt_label)      <span class="comment"># 计算给定格式所占用空间大小</span></span><br><span class="line">        fout.write(str(int(labels[i]))+<span class="string">'\n'</span>)      <span class="comment"># 将label写入文件</span></span><br><span class="line">    <span class="keyword">return</span> labels</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">load_train_images</span><span class="params">()</span>:</span></span><br><span class="line">    save_image_path = os.path.join(dataset_path, save_train_images_path)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(save_image_path):</span><br><span class="line">        os.mkdir(save_image_path)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> decode_idx3_ubyte(os.path.join(</span><br><span class="line">        dataset_path, train_image_idx_ubyte_file), save_image_path)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">load_train_labels</span><span class="params">()</span>:</span></span><br><span class="line">    save_file = os.path.join(dataset_path, save_train_labels_file)</span><br><span class="line">    <span class="keyword">return</span> decode_idx1_ubyte(os.path.join(</span><br><span class="line">        dataset_path, train_labels_idx_ubyte_file), save_file)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">load_test_images</span><span class="params">()</span>:</span></span><br><span class="line">    save_image_path = os.path.join(dataset_path, save_test_images_path)</span><br><span class="line">    <span class="keyword">if</span> <span class="keyword">not</span> os.path.exists(save_image_path):</span><br><span class="line">        os.mkdir(save_image_path)</span><br><span class="line">    <span class="keyword">return</span> decode_idx3_ubyte(os.path.join(</span><br><span class="line">        dataset_path, test_image_idx_ubyte_file), save_image_path)</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">load_test_labels</span><span class="params">()</span>:</span></span><br><span class="line">    save_file = os.path.join(dataset_path, save_test_labels_file)</span><br><span class="line">    <span class="keyword">return</span> decode_idx1_ubyte(os.path.join(</span><br><span class="line">        dataset_path, test_labels_idx_ubyte_file), save_file)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">test</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="comment">#train_images = load_train_images()</span></span><br><span class="line">    <span class="comment">#train_labels = load_train_labels()</span></span><br><span class="line"></span><br><span class="line">    test_images = load_test_images()</span><br><span class="line">    test_labels = load_test_labels()</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 查看前10个标签</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">10</span>):</span><br><span class="line">        <span class="keyword">print</span> test_labels[i]</span><br><span class="line">        plt.imshow(test_images[i], cmap=<span class="string">'gray'</span>)</span><br><span class="line">        plt.show()</span><br><span class="line">    <span class="keyword">print</span> <span class="string">'done'</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">parse_data</span><span class="params">()</span>:</span></span><br><span class="line">    train_images = load_train_images()</span><br><span class="line">    train_labels = load_train_labels()</span><br><span class="line">    test_images = load_test_images()</span><br><span class="line">    test_labels = load_test_labels()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">    parse_data()</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2017/02/struct-mnist.html" title="Python 操作字节流以及 struct 模块简易教程">https://murphypei.github.io/blog/2017/02/struct-mnist.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/Python/" rel="tag"># Python</a>
+            
+              <a href="/tags/字节/" rel="tag"># 字节</a>
+            
+              <a href="/tags/mnist/" rel="tag"># mnist</a>
+            
+              <a href="/tags/struct/" rel="tag"># struct</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2017/02/ipc.html" rel="next" title="Linux 进程间通信">
+                  <i class="fa fa-chevron-left"></i> Linux 进程间通信
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2017/02/linux-process-thread.html" rel="prev" title="Linux 中进程和线程">
+                  Linux 中进程和线程 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#struct-模块简介"><span class="nav-number">1.</span> <span class="nav-text">struct 模块简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#利用-struct-解析-MNIST-数据集"><span class="nav-number">2.</span> <span class="nav-text">利用 struct 解析 MNIST 数据集</span></a></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">176</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">455</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2025</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">618k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:10</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '85d47c87bd2a62caf4bfa1b3dc2973a9',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

@@ -1,0 +1,1693 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="C++中的输入输出流规范好用，有时候我们需要借鉴其形式定制自己的输入输出流">
+<meta name="keywords" content="C++,stream,streambuf,ios">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ 定制输入输出流">
+<meta property="og:url" content="https://murphypei.github.io/blog/2019/01/cpp-custom-iostream.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="C++中的输入输出流规范好用，有时候我们需要借鉴其形式定制自己的输入输出流">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/cplusplus/iostream.gif">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/cplusplus/stream-out.png">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/cplusplus/stream-out.png">
+<meta property="og:updated_time" content="2025-06-25T02:00:03.858Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="C++ 定制输入输出流">
+<meta name="twitter:description" content="C++中的输入输出流规范好用，有时候我们需要借鉴其形式定制自己的输入输出流">
+<meta name="twitter:image" content="https://murphypei.github.io/images/posts/cplusplus/iostream.gif">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2019/01/cpp-custom-iostream">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>C++ 定制输入输出流 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/01/cpp-custom-iostream.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">C++ 定制输入输出流
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-01-03 09:19:44" itemprop="dateCreated datePublished" datetime="2019-01-03T09:19:44+08:00">2019-01-03</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-06-25 10:00:03" itemprop="dateModified" datetime="2025-06-25T10:00:03+08:00">2025-06-25</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>6.6k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>11 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>C++中的输入输出流规范好用，有时候我们需要借鉴其形式定制自己的输入输出流</p>
+<a id="more"></a>
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>为了提供更灵活的输入输出控制，并让其支持更多的类型和格式，C++ 引入了输入输出流。C++ 的输入输出系统中提供了两个基类，分别是 <code>ios_base</code> 和 <code>ios</code>。基于这两个基类实现了我们常用的标准输入输出流 <code>istream</code> 和 <code>ostream</code>。同时，基于这两个流，C++ 提供了另外两种类型：文件输入输出流 <code>fstream</code> 以及字符串输入输出流 <code>stringstream</code>。这些类之间的继承关系可以用下图来说明：</p>
+<p><img src="/images/posts/cplusplus/iostream.gif" alt="iostream"></p>
+<p>对于大多数 c++ 程序而言，使用系统提供的输入输出框架已经足够了。但是，对于想要根据需求改变流表现的使用者来说，了解如何定制流的过程至关重要。例如，你可能希望在你的项目中像标准输入输出一样来读取 tcp socket，或者希望像标准输入输出一样来封装一个对于 FILE* 的读取和写入，再或者你希望利用输入输出流的方式来操纵内存中的数据，这些都可以通过定制自己的流来实现。</p>
+<h2 id="streambuf简介"><a href="#streambuf简介" class="headerlink" title="streambuf简介"></a>streambuf简介</h2><p>我们都知道每一个输入输出流都会绑定相应的 <code>buffer</code>，也就是输入输出缓冲区。这个缓冲区就是基于上图中的 <code>streambuf</code> 类来定义的。可以看到，文件输入输出使用的是继承自 <code>streambuf</code> 的 <code>filebuf</code>，而字符串流则是使用的 <code>stringbuf</code>。事实上，<code>streambuf</code> 是输入输出系统中最关键的一部分，它负责提供缓冲功能，并提供“顺序读取设备”的抽象，也就是把数据刷新到外部设备中或者从外部设备中读取数据。而具体的流可以只负责进行格式化或者完成其他类型地工作。</p>
+<p>现在假设我们有这样一个需求：用标准输入输出的方式来封装一个 TCP socket，也就是定义一个 BasicTcpStream，使其可以进行如下地操作：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">std</span>::<span class="built_in">string</span> inputStr;</span><br><span class="line"><span class="function">BasicTcpStream <span class="title">tcpInOut1</span><span class="params">(socket1)</span></span>;</span><br><span class="line"><span class="function">BasicTcpStream <span class="title">tcpInOut2</span><span class="params">(socket2)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 1. 从标准输入中接受字符串，然后写入到socket中</span></span><br><span class="line"><span class="keyword">while</span>(<span class="built_in">cin</span> &gt;&gt; inputStr) &#123;</span><br><span class="line">    tcpInOut1 &lt;&lt; inputStr &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 从一个socket中接收数据写入到另一个socket中</span></span><br><span class="line"><span class="keyword">while</span>(tcpInOut1 &gt;&gt; inputStr) &#123;</span><br><span class="line">    tcpInOut2 &lt;&lt; inputStr &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意这并不是一个无意义的需求，事实上 phxrpc 就实现了这个功能。为了达到目的，那么我们需要完成两步的工作：</p>
+<pre><code>1. 按照需求自定义一个 `buffer` 类，该 `buffer` 一般需要继承自 `streambuf`，并且覆盖类中的部分虚函数实现。
+2. 定义一个相应的 `stream` 来使用该 `buffer` 类，也就是利用 `buffer` 类来同外部设备打交道，读取或者写入 socket。
+</code></pre><h2 id="自定义streambuf"><a href="#自定义streambuf" class="headerlink" title="自定义streambuf"></a>自定义streambuf</h2><p><code>streambuf</code> 是一个 <code>traits class</code>，由 <code>basic_streambuf</code> 所定义（具体什么是 <code>traits class</code> 以及为什么要这么定义 <code>streambuf</code>，以后再说）。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt; </span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">CharT</span>, </span></span><br><span class="line"><span class="class">    <span class="title">class</span> <span class="title">Traits</span> = <span class="title">std</span>:</span>:char_traits&lt;CharT&gt;</span><br><span class="line">&gt; <span class="class"><span class="keyword">class</span> <span class="title">basic_streambuf</span>;</span></span><br><span class="line"> </span><br><span class="line"><span class="keyword">typedef</span>   basic_streambuf&lt;<span class="keyword">char</span>&gt; streambuf; </span><br><span class="line"><span class="keyword">typedef</span>   basic_streambuf&lt;<span class="keyword">wchar_t</span>&gt; wstreambuf;</span><br></pre></td></tr></table></figure>
+<p>其中 <code>streambuf</code> 基于标准字符类型 <code>char</code>，而 <code>wstreambuf</code> 基于宽字符类型 <code>wchar_t</code>，这里我们的实例均基于 <code>streambuf</code> 所实现。<code>streambuf</code> 既定义了输出的操作也定义了输入操作，我们将分别介绍如何实现对于输入输出的定制。</p>
+<h3 id="用于输出的streambuf"><a href="#用于输出的streambuf" class="headerlink" title="用于输出的streambuf"></a>用于输出的streambuf</h3><p>用于输出的<code>streambuf</code>可以类比标准输出<code>std::cout</code>，用于<code>&lt;&lt;</code>操作符存放数据，将输出数据放置到缓冲区中。<code>streambuf</code> 使用三个指针来管理相应的输出缓冲区（缓冲区需要自行设置），分别由接口 <code>pbase</code>，<code>pptr</code>和 <code>epptr</code> 返回。其中 <code>pbase</code> 是缓冲区的基指针，指向缓冲区的第一个字节，<code>epptr</code> 是缓冲区的尾指针，指向其最后一个字节的下一个字节（类似于 iter.end() 的作用），而 <code>pptr</code> 指向缓冲区当前可用的位置，也就是 <code>pptr</code> 之前都已经被数据所填充，如下图：</p>
+<p><img src="/images/posts/cplusplus/stream-out.png" alt></p>
+<p><code>streambuf</code> 定义的输出相关的函数主要有 <code>sputc</code> 和 <code>sputn</code>，前者输出一个字符到缓冲区，并且将指针 <code>pptr</code> 向后移动一个字符，后者调用函数 <code>xsputn</code> 连续输出多个字符，<code>xsputn</code> 默认的实现就是多次调用 <code>sputc</code>。由于缓冲区有限，当 <code>pptr</code> 指针向后移动满足 <code>pptr() == epptr</code> 时，说明缓冲区满了，这时将会调用函数 <code>overflow</code> 将数据写入到外部设备并清空缓冲区；清空缓冲区的方式则是调用 <code>pbump</code> 函数将指针 <code>pptr</code> 重置。我们可以通过如下的类来实现自定义的输出 buffer：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TcpStreamBuf</span> :</span> <span class="keyword">public</span> <span class="built_in">std</span>::streambuf &#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">     TcpStreamBuf(<span class="keyword">int</span> socket, <span class="keyword">size_t</span> buf_size);</span><br><span class="line">     ~TcpStreamBuf();</span><br><span class="line"></span><br><span class="line">     <span class="function"><span class="keyword">int</span> <span class="title">overflow</span><span class="params">(<span class="keyword">int</span> c)</span></span>;  <span class="comment">// 字符 c 是调用 overflow 时当前的字符</span></span><br><span class="line">     <span class="function"><span class="keyword">int</span> <span class="title">sync</span><span class="params">()</span></span>;           <span class="comment">// 将buffer中的内容刷新到外部设备，不管缓冲区是否满</span></span><br><span class="line"></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">     <span class="keyword">const</span> <span class="keyword">size_t</span> buf_size_;</span><br><span class="line">     <span class="keyword">int</span> socket_;</span><br><span class="line">     <span class="keyword">char</span>* pbuf_;  <span class="comment">// 输出缓冲区</span></span><br><span class="line"> &#125;;</span><br></pre></td></tr></table></figure>
+<p>我们在初始化时来申请 buffer 内存，并且通过 <code>setp</code> 函数来指定初始 <code>pbase</code> 以及 <code>epptr</code> 指针的位置：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">TcpStreamBuf::TcpStreamBuf(<span class="keyword">int</span> socket, <span class="keyword">size_t</span> buf_size) :</span><br><span class="line">    buf_size_(buf_size), socket_(socket) &#123;</span><br><span class="line">    assert(buf_size_ &gt; <span class="number">0</span>);</span><br><span class="line">    pbuf_ = <span class="keyword">new</span> <span class="keyword">char</span>[buf_size_];</span><br><span class="line"></span><br><span class="line">    setp(pbuf_, pbuf_ + buf_size_); <span class="comment">// set the pointers for output buf</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// flush the data to the socket</span></span><br><span class="line"><span class="keyword">int</span> TcpStreamBuf::sync() &#123;</span><br><span class="line">    <span class="keyword">int</span> sent = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">int</span> total = pptr() - pbase();  <span class="comment">// data that can be flushed</span></span><br><span class="line">    <span class="keyword">while</span> (sent &lt; total) &#123;</span><br><span class="line">        <span class="keyword">int</span> ret = send(socket_, pbase()+sent, total-sent, <span class="number">0</span>);</span><br><span class="line">        <span class="keyword">if</span> (ret &gt; <span class="number">0</span>) sent += ret;</span><br><span class="line">        <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    setp(pbase(), pbase() + buf_size_);  <span class="comment">// reset the buffer</span></span><br><span class="line">    pbump(<span class="number">0</span>);  <span class="comment">// reset pptr to buffer head</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的构造函数和 <code>sync</code> 函数都比较容易理解。构造函数申请一块堆内存 <code>pbuf</code> 作为输出缓冲区，然后调用 <code>setp</code> 函数来设置 buffer 的头指针 <code>pbase</code> 和尾指针 <code>epptr</code>。<code>sync</code> 函数强制将已经缓存的数据调用 <code>send</code> 发送出去，也就是刷新到外部设备。</p>
+<p>接下来我们看如何定义函数 <code>overflow</code>。注意，<strong><code>overflow</code>是缓冲区满了的时候自动调用的</strong>，由于调用 <code>overflow</code> 时当前的缓冲区已经满了，因此 <code>overflow</code> 的参数 <code>c</code>，也就是传入的字符，必须在缓冲区中的数据刷新到外部设备之后才能够放入到 <code>buffer</code> 中，否则 <code>overflow</code> 应该返回 <code>eof</code>。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> TcpStreamBuf::overflow(<span class="keyword">int</span> c) &#123;</span><br><span class="line">    <span class="keyword">if</span> (<span class="number">-1</span> == sync()) &#123;</span><br><span class="line">        <span class="keyword">return</span> traits_type::eof();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// put c into buffer after successful sync</span></span><br><span class="line">        <span class="keyword">if</span> (!traits_type::eq_int_type(c, traits_type::eof())) &#123;</span><br><span class="line">            sputc(traits_type::to_char_type(c));</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// return eq_int_type(c, eof()) ? eof():c;</span></span><br><span class="line">        <span class="keyword">return</span> traits_type::not_eof(c);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>完成了上述这些步骤，我们基本上已经定义了一个可以用于输出的缓冲区 <code>TcpStreamBuf</code>，接下来我们同样介绍一下，如何为该缓冲区类增加输入的功能。</p>
+<h3 id="用于输入的streambuf"><a href="#用于输入的streambuf" class="headerlink" title="用于输入的streambuf"></a>用于输入的streambuf</h3><p>前面的需求中，希望 <code>TcpStream</code> 能够支持类似于 <code>cin</code> 的操作，也就是直接从 <code>socket</code> 中读取数据。这就要求我们定义的底层 <code>TcpStreamBuf</code> 需要支持输入操作。同管理输出缓冲区一样，<code>streambuf</code> 也使用三个指针，<code>eback()</code>，<code>gptr()</code> 以及 <code>egptr()</code> 来指示输入缓冲区的开始字节，当前可用字节以及缓冲区尾的下一字节，如下图所示：</p>
+<p><img src="/images/posts/cplusplus/stream-out.png" alt></p>
+<p><code>streambuf</code> 类同样定义了如下几个函数来支持对于输入缓冲区的读取和管理：</p>
+<ul>
+<li><code>sgetc</code>: 从输入缓冲区中读取一个字符；</li>
+<li><code>sbumpc</code>: 从输入缓冲区中读取一个字符，并将 gptr() 指针向后移动一个位置；</li>
+<li><code>sgetn</code>: 从输入缓冲区中读取 n 个字符；</li>
+<li><code>sungetc</code>: 将缓冲区的 gptr() 指针向前移动一个位置；</li>
+<li><code>sputbackc</code>: 将一个读取到的字符重新放回到输入缓冲区中；</li>
+</ul>
+<p>与输出缓冲区不同的是，输入缓冲区需要额外提供 <code>putback</code> 操作，也就是将字符放回到输入缓冲区内。我们的 <code>TcpStream</code> 暂时不需要支持该功能，如果想了解如何添加 <code>putback</code> 功能可以参考一下<a href="http://wizmann.tk/phxrpc-1.html" target="_blank" rel="noopener">phxrpc</a>。</p>
+<p>当输入缓冲区满足 <code>gptr() == egptr()</code> 时，表明缓冲区已经没有数据可以读取，函数 <code>sget</code>c 将会调用 <code>underflow</code> 函数来从外部设备中拉取数据。不同于 <code>sgetc</code>，<code>sbumpc</code> 在这种情况下则会调用 <code>uflow</code> 来实现拉取数据，并移动缓冲区读取指针的目的。默认情况下，<code>uflow</code> 会调用 <code>underflow</code>，我们也无需额外实现 <code>uflow</code>，但在特殊情况下（例如没有定义缓冲空间），则需要覆盖实现两个函数。</p>
+<p>知道这些之后，我们就可以为 <code>TcpStreamBuf</code> 增加输入的功能。首先我们需要在构造时，为 <code>TcpStreamBuf</code> 申请一块空间用于输出缓冲区，并调用 <code>setg</code> 来设置相应的三个指针:</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gbuf_ = <span class="keyword">new</span> <span class="keyword">char</span>[buf_size_];</span><br><span class="line">setg(gbuf_, gbuf_, gbuf_);</span><br></pre></td></tr></table></figure>
+<p>需要注意的是，<code>setg</code> 比 <code>setp</code> 多一个参数，需要同时设置三个指针的指向位置。接下来我们需要定义当缓冲区已经没有数据时需要进行的操作，也就是 <code>underflow</code> 函数：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">int</span> TcpStreamBuf::underflow() &#123;</span><br><span class="line">    <span class="keyword">int</span> ret = recv(socket_, eback(), buf_size_, <span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (ret &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        setg(eback(), eback(), eback() + ret);</span><br><span class="line">        <span class="keyword">return</span> traits_type::to_int_type(*gptr());</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> traits_type::eof();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当缓冲区没有数据时，函数 <code>underflow</code> 将直接从 <code>socket</code> 中读取数据到 <code>gbuf_</code> 中，然后设置尾指针为 <code>eback() + ret</code>，设置 <code>gptr</code> 为指向数据的第一个字节 <code>eback</code>。同时返回当前可以读取的位置上的数据 <code>*gptr()</code>。</p>
+<p>上述的函实现已经基本满足一个可以用于读取写入 <code>TCP socket</code> 的 <code>streambuf</code>，接下来我们介绍第二步，也就是定义一个 <code>stream</code> 来使用 <code>TcpStreamBuf</code>。</p>
+<h2 id="自定义stream"><a href="#自定义stream" class="headerlink" title="自定义stream"></a>自定义stream</h2><p>自定义的类 <code>BasicTcpStream</code> 需要继承于类 <code>iostream</code>，并且将 <code>TcpStreamBuf</code> 作为底层的缓冲区使用：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BasicTcpStream</span> :</span> <span class="keyword">public</span> <span class="built_in">std</span>::iostream &#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    BasicTcpStream(<span class="keyword">int</span> socket, <span class="keyword">size_t</span> buf_size): </span><br><span class="line">        iostream(<span class="keyword">new</span> TcpStreamBuf(socket, buf_size), </span><br><span class="line">        socket_(socket), buf_size_(buf_size) &#123;</span><br><span class="line">    &#125;</span><br><span class="line">    ~BasicTcpStream();</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">int</span> socket_;</span><br><span class="line">    <span class="keyword">const</span> <span class="keyword">size_t</span> buf_size_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>下面不再为这个类增加更多的内容，仅仅将其作为一个简单的包装类来测试一下 <code>TcpStreamBuf</code> 的使用。我们首先需要编写一个简单的 <code>client</code> 和 <code>server</code> 来建立起 tcp 链接，然后通过类似于标准输入输出的方式来实现对于 <code>socket</code> 的写入和读取。</p>
+<p><code>server.c</code> 的写入代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (;;) &#123;</span><br><span class="line">    <span class="keyword">int</span> clientfd = <span class="number">-1</span>;</span><br><span class="line">    <span class="class"><span class="keyword">struct</span> <span class="title">sockaddr_in</span> <span class="title">addr</span>;</span></span><br><span class="line">    <span class="keyword">socklen_t</span> socklen = <span class="keyword">sizeof</span>(addr);</span><br><span class="line"></span><br><span class="line">    clientfd = accept(sockfd, (struct sockaddr*) &amp;addr, &amp;socklen);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (clientfd &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">        tcpstream::<span class="function">BasicTcpStream <span class="title">tcpInOut</span><span class="params">(clientfd, BUF_SIZE)</span></span>;</span><br><span class="line">        tcpInOut &lt;&lt; <span class="string">"Hello World"</span> &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">char</span> c = <span class="string">'j'</span>; c &lt;= <span class="string">'q'</span>; c++) &#123;</span><br><span class="line">            tcpInOut &lt;&lt; c &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">int</span> rc;</span><br><span class="line">        <span class="keyword">while</span>(tcpInOut &gt;&gt; rc) &#123;</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="keyword">char</span>(rc) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对于每一个接入的客户端，首先写回一个 HelloWorld，然后从字母 j 到字母 q 逐个写入，之后接受从客户端发过来的字符。</p>
+<p>客户端的代码如下：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">tcpstream::<span class="function">BasicTcpStream <span class="title">tcpInOut</span><span class="params">(sockfd, BUF_SIZE)</span></span>;</span><br><span class="line"><span class="keyword">char</span> line[<span class="number">64</span>] = &#123; <span class="number">0</span> &#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(tcpInOut.getline(line, <span class="number">64</span>).good()) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; line &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">"receive error: "</span> &lt;&lt; line &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">char</span> c;</span><br><span class="line"><span class="keyword">while</span>(tcpInOut &gt;&gt; c) &#123;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; c &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>;</span><br><span class="line">    tcpInOut &lt;&lt; <span class="built_in">std</span>::<span class="built_in">toupper</span>(c) &lt;&lt; <span class="built_in">std</span>::<span class="built_in">endl</span>; </span><br><span class="line">    <span class="keyword">if</span>(c == <span class="string">'q'</span>) &#123;</span><br><span class="line">        close(sockfd);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>也就是将服务端发送过来的字母全部转为大写并发送回去。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><ul>
+<li><a href="http://kaiyuan.me/2017/06/22/custom-streambuf/" target="_blank" rel="noopener">http://kaiyuan.me/2017/06/22/custom-streambuf/</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2019/01/cpp-custom-iostream.html" title="C++ 定制输入输出流">https://murphypei.github.io/blog/2019/01/cpp-custom-iostream.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/C/" rel="tag"># C++</a>
+            
+              <a href="/tags/stream/" rel="tag"># stream</a>
+            
+              <a href="/tags/streambuf/" rel="tag"># streambuf</a>
+            
+              <a href="/tags/ios/" rel="tag"># ios</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2018/12/cpp-macros-uitls.html" rel="next" title="C++ Debug常用的宏定义记录">
+                  <i class="fa fa-chevron-left"></i> C++ Debug常用的宏定义记录
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2019/01/jupyter-virtualenvs.html" rel="prev" title="jupyter 设置多个虚拟环境的 kernel">
+                  jupyter 设置多个虚拟环境的 kernel <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前言"><span class="nav-number">1.</span> <span class="nav-text">前言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#streambuf简介"><span class="nav-number">2.</span> <span class="nav-text">streambuf简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#自定义streambuf"><span class="nav-number">3.</span> <span class="nav-text">自定义streambuf</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#用于输出的streambuf"><span class="nav-number">3.1.</span> <span class="nav-text">用于输出的streambuf</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用于输入的streambuf"><span class="nav-number">3.2.</span> <span class="nav-text">用于输入的streambuf</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#自定义stream"><span class="nav-number">4.</span> <span class="nav-text">自定义stream</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">4.0.1.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">176</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">455</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2025</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">618k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:10</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: 'dbab8330439a1ecbedf99c764ba2f8ca',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

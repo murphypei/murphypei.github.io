@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="vsftpd 如果需要在同一站点上利用多个用户来区分多个主目录，并将其限制在相应的目录权限内，需要用到虚拟用户来进行配置。以下是我在 ubuntu 16.04 上面的实践经验总结。">
+<meta name="keywords" content="Linux,vsftpd,ftp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="vsftpd 虚拟多用户多目录配置">
+<meta property="og:url" content="https://murphypei.github.io/blog/2019/02/vsftpd.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="vsftpd 如果需要在同一站点上利用多个用户来区分多个主目录，并将其限制在相应的目录权限内，需要用到虚拟用户来进行配置。以下是我在 ubuntu 16.04 上面的实践经验总结。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2025-06-25T02:00:03.870Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="vsftpd 虚拟多用户多目录配置">
+<meta name="twitter:description" content="vsftpd 如果需要在同一站点上利用多个用户来区分多个主目录，并将其限制在相应的目录权限内，需要用到虚拟用户来进行配置。以下是我在 ubuntu 16.04 上面的实践经验总结。">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2019/02/vsftpd">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>vsftpd 虚拟多用户多目录配置 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/02/vsftpd.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">vsftpd 虚拟多用户多目录配置
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-02-20 09:19:44" itemprop="dateCreated datePublished" datetime="2019-02-20T09:19:44+08:00">2019-02-20</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-06-25 10:00:03" itemprop="dateModified" datetime="2025-06-25T10:00:03+08:00">2025-06-25</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Linux/" itemprop="url" rel="index"><span itemprop="name">Linux</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>3.7k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>6 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>vsftpd 如果需要在同一站点上利用多个用户来区分多个主目录，并将其限制在相应的目录权限内，需要用到虚拟用户来进行配置。以下是我在 ubuntu 16.04 上面的实践经验总结。</p>
+<a id="more"></a>
+<h2 id="需求分析"><a href="#需求分析" class="headerlink" title="需求分析"></a>需求分析</h2><p>假设在我的服务器上，有一个主文件夹 www，下面分别有两个文件夹 model 和 lib，我希望利用不同的用户登录，让其访问不同的文件夹，同时每个用户<strong>不能切换到上级目录</strong>。同时处于安全考虑还要求该账号上传的文件权限为 644，即<strong>上传的文件具有可读可写权限，但是没有可执行权限。</strong></p>
+<p>另外，为了服务器的安全，还要求该用户不能是系统用户，即使用 vsftpd 的虚拟用户。</p>
+<p>根据以上需求，我们需要进行一下配置。</p>
+<h2 id="vsftpd-安装"><a href="#vsftpd-安装" class="headerlink" title="vsftpd 安装"></a>vsftpd 安装</h2><p>vsftpd 的安装：</p>
+<p><code>sudo apt-get -y install vsftpd</code></p>
+<p>安装完成后，vsftpd 初始化时使用的配置文件就是 /etc/vsftpd.conf 文件。</p>
+<p>在 ubuntu下 要启动、停止、重启vsftpd，我们必须使用以下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo service vsftpd stop</span><br><span class="line">sudo service vsftpd start</span><br><span class="line">sudo service vsftpd restart</span><br></pre></td></tr></table></figure>
+<p>同时，为了后续的虚拟用户，我们还需要安装加密工具：</p>
+<p><code>sudo apt-get -y install db-util</code></p>
+<h2 id="vsftpd-配置"><a href="#vsftpd-配置" class="headerlink" title="vsftpd 配置"></a>vsftpd 配置</h2><p>为了能够使用虚拟用户，我们首先需要创建虚拟用户，以下的操作的一些路径和文件名可以根据自己的习惯进行更改，当然，最好保持一致，防止出错。</p>
+<h3 id="创建本地用户"><a href="#创建本地用户" class="headerlink" title="创建本地用户"></a>创建本地用户</h3><p>首先需要创建一个本地用户，作为虚拟用户的宿主，也同时方便组权限对于 ftp 站点的管理。</p>
+<p><code>sudo useradd -m /srv/ftpadmin -s /bin/false</code></p>
+<p>我们将其主目录放到 /srv/ftpadmin 中，使用 <code>/bin/false</code> 作为默认 bash，同时也不设置密码，这样这个用户是登录不了的，仅仅作为一种象征和宿主存在。</p>
+<p>现在我们把数据目录的权限给这个用户。</p>
+<p><code>sudo chown -R ftpadmin:ftpadmin /www</code></p>
+<h3 id="创建虚拟用户"><a href="#创建虚拟用户" class="headerlink" title="创建虚拟用户"></a>创建虚拟用户</h3><p>创建一个 user.txt</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo mkdir /etc/vsftpd</span><br><span class="line"><span class="built_in">cd</span> /etc/vsftpd</span><br><span class="line">sudo vim user.txt</span><br></pre></td></tr></table></figure>
+<p>在 user.txt 中添加两个用户的信息，假设一个用户为 ftplib，密码为 pdlib，另一个用户为 ftpmodel，密码为 pdmodel，则 user.txt 形如下面：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ftplib</span><br><span class="line">pdlib</span><br><span class="line">ftpmodel</span><br><span class="line">pdmodel</span><br></pre></td></tr></table></figure>
+<p>更多用户以此类推。然后使用 db_util 加密工具进行加密。</p>
+<p><code>sudo db_load -T -t hash -f /etc/vsftpd/user.txt /etc/vsftpd/user.db</code></p>
+<p>加密后得到的文件为 /etc/vsftpd/user.db。最好再改一下这个文件的权限：</p>
+<p><code>sudo chmod 600 /etc/vsftpd/user.db</code></p>
+<h3 id="PAM-验证配置"><a href="#PAM-验证配置" class="headerlink" title="PAM 验证配置"></a>PAM 验证配置</h3><p>我们需要配置一个新的 PAM 用于虚拟用户的验证。</p>
+<p><code>sudo vim /etc/pam.d/vsftpd.vu</code></p>
+<p>在这个新文件中写入如下信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">auth required pam_userdb.so db=/etc/vsftpd/user</span><br><span class="line">account required pam_userdb.so db=/etc/vsftpd/user</span><br></pre></td></tr></table></figure>
+<p>如果你上面没改名字，用的也是 user.db，那么这地方就不用改，如果不是 user.db，这地方需要改成你相应的。</p>
+<h3 id="vsftp-服务器配置"><a href="#vsftp-服务器配置" class="headerlink" title="vsftp 服务器配置"></a>vsftp 服务器配置</h3><p>根据上面的情况，你已经有了两个虚拟用户了，下面是配置 ftp 服务器了，也是重点，先上我的配置：</p>
+<p><code>grep -vE &quot;^#|^$&quot; /etc/vsftpd.conf</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">listen=NO               # 很奇怪是不是，我的是NO，网上大部分都是YES。因为我用的是公司的ftp统一配置，所以不能单独开启独立的守护进程，大家根据自己的需要来判断。</span><br><span class="line">listen_ipv6=YES         # ipv6，根据实际需求了</span><br><span class="line">anonymous_enable=NO     # 是否允许匿名登录，我不需要</span><br><span class="line">local_enable=YES        # 设定本地用户可以访问。注意：主要是为虚拟宿主用户，如果该项目设定为NO那么所有虚拟用户将无法访问。</span><br><span class="line">write_enable=YES        # 设定可以进行写操作，也就是上传</span><br><span class="line">local_umask=022         # 设定用户创建文件的默认权限，它与chmod的效果刚好相反，umask设置的是权限“补码”，022表示默认上传的文件权限是755</span><br><span class="line">dirmessage_enable=YES   # 设定开启目录标语功能。</span><br><span class="line">use_localtime=YES       # 时间设置</span><br><span class="line">xferlog_enable=YES      # 设定开启日志记录功能。</span><br><span class="line">connect_from_port_20=YES            # 默认</span><br><span class="line">xferlog_file=/var/log/vsftpd.log    # 日志文件</span><br><span class="line">xferlog_std_format=YES              # 日志记录格式</span><br><span class="line">ftpd_banner=Hello.                  # 标语，没啥用</span><br><span class="line">chroot_local_user=YES               # 重要，后面说明</span><br><span class="line">chroot_list_enable=NO               # 同上</span><br><span class="line">#chroot_list_file=/etc/vsftpd.chroot_list   # 同上</span><br><span class="line">allow_writeable_chroot=YES                  # 同上</span><br><span class="line">secure_chroot_dir=/var/run/vsftpd/empty     # 默认</span><br><span class="line">pam_service_name=ftp                        # 默认，后面覆盖了</span><br><span class="line">rsa_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem              # 默认</span><br><span class="line">rsa_private_key_file=/etc/ssl/private/ssl-cert-snakeoil.key     # 默认</span><br><span class="line">ssl_enable=NO                       # 默认</span><br><span class="line">utf8_filesystem=YES                 # uft8格式</span><br><span class="line">guest_enable=YES                    # 必须打开，为了虚拟用户登录</span><br><span class="line">pam_service_name=vsftpd.vu          # 覆盖默认的pam文件，验证虚拟用户</span><br><span class="line">user_config_dir=/etc/vsftpd/user_conf       # 用户配置的目录</span><br></pre></td></tr></table></figure>
+<p>上面的配置注释的很清楚了，还有一些需要说明：</p>
+<p>首先是 <code>chroot_*</code>，这几个参数主要是为了设置 ftp 登录之后可以访问的目录。还记得我们的需求里面有一个就是限制用户只能够访问自己的主目录吧，这几个参数就能满足我们的要求，具体配置的方法如下：</p>
+<ul>
+<li><code>chroot_local_user</code>：是否将所有用户限制在主目录，YES 为启用 NO 禁用（该项默认值是 NO，即在安装 vsftpd 后不做配置的话，ftp 用户是可以向上切换到要目录之外的）。</li>
+<li><code>chroot_list_enable</code>：是否启动限制用户的名单 YES 为启用 NO 禁用（包括注释掉也为禁用）。</li>
+<li><code>chroot_list_file=/etc/vsftpd/chroot_list</code>：是否限制在主目录下的用户名单，至于是限制名单还是排除名单，这取决于 <code>chroot_local_user</code> 的值。</li>
+</ul>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center"></th>
+<th style="text-align:center">chroot_local_user=YES</th>
+<th style="text-align:center">chroot_local_user=NO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">chroot_list_enable=YES</td>
+<td style="text-align:center">YY</td>
+<td style="text-align:center">YN</td>
+</tr>
+<tr>
+<td style="text-align:center">chroot_list_enable=NO</td>
+<td style="text-align:center">NY</td>
+<td style="text-align:center">NN</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>具体解释如下：</p>
+<ul>
+<li>YY：所有用户都被限制在其主目录下，使用<code>chroot_list_file</code>指定的用户列表，这些用户作为“例外”，不受限制。</li>
+<li>YN：所有用户都不被限制其主目录下，使用<code>chroot_list_file</code>指定的用户列表，这些用户作为“例外”，受到限制。</li>
+<li>NY：所有用户都被限制在其主目录下，不使用<code>chroot_list_file</code>指定的用户列表，没有任何“例外”用户。</li>
+<li>NN：所有用户都不被限制其主目录下，不使用<code>chroot_list_file</code>指定的用户列表，没有任何“例外”用户。</li>
+</ul>
+<p>然后就是虚拟用户的自定义配置了。</p>
+<h3 id="用户配置"><a href="#用户配置" class="headerlink" title="用户配置"></a>用户配置</h3><p>在上面的 ftp 服务器配置中，有一个是用户配置的目录：user_config_dir=/etc/vsftpd/user_conf，我们在这个目录中设置每个用户自己的配置信息。</p>
+<p>首先创建用户名的配置文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo touch /etc/vsftpd/user_conf/ftplib</span><br><span class="line">sudo touch /etc/vsftpd/user_conf/ftpmodel</span><br></pre></td></tr></table></figure>
+<p>在 ftplib 中添加内容：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">guest_username=ftplib</span><br><span class="line">virtual_use_local_privs=YES</span><br><span class="line">anon_umask=133</span><br><span class="line">local_root=/www/lib</span><br></pre></td></tr></table></figure>
+<p>首先设置用户名，然后是配置虚拟用户的权限和本地用户一样，同时设置虚拟用户的 umask 掩码为 133，也就是去除可执行权限，然后是虚拟用户的主目录。ftpmodel 同样类似这种配置，不再贴出了。</p>
+<h2 id="启用-ftp-站点"><a href="#启用-ftp-站点" class="headerlink" title="启用 ftp 站点"></a>启用 ftp 站点</h2><p><code>sudo service vsftpd start</code> 或者 <code>sudo service vsftpd restart</code>，让配置生效。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><ul>
+<li><a href="https://www.ilanni.com/?p=10071" target="_blank" rel="noopener">https://www.ilanni.com/?p=10071</a></li>
+<li><a href="https://blog.csdn.net/bluishglc/article/details/42398811" target="_blank" rel="noopener">https://blog.csdn.net/bluishglc/article/details/42398811</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2019/02/vsftpd.html" title="vsftpd 虚拟多用户多目录配置">https://murphypei.github.io/blog/2019/02/vsftpd.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/Linux/" rel="tag"># Linux</a>
+            
+              <a href="/tags/vsftpd/" rel="tag"># vsftpd</a>
+            
+              <a href="/tags/ftp/" rel="tag"># ftp</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2019/02/cpp-new-delete.html" rel="next" title="C++ new和delete探究">
+                  <i class="fa fa-chevron-left"></i> C++ new和delete探究
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2019/02/svm-kernel.html" rel="prev" title="SVM 核函数数学原理深入理解">
+                  SVM 核函数数学原理深入理解 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#需求分析"><span class="nav-number">1.</span> <span class="nav-text">需求分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vsftpd-安装"><span class="nav-number">2.</span> <span class="nav-text">vsftpd 安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#vsftpd-配置"><span class="nav-number">3.</span> <span class="nav-text">vsftpd 配置</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#创建本地用户"><span class="nav-number">3.1.</span> <span class="nav-text">创建本地用户</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#创建虚拟用户"><span class="nav-number">3.2.</span> <span class="nav-text">创建虚拟用户</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PAM-验证配置"><span class="nav-number">3.3.</span> <span class="nav-text">PAM 验证配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#vsftp-服务器配置"><span class="nav-number">3.4.</span> <span class="nav-text">vsftp 服务器配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#用户配置"><span class="nav-number">3.5.</span> <span class="nav-text">用户配置</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#启用-ftp-站点"><span class="nav-number">4.</span> <span class="nav-text">启用 ftp 站点</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">4.0.1.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">176</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">455</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2025</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">618k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:10</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: 'd59991ddfd5c2bf7aee73e81b80583f8',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

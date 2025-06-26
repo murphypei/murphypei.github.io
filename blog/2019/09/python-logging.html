@@ -1,0 +1,1850 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="标准日志库 logging 即使不是 Python 中最好的日志库，也是使用最多的日志库了，我个人非常喜欢。本文较为全面的总结了 logging 库的知识点。">
+<meta name="keywords" content="python,logging,handler,logger">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Python 日志库 logging 总结">
+<meta property="og:url" content="https://murphypei.github.io/blog/2019/09/python-logging.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="标准日志库 logging 即使不是 Python 中最好的日志库，也是使用最多的日志库了，我个人非常喜欢。本文较为全面的总结了 logging 库的知识点。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/python/python-logging-flow.png">
+<meta property="og:updated_time" content="2025-06-25T02:00:03.966Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Python 日志库 logging 总结">
+<meta name="twitter:description" content="标准日志库 logging 即使不是 Python 中最好的日志库，也是使用最多的日志库了，我个人非常喜欢。本文较为全面的总结了 logging 库的知识点。">
+<meta name="twitter:image" content="https://murphypei.github.io/images/posts/python/python-logging-flow.png">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2019/09/python-logging">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>Python 日志库 logging 总结 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/09/python-logging.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">Python 日志库 logging 总结
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-11 14:45:42" itemprop="dateCreated datePublished" datetime="2019-09-11T14:45:42+08:00">2019-09-11</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-06-25 10:00:03" itemprop="dateModified" datetime="2025-06-25T10:00:03+08:00">2025-06-25</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Python/" itemprop="url" rel="index"><span itemprop="name">Python</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>11k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>18 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>标准日志库 logging 即使不是 Python 中最好的日志库，也是使用最多的日志库了，我个人非常喜欢。本文较为全面的总结了 logging 库的知识点。</p>
+<a id="more"></a>
+<h3 id="logging-介绍"><a href="#logging-介绍" class="headerlink" title="logging 介绍"></a>logging 介绍</h3><h4 id="日志级别"><a href="#日志级别" class="headerlink" title="日志级别"></a>日志级别</h4><p>Python 标准库 logging 用作记录日志，默认分为六种日志级别（括号为级别对应的数值），NOTSET（0）、DEBUG（10）、INFO（20）、WARNING（30）、ERROR（40）、CRITICAL（50）。我们自定义日志级别时注意不要和默认的日志级别数值相同，logging 执行时输出大于等于设置的日志级别的日志信息，如设置日志级别是 INFO，则 INFO、WARNING、ERROR、CRITICAL 级别的日志都会输出。</p>
+<h4 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h4><p>官方的 logging 模块工作流程图如下：</p>
+<p><img src="/images/posts/python/python-logging-flow.png" alt="logging 工作流程"></p>
+<p>从下图中我们可以看出看到这几种 Python 类型，Logger、LogRecord、Filter、Handler、Formatter。它们的作用分别为：</p>
+<ul>
+<li>Logger：日志，暴露函数给应用程序，基于日志记录器和过滤器级别决定哪些日志有效。</li>
+<li>LogRecord ：日志记录器，将日志传到相应的处理器处理。</li>
+<li>Handler ：处理器, 将(日志记录器产生的)日志记录发送至合适的目的地。</li>
+<li>Filter ：过滤器, 提供了更好的粒度控制,它可以决定输出哪些日志记录。</li>
+<li>Formatter：格式化器, 指明了最终输出中日志记录的布局。</li>
+</ul>
+<p>logging 的整个工作流程：</p>
+<ol>
+<li>判断 Logger 对象对于设置的级别是否可用，如果可用，则往下执行，否则，流程结束。</li>
+<li>创建 LogRecord 对象，如果注册到 Logger 对象中的 Filter 对象过滤后返回 False，则不记录日志，流程结束，否则，则向下执行。</li>
+<li>LogRecord 对象将 Handler 对象传入当前的 Logger 对象，（图中的子流程）如果 Handler 对象的日志级别大于设置的日志级别，再判断注册到 Handler 对象中的 Filter 对象过滤后是否返回 True 而放行输出日志信息，否则不放行，流程结束。</li>
+<li>如果传入的 Handler 大于 Logger 中设置的级别，也即 Handler 有效，则往下执行，否则，流程结束。</li>
+<li>判断这个 Logger 对象是否还有父 Logger 对象，如果没有（代表当前 Logger 对象是最顶层的 Logger 对象 root Logger），流程结束。否则将 Logger 对象设置为它的父 Logger 对象，重复上面的 3、4 两步，输出父类 Logger 对象中的日志输出，直到是 root Logger 为止。</li>
+</ol>
+<h4 id="输出格式"><a href="#输出格式" class="headerlink" title="输出格式"></a>输出格式</h4><p>日志输出格式可以自定义，默认的比较简单： </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 日志级别:日志记录名称:日志消息内容</span></span><br><span class="line">WARNING:ROOT:MESSAGE</span><br></pre></td></tr></table></figure>
+<h3 id="loggging-使用"><a href="#loggging-使用" class="headerlink" title="loggging 使用"></a>loggging 使用</h3><p>下面重点说说 logging 的使用，这也是大家最关心的。</p>
+<h4 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h4><p>首先是基本使用，我所认为的基本使用就是我这个 Python 文件临时要记录一下，就这么简单。示例如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line">logging.basicConfig()</span><br><span class="line">logging.debug(<span class="string">'This is a debug message'</span>)</span><br><span class="line">logging.info(<span class="string">'This is an info message'</span>)</span><br><span class="line">logging.warning(<span class="string">'This is a warning message'</span>)</span><br><span class="line">logging.error(<span class="string">'This is an error message'</span>)</span><br><span class="line">logging.critical(<span class="string">'This is a critical message'</span>)</span><br></pre></td></tr></table></figure>
+<p>输出结果</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">WARNING:root:This <span class="keyword">is</span> a warning message</span><br><span class="line">ERROR:root:This <span class="keyword">is</span> an error message</span><br><span class="line">CRITICAL:root:This <span class="keyword">is</span> a critical message</span><br></pre></td></tr></table></figure>
+<p>可以看到，<strong>默认打印的日志级别是 WARNING，不输出到文件，格式默认</strong>。</p>
+<p>当然，如果我们不懒，在 <code>basicConfig</code> 中传入一些参数就可以定制一下了：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line">logging.basicConfig(filename=<span class="string">"test.log"</span>,</span><br><span class="line">                    filemode=<span class="string">"w"</span>,</span><br><span class="line">                    format=<span class="string">"%(asctime)s %(name)s:%(levelname)s:%(message)s"</span>,</span><br><span class="line">                    datefmt=<span class="string">"%d-%M-%Y %H:%M:%S"</span>,</span><br><span class="line">                    level=logging.DEBUG)</span><br><span class="line"></span><br><span class="line">logging.debug(<span class="string">'This is a debug message'</span>)</span><br><span class="line">logging.info(<span class="string">'This is an info message'</span>)</span><br><span class="line">logging.warning(<span class="string">'This is a warning message'</span>)</span><br><span class="line">logging.error(<span class="string">'This is an error message'</span>)</span><br><span class="line">logging.critical(<span class="string">'This is a critical message'</span>)</span><br></pre></td></tr></table></figure>
+<p>运行完毕，我们就可以在 test.log 中看到如下内容了：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">13</span><span class="number">-10</span><span class="number">-18</span> <span class="number">21</span>:<span class="number">10</span>:<span class="number">32</span> root:DEBUG:This <span class="keyword">is</span> a debug message</span><br><span class="line"><span class="number">13</span><span class="number">-10</span><span class="number">-18</span> <span class="number">21</span>:<span class="number">10</span>:<span class="number">32</span> root:INFO:This <span class="keyword">is</span> an info message</span><br><span class="line"><span class="number">13</span><span class="number">-10</span><span class="number">-18</span> <span class="number">21</span>:<span class="number">10</span>:<span class="number">32</span> root:WARNING:This <span class="keyword">is</span> a warning message</span><br><span class="line"><span class="number">13</span><span class="number">-10</span><span class="number">-18</span> <span class="number">21</span>:<span class="number">10</span>:<span class="number">32</span> root:ERROR:This <span class="keyword">is</span> an error message</span><br><span class="line"><span class="number">13</span><span class="number">-10</span><span class="number">-18</span> <span class="number">21</span>:<span class="number">10</span>:<span class="number">32</span> root:CRITICAL:This <span class="keyword">is</span> a critical message</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意，此时输出到文件中，因此屏幕是不会打印任何内容的。</p>
+</blockquote>
+<p><code>basicConfig</code> 的参数如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">参数名称</th>
+<th style="text-align:center">参数描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">filename</td>
+<td style="text-align:center">日志输出到文件的文件名</td>
+</tr>
+<tr>
+<td style="text-align:center">filemode</td>
+<td style="text-align:center">文件模式，r[+]、w[+]、a[+]</td>
+</tr>
+<tr>
+<td style="text-align:center">format</td>
+<td style="text-align:center">日志输出的格式</td>
+</tr>
+<tr>
+<td style="text-align:center">datefat</td>
+<td style="text-align:center">日志附带日期时间的格式</td>
+</tr>
+<tr>
+<td style="text-align:center">style</td>
+<td style="text-align:center">格式占位符，默认为 “%” 和 “{}”</td>
+</tr>
+<tr>
+<td style="text-align:center">level</td>
+<td style="text-align:center">设置日志输出级别</td>
+</tr>
+<tr>
+<td style="text-align:center">stream</td>
+<td style="text-align:center">定义输出流，用来初始化 StreamHandler 对象，不能 filename 参数一起使用，否则会 ValueError 异常</td>
+</tr>
+<tr>
+<td style="text-align:center">handles</td>
+<td style="text-align:center">定义处理器，用来创建 Handler 对象，不能和 filename 、stream 参数一起使用，否则也会抛出 ValueError 异常</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这里有一个需要注意的地方，当发生异常时，直接使用无参数的 <code>debug()</code>、<code>info()</code>、<code>warning()</code>、<code>error()</code>、<code>critical()</code> 方法并不能记录异常信息，需要设置 <code>exc_info</code> 参数为 <code>True</code> 才可以，或者使用 <code>exception()</code> 方法，还可以使用 <code>log()</code> 方法，但还要设置日志级别和 <code>exc_info</code> 参数。示例如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"></span><br><span class="line">logging.basicConfig(filename=<span class="string">"test.log"</span>,</span><br><span class="line">                    filemode=<span class="string">"w"</span>,</span><br><span class="line">                    format=<span class="string">"%(asctime)s %(name)s:%(levelname)s:%(message)s"</span>,</span><br><span class="line">                    datefmt=<span class="string">"%d-%M-%Y %H:%M:%S"</span>,</span><br><span class="line">                    level=logging.DEBUG)</span><br><span class="line">a = <span class="number">5</span></span><br><span class="line">b = <span class="number">0</span></span><br><span class="line"><span class="keyword">try</span>:</span><br><span class="line">    c = a / b</span><br><span class="line"><span class="keyword">except</span> Exception <span class="keyword">as</span> e:</span><br><span class="line">    <span class="comment"># 下面三种方式三选一，推荐使用第一种</span></span><br><span class="line">    logging.exception(<span class="string">"Exception occurred"</span>)</span><br><span class="line">    logging.error(<span class="string">"Exception occurred"</span>, exc_info=<span class="literal">True</span>)</span><br><span class="line">    logging.log(level=logging.DEBUG, msg=<span class="string">"Exception occurred"</span>, exc_info=<span class="literal">True</span>)</span><br></pre></td></tr></table></figure>
+<h4 id="自定义-logger"><a href="#自定义-logger" class="headerlink" title="自定义 logger"></a>自定义 logger</h4><p>以上的使用肯定不能满足大型项目的日志记录需求，因此就来到了喜闻乐见的自定义阶段了。。</p>
+<p>首先需要明确一个比较重要的知识点：<strong>一个系统只有一个 Logger 对象</strong>，并且该对象不能被直接实例化，没错，这里用到了单例模式，获取 Logger 对象的方法为 <code>getLogger</code>。</p>
+<blockquote>
+<p>这里的单例模式并不是说只有一个 Logger 对象，而是指<strong>整个系统只有一个 root Logger 对象</strong>，Logger 对象在执行 <code>info()</code>、<code>error()</code> 等方法时实际上调用都是 root Logger 对象对应的 <code>info()</code>、<code>error()</code> 等方法。</p>
+</blockquote>
+<p>以上这句话需要深刻理解，因为在大型项目中，有很多文件，我们可以在每个文件中调用 <code>getLogger()</code> 来获取一个当前文件的 logger，存在以下情况：</p>
+<ul>
+<li>假如 <code>getLogger()</code> 不传入任何参数，则不同文件获取的都是 root Logger，因此对这些 Logger 对象的操作都将影响其他文件的输入，比如我在 A 文件中对 logger 添加了一个 <code>logging.StreamHandler()</code>，同时在 B 文件中也添加了一个，则最后打印出来的每条日志都有两行一样的，因为处理了两次。</li>
+<li>假如我们在不同文件中调用 <code>getLogger()</code> 传入不同的名字，比如当前文件的模块名字，那么得到的 Logger 对象也是不同的，因此不同的 Logger 对象可以添加不同的 hanlder 来控制当前文件中日志的输出。</li>
+<li>以上两种方式实际输出都是由 root Logger 作为代理来调用的，因此实际输出操作是 root Logger，但是我们可以根据第二条来实现同一项目不同文件不同输出的控制，也可以根据第一条实现统一的输出控制。在打印出来的日志示例名称（默认的第二列）中可以看到 Logger 对象的名字（默认 root）。</li>
+</ul>
+<p>每个 Logger 对象都可以设置一个名字，如果想区别不同文件的 logger，可以设置 <code>logger = logging.getLogger(__name__)</code>，<code>__name__</code> 是 Python 中的一个特殊内置变量，他代表当前模块的名称（默认为 <code>__main__</code>）。Logger 对象的 <code>name</code> 为建议使用使用以点号作为分隔符的命名空间等级制度。</p>
+<p>Logger 对象可以设置多个 Handler 对象和 Filter 对象，Handler 对象又可以设置 Formatter 对象。Formatter 对象用来设置具体的输出格式，常用变量格式如下表所示，所有可以参数见官方文档：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">变量</th>
+<th style="text-align:center">格式</th>
+<th style="text-align:center">变量描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">asctime</td>
+<td style="text-align:center">%(asctime)s</td>
+<td style="text-align:center">将日志的时间构造成可读的形式，默认情况下是精确到毫秒，如 2018-10-13 23:24:57,832，可以额外指定 datefmt 参数来指定该变量的格式</td>
+</tr>
+<tr>
+<td style="text-align:center">name</td>
+<td style="text-align:center">%(name)</td>
+<td style="text-align:center">日志对象的名称</td>
+</tr>
+<tr>
+<td style="text-align:center">filename</td>
+<td style="text-align:center">%(filename)s</td>
+<td style="text-align:center">不包含路径的文件名</td>
+</tr>
+<tr>
+<td style="text-align:center">pathname</td>
+<td style="text-align:center">%(pathname)s</td>
+<td style="text-align:center">包含路径的文件名</td>
+</tr>
+<tr>
+<td style="text-align:center">funcName</td>
+<td style="text-align:center">%(funcName)s</td>
+<td style="text-align:center">日志记录所在的函数名</td>
+</tr>
+<tr>
+<td style="text-align:center">levelname</td>
+<td style="text-align:center">%(levelname)s</td>
+<td style="text-align:center">日志的级别名称</td>
+</tr>
+<tr>
+<td style="text-align:center">message</td>
+<td style="text-align:center">%(message)s</td>
+<td style="text-align:center">具体的日志信息</td>
+</tr>
+<tr>
+<td style="text-align:center">lineno</td>
+<td style="text-align:center">%(lineno)d</td>
+<td style="text-align:center">日志记录所在的行号</td>
+</tr>
+<tr>
+<td style="text-align:center">pathname</td>
+<td style="text-align:center">%(pathname)s</td>
+<td style="text-align:center">完整路径</td>
+</tr>
+<tr>
+<td style="text-align:center">process</td>
+<td style="text-align:center">%(process)d</td>
+<td style="text-align:center">当前进程ID</td>
+</tr>
+<tr>
+<td style="text-align:center">processName</td>
+<td style="text-align:center">%(processName)s</td>
+<td style="text-align:center">当前进程名称</td>
+</tr>
+<tr>
+<td style="text-align:center">thread</td>
+<td style="text-align:center">%(thread)d</td>
+<td style="text-align:center">当前线程ID</td>
+</tr>
+<tr>
+<td style="text-align:center">threadName</td>
+<td style="text-align:center">%threadName)s</td>
+<td style="text-align:center">当前线程名称</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Logger 对象和 Handler 对象都可以设置级别，而默认 Logger 对象级别为 30，也即 WARNING，默认 Handler 对象级别为 0，也即 NOTSET。logging 模块这样设计是为了更好的灵活性，比如有时候我们既想在控制台中输出 DEBUG 级别的日志，又想在文件中输出WARNING 级别的日志。</p>
+<blockquote>
+<p>日志最后的输出级别是 Logger 和 Handler 中级别最高的，因此如果我们想输出低级别的，比如 INFO，不仅仅要设置 Handler 的级别，还需要修改 Logger 的级别。</p>
+</blockquote>
+<p>可以只设置一个最低级别的 Logger 对象，两个不同级别的 Handler 对象，示例代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"><span class="keyword">import</span> logging.handlers</span><br><span class="line"></span><br><span class="line">logger = logging.getLogger(<span class="string">"logger"</span>)</span><br><span class="line"></span><br><span class="line">handler1 = logging.StreamHandler()</span><br><span class="line">handler2 = logging.FileHandler(filename=<span class="string">"test.log"</span>)</span><br><span class="line"></span><br><span class="line">logger.setLevel(logging.DEBUG)</span><br><span class="line">handler1.setLevel(logging.WARNING)</span><br><span class="line">handler2.setLevel(logging.DEBUG)</span><br><span class="line"></span><br><span class="line">formatter = logging.Formatter(<span class="string">"%(asctime)s %(name)s %(levelname)s %(message)s"</span>)</span><br><span class="line">handler1.setFormatter(formatter)</span><br><span class="line">handler2.setFormatter(formatter)</span><br><span class="line"></span><br><span class="line">logger.addHandler(handler1)</span><br><span class="line">logger.addHandler(handler2)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 分别为 10、30、30</span></span><br><span class="line"><span class="comment"># print(handler1.level)</span></span><br><span class="line"><span class="comment"># print(handler2.level)</span></span><br><span class="line"><span class="comment"># print(logger.level)</span></span><br><span class="line"></span><br><span class="line">logger.debug(<span class="string">'This is a customer debug message'</span>)</span><br><span class="line">logger.info(<span class="string">'This is an customer info message'</span>)</span><br><span class="line">logger.warning(<span class="string">'This is a customer warning message'</span>)</span><br><span class="line">logger.error(<span class="string">'This is an customer error message'</span>)</span><br><span class="line">logger.critical(<span class="string">'This is a customer critical message'</span>)</span><br></pre></td></tr></table></figure>
+<p>控制台输出结果为：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2018</span><span class="number">-10</span><span class="number">-13</span> <span class="number">23</span>:<span class="number">24</span>:<span class="number">57</span>,<span class="number">832</span> logger WARNING This <span class="keyword">is</span> a customer warning message</span><br><span class="line"><span class="number">2018</span><span class="number">-10</span><span class="number">-13</span> <span class="number">23</span>:<span class="number">24</span>:<span class="number">57</span>,<span class="number">832</span> logger ERROR This <span class="keyword">is</span> an customer error message</span><br><span class="line"><span class="number">2018</span><span class="number">-10</span><span class="number">-13</span> <span class="number">23</span>:<span class="number">24</span>:<span class="number">57</span>,<span class="number">832</span> logger CRITICAL This <span class="keyword">is</span> a customer critical message</span><br></pre></td></tr></table></figure>
+<p>文件中输出内容为：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2018</span><span class="number">-10</span><span class="number">-13</span> <span class="number">23</span>:<span class="number">44</span>:<span class="number">59</span>,<span class="number">817</span> logger DEBUG This <span class="keyword">is</span> a customer debug message</span><br><span class="line"><span class="number">2018</span><span class="number">-10</span><span class="number">-13</span> <span class="number">23</span>:<span class="number">44</span>:<span class="number">59</span>,<span class="number">817</span> logger INFO This <span class="keyword">is</span> an customer info message</span><br><span class="line"><span class="number">2018</span><span class="number">-10</span><span class="number">-13</span> <span class="number">23</span>:<span class="number">44</span>:<span class="number">59</span>,<span class="number">817</span> logger WARNING This <span class="keyword">is</span> a customer warning message</span><br><span class="line"><span class="number">2018</span><span class="number">-10</span><span class="number">-13</span> <span class="number">23</span>:<span class="number">44</span>:<span class="number">59</span>,<span class="number">817</span> logger ERROR This <span class="keyword">is</span> an customer error message</span><br><span class="line"><span class="number">2018</span><span class="number">-10</span><span class="number">-13</span> <span class="number">23</span>:<span class="number">44</span>:<span class="number">59</span>,<span class="number">817</span> logger CRITICAL This <span class="keyword">is</span> a customer critical message</span><br></pre></td></tr></table></figure>
+<p>创建了自定义的 Logger 对象，就不要在用 logging 中的日志输出方法了，这些方法使用的是默认配置的 Logger 对象，否则会输出的日志信息会重复。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging</span><br><span class="line"><span class="keyword">import</span> logging.handlers</span><br><span class="line"></span><br><span class="line">logger = logging.getLogger(<span class="string">"logger"</span>)</span><br><span class="line">handler = logging.StreamHandler()</span><br><span class="line">handler.setLevel(logging.DEBUG)</span><br><span class="line">formatter = logging.Formatter(<span class="string">"%(asctime)s %(name)s %(levelname)s %(message)s"</span>)</span><br><span class="line">handler.setFormatter(formatter)</span><br><span class="line">logger.addHandler(handler)</span><br><span class="line">logger.debug(<span class="string">'This is a customer debug message'</span>)</span><br><span class="line">logging.info(<span class="string">'This is an customer info message'</span>)</span><br><span class="line">logger.warning(<span class="string">'This is a customer warning message'</span>)</span><br><span class="line">logger.error(<span class="string">'This is an customer error message'</span>)</span><br><span class="line">logger.critical(<span class="string">'This is a customer critical message'</span>)`</span><br></pre></td></tr></table></figure>
+<p>输出结果如下（可以看到日志信息被输出了两遍）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2018</span><span class="number">-10</span><span class="number">-13</span> <span class="number">22</span>:<span class="number">21</span>:<span class="number">35</span>,<span class="number">873</span> logger WARNING This <span class="keyword">is</span> a customer warning message</span><br><span class="line">WARNING:logger:This <span class="keyword">is</span> a customer warning message</span><br><span class="line"><span class="number">2018</span><span class="number">-10</span><span class="number">-13</span> <span class="number">22</span>:<span class="number">21</span>:<span class="number">35</span>,<span class="number">873</span> logger ERROR This <span class="keyword">is</span> an customer error message</span><br><span class="line">ERROR:logger:This <span class="keyword">is</span> an customer error message</span><br><span class="line"><span class="number">2018</span><span class="number">-10</span><span class="number">-13</span> <span class="number">22</span>:<span class="number">21</span>:<span class="number">35</span>,<span class="number">873</span> logger CRITICAL This <span class="keyword">is</span> a customer critical message</span><br><span class="line">CRITICAL:logger:This <span class="keyword">is</span> a customer critical message</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>在引入有日志输出的 Python 文件时，如 import test.py，在满足大于当前设置的日志级别后就会输出导入文件中的日志，在大型项目中尤其要注意。</p>
+</blockquote>
+<h4 id="logger-配置"><a href="#logger-配置" class="headerlink" title="logger 配置"></a>logger 配置</h4><p>通过上面的例子，我们知道创建一个 Logger 对象所需的配置了，上面直接硬编码在程序中配置对象，配置还可以从字典类型的对象和配置文件获取。打开 logging.config Python 文件，可以看到其中的配置解析转换函数。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging.config</span><br><span class="line"></span><br><span class="line">config = &#123;</span><br><span class="line">    <span class="string">'version'</span>: <span class="number">1</span>,</span><br><span class="line">    <span class="string">'formatters'</span>: &#123;</span><br><span class="line">        <span class="string">'simple'</span>: &#123;</span><br><span class="line">            <span class="string">'format'</span>: <span class="string">'%(asctime)s - %(name)s - %(levelname)s - %(message)s'</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="comment"># 其他的 formatter</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">'handlers'</span>: &#123;</span><br><span class="line">        <span class="string">'console'</span>: &#123;</span><br><span class="line">            <span class="string">'class'</span>: <span class="string">'logging.StreamHandler'</span>,</span><br><span class="line">            <span class="string">'level'</span>: <span class="string">'DEBUG'</span>,</span><br><span class="line">            <span class="string">'formatter'</span>: <span class="string">'simple'</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">'file'</span>: &#123;</span><br><span class="line">            <span class="string">'class'</span>: <span class="string">'logging.FileHandler'</span>,</span><br><span class="line">            <span class="string">'filename'</span>: <span class="string">'logging.log'</span>,</span><br><span class="line">            <span class="string">'level'</span>: <span class="string">'DEBUG'</span>,</span><br><span class="line">            <span class="string">'formatter'</span>: <span class="string">'simple'</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="comment"># 其他的 handler</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="string">'loggers'</span>:&#123;</span><br><span class="line">        <span class="string">'StreamLogger'</span>: &#123;</span><br><span class="line">            <span class="string">'handlers'</span>: [<span class="string">'console'</span>],</span><br><span class="line">            <span class="string">'level'</span>: <span class="string">'DEBUG'</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="string">'FileLogger'</span>: &#123;</span><br><span class="line">            <span class="comment"># 既有 console Handler，还有 file Handler</span></span><br><span class="line">            <span class="string">'handlers'</span>: [<span class="string">'console'</span>, <span class="string">'file'</span>],</span><br><span class="line">            <span class="string">'level'</span>: <span class="string">'DEBUG'</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="comment"># 其他的 Logger</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">logging.config.dictConfig(config)</span><br><span class="line">StreamLogger = logging.getLogger(<span class="string">"StreamLogger"</span>)</span><br><span class="line">FileLogger = logging.getLogger(<span class="string">"FileLogger"</span>)</span><br><span class="line"><span class="comment"># 省略日志输出</span></span><br></pre></td></tr></table></figure>
+<p>因此我们也可以从配置文件中获取配置信息。常见的配置文件有 ini 格式、yaml 格式、JSON 格式，或者从网络中获取都是可以的，只要有相应的文件解析器解析配置即可，下面只展示了 ini 格式和 yaml 格式的配置。</p>
+<figure class="highlight ini"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="section">[loggers]</span></span><br><span class="line"><span class="attr">keys</span>=root,sampleLogger</span><br><span class="line"></span><br><span class="line"><span class="section">[handlers]</span></span><br><span class="line"><span class="attr">keys</span>=consoleHandler</span><br><span class="line"></span><br><span class="line"><span class="section">[formatters]</span></span><br><span class="line"><span class="attr">keys</span>=sampleFormatter</span><br><span class="line"></span><br><span class="line"><span class="section">[logger_root]</span></span><br><span class="line"><span class="attr">level</span>=DEBUG</span><br><span class="line"><span class="attr">handlers</span>=consoleHandler</span><br><span class="line"></span><br><span class="line"><span class="section">[logger_sampleLogger]</span></span><br><span class="line"><span class="attr">level</span>=DEBUG</span><br><span class="line"><span class="attr">handlers</span>=consoleHandler</span><br><span class="line"><span class="attr">qualname</span>=sampleLogger</span><br><span class="line"><span class="attr">propagate</span>=<span class="number">0</span></span><br><span class="line"></span><br><span class="line"><span class="section">[handler_consoleHandler]</span></span><br><span class="line"><span class="attr">class</span>=StreamHandler</span><br><span class="line"><span class="attr">level</span>=DEBUG</span><br><span class="line"><span class="attr">formatter</span>=sampleFormatter</span><br><span class="line"><span class="attr">args</span>=(sys.stdout,)</span><br><span class="line"></span><br><span class="line"><span class="section">[formatter_sampleFormatter]</span></span><br><span class="line"><span class="attr">format</span>=%(asctime)s - %(name)s - %(levelname)s - %(message)s</span><br></pre></td></tr></table></figure>
+<p>因为默认有 ini 的解析器，所以我们不需要额外操作就可以直接解析上述 test.ini 文件的配置信息来初始化 logger：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging.config</span><br><span class="line"></span><br><span class="line">logging.config.fileConfig(fname=<span class="string">'test.ini'</span>, disable_existing_loggers=<span class="literal">False</span>)</span><br><span class="line">logger = logging.getLogger(<span class="string">"sampleLogger"</span>)</span><br></pre></td></tr></table></figure>
+<p>也可以使用 yaml 文件作为配置文件格式：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="number">1</span></span><br><span class="line"><span class="attr">formatters:</span></span><br><span class="line"><span class="attr">  simple:</span></span><br><span class="line"><span class="attr">    format:</span> <span class="string">'%(asctime)s - %(name)s - %(levelname)s - %(message)s'</span></span><br><span class="line"><span class="attr">handlers:</span></span><br><span class="line"><span class="attr">  console:</span></span><br><span class="line"><span class="attr">    class:</span> <span class="string">logging.StreamHandler</span></span><br><span class="line"><span class="attr">    level:</span> <span class="string">DEBUG</span></span><br><span class="line"><span class="attr">    formatter:</span> <span class="string">simple</span></span><br><span class="line">  </span><br><span class="line"><span class="attr">loggers:</span></span><br><span class="line"><span class="attr">  simpleExample:</span></span><br><span class="line"><span class="attr">    level:</span> <span class="string">DEBUG</span></span><br><span class="line"><span class="attr">    handlers:</span> <span class="string">[console]</span></span><br><span class="line"><span class="attr">    propagate:</span> <span class="literal">no</span></span><br><span class="line"><span class="attr">root:</span></span><br><span class="line"><span class="attr">  level:</span> <span class="string">DEBUG</span></span><br><span class="line"><span class="attr">  handlers:</span> <span class="string">[console]</span></span><br></pre></td></tr></table></figure>
+<p>因为默认不是 yaml 解析器，因此需要安装额外的 yaml 解析器，将文件解析为字典传入：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> logging.config</span><br><span class="line"><span class="comment"># 需要安装 pyymal 库</span></span><br><span class="line"><span class="keyword">import</span> yaml</span><br><span class="line"></span><br><span class="line"><span class="keyword">with</span> open(<span class="string">'test.yaml'</span>, <span class="string">'r'</span>) <span class="keyword">as</span> f:</span><br><span class="line">    config = yaml.safe_load(f.read())</span><br><span class="line">    logging.config.dictConfig(config)</span><br><span class="line"></span><br><span class="line">logger = logging.getLogger(<span class="string">"sampleLogger"</span>)</span><br><span class="line"><span class="comment"># 省略日志输出</span></span><br></pre></td></tr></table></figure>
+<h3 id="实战问题"><a href="#实战问题" class="headerlink" title="实战问题"></a>实战问题</h3><h4 id="中文乱码"><a href="#中文乱码" class="headerlink" title="中文乱码"></a>中文乱码</h4><p>上面的例子中日志输出都是英文内容，发现不了将日志输出到文件中会有中文乱码的问题，如何解决到这个问题呢？FileHandler 创建对象时可以设置文件编码，如果将文件编码设置为 “utf-8”（utf-8 和 utf8 等价），就可以解决中文乱码问题啦。一种方法是自定义 Logger 对象，需要写很多配置，另一种方法是使用默认配置方法 basicConfig()，传入 handlers 处理器列表对象，在其中的 handler 设置文件的编码。网上很多都是无效的方法，关键参考代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 自定义 Logger 配置</span></span><br><span class="line">handler = logging.FileHandler(filename=<span class="string">"test.log"</span>, encoding=<span class="string">"utf-8"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用默认的 Logger 配置</span></span><br><span class="line">logging.basicConfig(handlers=[logging.FileHandler(<span class="string">"test.log"</span>, encoding=<span class="string">"utf-8"</span>)], level=logging.DEBUG)</span><br></pre></td></tr></table></figure>
+<h4 id="临时禁用日志输出"><a href="#临时禁用日志输出" class="headerlink" title="临时禁用日志输出"></a>临时禁用日志输出</h4><p>有时候我们又不想让日志输出，但在这后又想输出日志。如果我们打印信息用的是 <code>print()</code> 方法，那么就需要把所有的 <code>print()</code> 方法都注释掉，而使用了 logging 后，我们就有了一键开关闭日志的 “魔法”。一种方法是在使用默认配置时，给 <code>logging.disabled()</code> 方法传入禁用的日志级别，就可以禁止设置级别以下的日志输出了，另一种方法时在自定义 Logger 时，Logger 对象的 <code>disable</code> 属性设为 <code>True</code>（默认值是 <code>False</code>，也即不禁用）。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">logging.disable(logging.INFO)</span><br><span class="line"></span><br><span class="line">logger.disabled = <span class="literal">True</span></span><br></pre></td></tr></table></figure>
+<h4 id="日志文件按照时间划分或者按照大小划分"><a href="#日志文件按照时间划分或者按照大小划分" class="headerlink" title="日志文件按照时间划分或者按照大小划分"></a>日志文件按照时间划分或者按照大小划分</h4><p>如果将日志保存在一个文件中，那么时间一长，或者日志一多，单个日志文件就会很大，既不利于备份，也不利于查看。我们会想到能不能按照时间或者大小对日志文件进行划分呢？答案肯定是可以的，并且还很简单，logging 考虑到了我们这个需求。logging.handlers 文件中提供了 <code>TimedRotatingFileHandler</code> 和 <code>RotatingFileHandler</code> 类分别可以实现按时间和大小划分。打开这个 handles 文件，可以看到还有其他功能的 Handler 类，它们都继承自基类 <code>BaseRotatingHandler</code>。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># TimedRotatingFileHandler 类构造函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, filename, when=<span class="string">'h'</span>, interval=<span class="number">1</span>, backupCount=<span class="number">0</span>, encoding=None, delay=False, utc=False, atTime=None)</span>:</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># RotatingFileHandler 类的构造函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, filename, mode=<span class="string">'a'</span>, maxBytes=<span class="number">0</span>, backupCount=<span class="number">0</span>, encoding=None, delay=False)</span></span></span><br></pre></td></tr></table></figure>
+<p>使用示例：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 每隔 1000 Byte 划分一个日志文件，备份文件为 3 个</span></span><br><span class="line">file_handler = logging.handlers.RotatingFileHandler(<span class="string">"test.log"</span>, mode=<span class="string">"w"</span>, maxBytes=<span class="number">1000</span>, backupCount=<span class="number">3</span>, encoding=<span class="string">"utf-8"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># 每隔 1小时 划分一个日志文件，interval 是时间间隔，备份文件为 10 个</span></span><br><span class="line">handler2 = logging.handlers.TimedRotatingFileHandler(<span class="string">"test.log"</span>, when=<span class="string">"H"</span>, interval=<span class="number">1</span>, backupCount=<span class="number">10</span>)</span><br></pre></td></tr></table></figure>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>logging 作为 Python 标准日志库，灵活并且强大，但是实际使用中也需要注意一些配置，对此我觉得需要深入理解 logging 的整个流程，才能达到随心所欲的掌握这个强大的工具。</p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><ul>
+<li><a href="https://cloud.tencent.com/developer/article/1354396" target="_blank" rel="noopener">https://cloud.tencent.com/developer/article/1354396</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2019/09/python-logging.html" title="Python 日志库 logging 总结">https://murphypei.github.io/blog/2019/09/python-logging.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+              <a href="/tags/logging/" rel="tag"># logging</a>
+            
+              <a href="/tags/handler/" rel="tag"># handler</a>
+            
+              <a href="/tags/logger/" rel="tag"># logger</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2019/09/trt-useage.html" rel="next" title="TensorRT 实战教程">
+                  <i class="fa fa-chevron-left"></i> TensorRT 实战教程
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2019/09/cuda-function-prefix.html" rel="prev" title="CUDA 函数前缀">
+                  CUDA 函数前缀 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#logging-介绍"><span class="nav-number">1.</span> <span class="nav-text">logging 介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#日志级别"><span class="nav-number">1.1.</span> <span class="nav-text">日志级别</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#工作流程"><span class="nav-number">1.2.</span> <span class="nav-text">工作流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#输出格式"><span class="nav-number">1.3.</span> <span class="nav-text">输出格式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#loggging-使用"><span class="nav-number">2.</span> <span class="nav-text">loggging 使用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#基本使用"><span class="nav-number">2.1.</span> <span class="nav-text">基本使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#自定义-logger"><span class="nav-number">2.2.</span> <span class="nav-text">自定义 logger</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#logger-配置"><span class="nav-number">2.3.</span> <span class="nav-text">logger 配置</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实战问题"><span class="nav-number">3.</span> <span class="nav-text">实战问题</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#中文乱码"><span class="nav-number">3.1.</span> <span class="nav-text">中文乱码</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#临时禁用日志输出"><span class="nav-number">3.2.</span> <span class="nav-text">临时禁用日志输出</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#日志文件按照时间划分或者按照大小划分"><span class="nav-number">3.3.</span> <span class="nav-text">日志文件按照时间划分或者按照大小划分</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#参考资料"><span class="nav-number">4.1.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">176</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">455</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2025</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">618k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:10</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: 'e6911f9dc0be64aa3229d30d42b51984',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>
