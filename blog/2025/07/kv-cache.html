@@ -66,7 +66,7 @@
 <meta property="og:site_name" content="拾荒志">
 <meta property="og:description" content="继续梳理 LLM 知识，这次写 KV Cache。KV Cache 是大语言模型推理过程中的重要优化技术，能够显著减少计算量，提高推理速度。本文将从 Attention 计算原理出发，详细推导 KV Cache 的数学等价性，并分析其优化效果。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2025-07-02T01:46:12.705Z">
+<meta property="og:updated_time" content="2025-07-21T11:44:22.914Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LLM 推理： KV Cache 原理与优化">
 <meta name="twitter:description" content="继续梳理 LLM 知识，这次写 KV Cache。KV Cache 是大语言模型推理过程中的重要优化技术，能够显著减少计算量，提高推理速度。本文将从 Attention 计算原理出发，详细推导 KV Cache 的数学等价性，并分析其优化效果。">
@@ -275,7 +275,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-07-02 09:46:12" itemprop="dateModified" datetime="2025-07-02T09:46:12+08:00">2025-07-02</time>
+                <time title="修改时间：2025-07-21 19:44:22" itemprop="dateModified" datetime="2025-07-21T19:44:22+08:00">2025-07-21</time>
               </span>
             
           
@@ -350,7 +350,7 @@ Q = XW_Q, \quad K = XW_K, \quad V = XW_V</script><p>其中：</p>
 \text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V</script><p>其中 $d_k$ 是键向量的维度。</p>
 <p><strong>3. 分步展开</strong><br>对于第 $i$ 个位置的输出，可以表示为：</p>
 <script type="math/tex; mode=display">
-\O_i = \sum_{j=1}^{n} \alpha_{ij} v_j</script><p>其中：</p>
+O_i = \sum_{j=1}^{n} \alpha_{ij} v_j</script><p>其中：</p>
 <script type="math/tex; mode=display">
 \alpha_{ij} = \frac{\exp\left(\frac{q_i^T k_j}{\sqrt{d_k}}\right)}{\sum_{l=1}^{n} \exp\left(\frac{q_i^T k_l}{\sqrt{d_k}}\right)}</script><h3 id="自回归生成过程"><a href="#自回归生成过程" class="headerlink" title="自回归生成过程"></a>自回归生成过程</h3><p>在生成式推理中，模型逐个生成token。假设当前已经生成了 $t$ 个token，要生成第 $t+1$ 个token：</p>
 <p><strong>输入序列</strong>：$X_{1:t} = [x_1, x_2, …, x_t]$</p>
@@ -382,7 +382,7 @@ Q_{1:t+1} = X_{1:t+1}W_Q \\
 K_{1:t+1} = X_{1:t+1}W_K \\
 V_{1:t+1} = X_{1:t+1}W_V</script><p><strong>Attention输出</strong>：</p>
 <script type="math/tex; mode=display">
-\O_{t+1} = \sum_{j=1}^{t+1} \alpha_{(t+1)j} v_j</script><p>其中：</p>
+O_{t+1} = \sum_{j=1}^{t+1} \alpha_{(t+1)j} v_j</script><p>其中：</p>
 <script type="math/tex; mode=display">
 \alpha_{(t+1)j} = \frac{\exp\left(\frac{q_{t+1}^T k_j}{\sqrt{d_k}}\right)}{\sum_{l=1}^{t+1} \exp\left(\frac{q_{t+1}^T k_l}{\sqrt{d_k}}\right)}</script><h4 id="2-KV-Cache的计算表示"><a href="#2-KV-Cache的计算表示" class="headerlink" title="2. KV Cache的计算表示"></a>2. KV Cache的计算表示</h4><p>在KV Cache中，生成第 $t+1$ 个token时：</p>
 <p><strong>缓存状态</strong>：</p>
@@ -399,10 +399,10 @@ v_{t+1} = x_{t+1}W_V</script><p><strong>更新缓存</strong>：</p>
 K_{cache}^{new} = [K_{cache}, k_{t+1}] = [K_1, K_2, ..., K_t, K_{t+1}] \\
 V_{cache}^{new} = [V_{cache}, v_{t+1}] = [V_1, V_2, ..., V_t, V_{t+1}]</script><p><strong>Attention计算</strong>：</p>
 <script type="math/tex; mode=display">
-\O_{t+1} = \sum_{j=1}^{t+1} \alpha_{(t+1)j} v_j</script><p>其中：</p>
+O_{t+1} = \sum_{j=1}^{t+1} \alpha_{(t+1)j} v_j</script><p>其中：</p>
 <script type="math/tex; mode=display">
 \alpha_{(t+1)j} = \frac{\exp\left(\frac{q_{t+1}^T k_j}{\sqrt{d_k}}\right)}{\sum_{l=1}^{t+1} \exp\left(\frac{q_{t+1}^T k_l}{\sqrt{d_k}}\right)}</script><blockquote>
-<p>这里注意重点，$\O_{t+1}$，只和 $\alpha_{(t+1)j}$ 以及 $v_{i:t+1}$ 有关。而 $\alpha_{(t+1)j}$ 只和 $q_{t+1}$ 以及 $k_{i:t+1}$ 有关，这也是为何需要 KV  缓存，而不需要 Q 缓存的原因。这是 Attention 计算的核心，也是实现 KV cache 的关键。</p>
+<p>这里注意重点，$O_{t+1}$，只和 $\alpha_{(t+1)j}$ 以及 $v_{i:t+1}$ 有关。而 $\alpha_{(t+1)j}$ 只和 $q_{t+1}$ 以及 $k_{i:t+1}$ 有关，这也是为何需要 KV  缓存，而不需要 Q 缓存的原因。这是 Attention 计算的核心，也是实现 KV cache 的关键。</p>
 </blockquote>
 <h4 id="3-等价性证明"><a href="#3-等价性证明" class="headerlink" title="3. 等价性证明"></a>3. 等价性证明</h4><p><strong>矩阵运算的线性性质</strong>：</p>
 <p>对于线性变换 $K = XW_K$，由于矩阵乘法的线性性质：</p>

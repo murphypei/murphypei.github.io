@@ -58,19 +58,19 @@
   };
 </script>
 
-  <meta name="description" content="目前所采用的扩散模型大都是来自于2020年的工作DDPM。DDPM对之前的扩散模型进行了简化，并通过变分推断（variational inference）来进行建模，这主要是因为扩散模型也是一个隐变量模型（latent variable model），相比VAE这样的隐变量模型，扩散模型的隐变量是和原始数据是同维度的，而且推理过程（即扩散过程）往往是固定的。">
+  <meta name="description" content="目前所采用的扩散模型大都是来自于 2020 年的工作 DDPM。DDPM 对之前的扩散模型进行了简化，并通过变分推断（variational inference）来进行建模，这主要是因为扩散模型也是一个隐变量模型（latent variable model），相比 VAE 这样的隐变量模型，扩散模型的隐变量是和原始数据是同维度的，而且推理过程（即扩散过程）往往是固定的。">
 <meta name="keywords" content="AIGC,DDPM,图像生成">
 <meta property="og:type" content="article">
-<meta property="og:title" content="图像生成基础-DDPM">
+<meta property="og:title" content="图像生成基础：DDPM">
 <meta property="og:url" content="https://murphypei.github.io/blog/2024/07/aigc-ddpm.html">
 <meta property="og:site_name" content="拾荒志">
-<meta property="og:description" content="目前所采用的扩散模型大都是来自于2020年的工作DDPM。DDPM对之前的扩散模型进行了简化，并通过变分推断（variational inference）来进行建模，这主要是因为扩散模型也是一个隐变量模型（latent variable model），相比VAE这样的隐变量模型，扩散模型的隐变量是和原始数据是同维度的，而且推理过程（即扩散过程）往往是固定的。">
+<meta property="og:description" content="目前所采用的扩散模型大都是来自于 2020 年的工作 DDPM。DDPM 对之前的扩散模型进行了简化，并通过变分推断（variational inference）来进行建模，这主要是因为扩散模型也是一个隐变量模型（latent variable model），相比 VAE 这样的隐变量模型，扩散模型的隐变量是和原始数据是同维度的，而且推理过程（即扩散过程）往往是固定的。">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://murphypei.github.io/images/posts/aigc/ddpm/1.webp">
-<meta property="og:updated_time" content="2025-06-25T02:00:04.086Z">
+<meta property="og:updated_time" content="2025-07-21T11:29:15.401Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="图像生成基础-DDPM">
-<meta name="twitter:description" content="目前所采用的扩散模型大都是来自于2020年的工作DDPM。DDPM对之前的扩散模型进行了简化，并通过变分推断（variational inference）来进行建模，这主要是因为扩散模型也是一个隐变量模型（latent variable model），相比VAE这样的隐变量模型，扩散模型的隐变量是和原始数据是同维度的，而且推理过程（即扩散过程）往往是固定的。">
+<meta name="twitter:title" content="图像生成基础：DDPM">
+<meta name="twitter:description" content="目前所采用的扩散模型大都是来自于 2020 年的工作 DDPM。DDPM 对之前的扩散模型进行了简化，并通过变分推断（variational inference）来进行建模，这主要是因为扩散模型也是一个隐变量模型（latent variable model），相比 VAE 这样的隐变量模型，扩散模型的隐变量是和原始数据是同维度的，而且推理过程（即扩散过程）往往是固定的。">
 <meta name="twitter:image" content="https://murphypei.github.io/images/posts/aigc/ddpm/1.webp">
   <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
   <link rel="canonical" href="https://murphypei.github.io/blog/2024/07/aigc-ddpm">
@@ -87,7 +87,7 @@
   };
 </script>
 
-  <title>图像生成基础-DDPM | 拾荒志</title>
+  <title>图像生成基础：DDPM | 拾荒志</title>
   <meta name="generator" content="Hexo 3.9.0">
   
 
@@ -250,7 +250,7 @@
       <meta itemprop="name" content="拾荒志">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">图像生成基础-DDPM
+        <h2 class="post-title" itemprop="name headline">图像生成基础：DDPM
 
           
         </h2>
@@ -277,7 +277,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-06-25 10:00:04" itemprop="dateModified" datetime="2025-06-25T10:00:04+08:00">2025-06-25</time>
+                <time title="修改时间：2025-07-21 19:29:15" itemprop="dateModified" datetime="2025-07-21T19:29:15+08:00">2025-07-21</time>
               </span>
             
           
@@ -335,32 +335,32 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>目前所采用的扩散模型大都是来自于2020年的工作DDPM。DDPM对之前的扩散模型进行了简化，并通过变分推断（variational inference）来进行建模，这主要是因为扩散模型也是一个隐变量模型（latent variable model），相比VAE这样的隐变量模型，扩散模型的隐变量是和原始数据是同维度的，而且推理过程（即扩散过程）往往是固定的。</p>
+        <p>目前所采用的扩散模型大都是来自于 2020 年的工作 DDPM。DDPM 对之前的扩散模型进行了简化，并通过变分推断（variational inference）来进行建模，这主要是因为扩散模型也是一个隐变量模型（latent variable model），相比 VAE 这样的隐变量模型，扩散模型的隐变量是和原始数据是同维度的，而且推理过程（即扩散过程）往往是固定的。</p>
 <a id="more"></a>
-<p>扩散模型包括两个过程：前向过程（forward process）和反向过程（reverse process），其中前向过程又称为扩散过程（diffusion process），如下图所示。无论是前向过程还是反向过程都是一个参数化的马尔可夫链（Markov chain），其中反向过程可以用来生成数据，这里我们将通过变分推断来进行建模和求解。</p>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>扩散模型包括两个过程：前向过程（forward process）和反向过程（reverse process），其中前向过程又称为扩散过程（diffusion process），如下图所示。无论是前向过程还是反向过程都是一个参数化的马尔可夫链（Markov chain），其中反向过程可以用来生成数据，这里我们将通过变分推断来进行建模和求解。</p>
 <p><img src="/images/posts/aigc/ddpm/1.webp" alt></p>
-<h3 id="前向扩散过程-Forward-Diffusion-Process"><a href="#前向扩散过程-Forward-Diffusion-Process" class="headerlink" title="前向扩散过程 (Forward Diffusion Process)"></a>前向扩散过程 (Forward Diffusion Process)</h3><p>解释扩散之前先介绍一个基本的数学表示：</p>
+<h3 id="前向扩散过程（Forward-Diffusion-Process）"><a href="#前向扩散过程（Forward-Diffusion-Process）" class="headerlink" title="前向扩散过程（Forward Diffusion Process）"></a>前向扩散过程（Forward Diffusion Process）</h3><p>解释扩散之前先介绍一个基本的数学表示：</p>
 <script type="math/tex; mode=display">
-\mathcal{N}(x_t; \mu, \Sigma)</script><p>一个正态分布，其中$\mu$是均值，$\Sigma$是协方差矩阵。在这个过程中，$x_t$服从一个$\mu$为均值、$\Sigma$为协方差矩阵的正态分布。</p>
+\mathcal{N}(x_t; \mu, \Sigma)</script><p>一个正态分布，其中 $\mu$ 是均值，$\Sigma$ 是协方差矩阵。在这个过程中，$x_t$ 服从一个 $\mu$ 为均值、$\Sigma$ 为协方差矩阵的正态分布。</p>
 <p>扩散就是对图像数据进行加噪声的过程，<strong>最核心的数学公式</strong>表示如下：</p>
 <script type="math/tex; mode=display">
-q(x_t | x_{t-1}) = \mathcal{N}(x_t; \sqrt{1 - \beta_t} x_{t-1}, \beta_t \mathbf{I})</script><p>$x_0$是原始数据，$x_t$是在$t$时刻的样本，$\mathcal{N}$表示正态分布，$\beta_t$表示在第$t$步的方差（噪音量），它是一个介于0和1之间的值，$\sqrt{1 - \beta_t}$表示输入数据的缩放系数，$\beta_t \mathbf{I}$表示加的噪音的方差。</p>
-<p>这个公式表示，给定$x_{t-1}$的情况下，$x_t$是以$\sqrt{1 - \beta_t} x_{t-1}$为均值、$\beta_t \mathbf{I}$为协方差矩阵的正态分布。可以简单理解为，$x_t$是$x_{t-1}$加上高斯噪音后的结果。</p>
-<p>前向过程就是这么简单。当我们逐渐加大$\beta_t$时，$x_t$逐渐变得模糊，最终变成一个高斯噪声图像。</p>
+q(x_t | x_{t-1}) = \mathcal{N}(x_t; \sqrt{1 - \beta_t} x_{t-1}, \beta_t \mathbf{I})</script><p>$x_0$ 是原始数据，$x_t$ 是在 $t$ 时刻的样本，$\mathcal{N}$ 表示正态分布，$\beta_t$ 表示在第 $t$ 步的方差（噪音量），它是一个介于 0 和 1 之间的值，$\sqrt{1 - \beta_t}$ 表示输入数据的缩放系数，$\beta_t \mathbf{I}$ 表示加的噪音的方差。</p>
+<p>这个公式表示，给定 $x_{t-1}$ 的情况下，$x_t$ 是以 $\sqrt{1 - \beta_t} x_{t-1}$ 为均值、$\beta_t \mathbf{I}$ 为协方差矩阵的正态分布。可以简单理解为，$x_t$ 是 $x_{t-1}$ 加上高斯噪音后的结果。</p>
+<p>前向过程就是这么简单。当我们逐渐加大 $\beta_t$ 时，$x_t$ 逐渐变得模糊，最终变成一个高斯噪声图像。</p>
 <script type="math/tex; mode=display">
-q(x_T|x_0) \approx \mathcal{N}(0, I)</script><p>这里也有一个推导，就是通过 $x_0$，可以直接表示$x_T$，因为高斯分布可以直接相加。</p>
-<h3 id="逆向生成过程-Reverse-Generation-Process"><a href="#逆向生成过程-Reverse-Generation-Process" class="headerlink" title="逆向生成过程 (Reverse Generation Process)"></a>逆向生成过程 (Reverse Generation Process)</h3><p>训练过程中，DDPM 学习从噪声生成数据的逆向过程。我们<strong>假设逆向过程也是一个高斯过程</strong>，但参数未知：</p>
+q(x_T|x_0) \approx \mathcal{N}(0, I)</script><p>这里也有一个推导，就是通过 $x_0$，可以直接表示 $x_T$，因为高斯分布可以直接相加。</p>
+<h3 id="逆向生成过程（Reverse-Generation-Process）"><a href="#逆向生成过程（Reverse-Generation-Process）" class="headerlink" title="逆向生成过程（Reverse Generation Process）"></a>逆向生成过程（Reverse Generation Process）</h3><p>训练过程中，DDPM 学习从噪声生成数据的逆向过程。我们<strong>假设逆向过程也是一个高斯过程</strong>，但参数未知：</p>
 <script type="math/tex; mode=display">
 p_\theta(x_{t-1}|x_t) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t, t), \sigma_\theta^2(x_t, t) I)</script><p>这里，模型的任务是学习 $\mu_\theta$ 和 $\sigma_\theta$ 的参数化形式，使得可以从噪声生成逼真的数据样本。</p>
-<h3 id="训练目标"><a href="#训练目标" class="headerlink" title="训练目标"></a>训练目标</h3><p>训练的目标是最小化前向过程和逆向过程之间的差异。具体来说，训练目标可以表示为以下KL散度的和：</p>
+<h3 id="训练目标"><a href="#训练目标" class="headerlink" title="训练目标"></a>训练目标</h3><p>训练的目标是最小化前向过程和逆向过程之间的差异。具体来说，训练目标可以表示为以下 KL 散度的和：</p>
 <script type="math/tex; mode=display">
-L = \sum_{t=1}^{T} D_{KL}\left(q(x_{t-1}|x_t, x_0) \| p_\theta(x_{t-1}|x_t)\right)</script><p>每一个KL项衡量在第$t$个时间步长上真实分布和模型估计分布之间的差异。</p>
+L = \sum_{t=1}^{T} D_{KL}\left(q(x_{t-1}|x_t, x_0) \| p_\theta(x_{t-1}|x_t)\right)</script><p>每一个 KL 项衡量在第 $t$ 个时间步长上真实分布和模型估计分布之间的差异。</p>
 <h3 id="损失函数"><a href="#损失函数" class="headerlink" title="损失函数"></a>损失函数</h3><p>为了简化训练过程，我们可以<strong>重参数化</strong>损失函数为一个去噪过程的预测任务。目标变为预测加入噪声的程度（噪声项）的均值和方差。</p>
 <blockquote>
 <p>这里重参数的推导很长，可以网上找一下。</p>
 </blockquote>
 <script type="math/tex; mode=display">
-L = \mathbb{E}_{q(x_0, \epsilon)} \left[\|\epsilon - \epsilon_\theta(x_t, t)\|^2\right]</script><p>其中 $\epsilon$ 是在前向过程加入的数据噪声，$\epsilon_\theta$ 是通过神经网络预测的噪声。所以神经网络的任务就是抽取一个$t$（1~$T$之间），通过$x_0$和加噪过程，计算得到$x_t$，然后神经网络预测噪声，计算预测的噪声和实际噪声的分布差异。</p>
+L = \mathbb{E}_{q(x_0, \epsilon)} \left[\|\epsilon - \epsilon_\theta(x_t, t)\|^2\right]</script><p>其中 $\epsilon$ 是在前向过程加入的数据噪声，$\epsilon_\theta$ 是通过神经网络预测的噪声。所以神经网络的任务就是抽取一个 $t$（1~$T$ 之间），通过 $x_0$ 和加噪过程，计算得到 $x_t$，然后神经网络预测噪声，计算预测的噪声和实际噪声的分布差异。</p>
 <h3 id="训练步骤"><a href="#训练步骤" class="headerlink" title="训练步骤"></a>训练步骤</h3><ol>
 <li><strong>采样数据 $x_0$</strong> 从真实数据分布中。</li>
 <li><strong>采样噪声 $\epsilon$</strong> 从标准正态分布中。</li>
@@ -369,9 +369,10 @@ L = \mathbb{E}_{q(x_0, \epsilon)} \left[\|\epsilon - \epsilon_\theta(x_t, t)\|^2
 <li><strong>计算损失 $L$</strong> 并通过反向传播更新模型参数。</li>
 </ol>
 <h3 id="生成步骤"><a href="#生成步骤" class="headerlink" title="生成步骤"></a>生成步骤</h3><p>生成数据时，从标准正态分布中采样 $x_T$，然后逐步通过逆向生成过程去噪，生成数据 $x_0$。</p>
-<p>在DDPM中，会将原始图像的像素值从[0, 255]范围归一化到[-1, 1]，像素值属于离散化值。</p>
-<h3 id="背后原理"><a href="#背后原理" class="headerlink" title="背后原理"></a>背后原理</h3><p>DDPM 通过一个称为“马尔科夫链”的过程，逐步将噪声转化为数据。其核心思想是分阶段进行去噪，每个阶段只去除一小部分噪声，使得每一步的去噪过程更为简单和稳定。<br>总的来说，DDPM 在生成任务中表现出色，特别是生成图像和其他复杂结构的数据类型。这是因为它通过多步生成过程有效地捕捉了数据的复杂结构和细节。</p>
-<p>DDPM的推导过程中，最重要的就是重参数技巧，这个技巧在很多生成模型中都有应用，比如VAE、GAN等。</p>
+<p>在 DDPM 中，会将原始图像的像素值从 [0, 255] 范围归一化到 [-1, 1]，像素值属于离散化值。</p>
+<h3 id="背后原理"><a href="#背后原理" class="headerlink" title="背后原理"></a>背后原理</h3><p>DDPM 通过一个称为”马尔科夫链”的过程，逐步将噪声转化为数据。其核心思想是分阶段进行去噪，每个阶段只去除一小部分噪声，使得每一步的去噪过程更为简单和稳定。</p>
+<p>总的来说，DDPM 在生成任务中表现出色，特别是生成图像和其他复杂结构的数据类型。这是因为它通过多步生成过程有效地捕捉了数据的复杂结构和细节。</p>
+<p>DDPM 的推导过程中，最重要的就是重参数技巧，这个技巧在很多生成模型中都有应用，比如 VAE、GAN 等。</p>
 
     </div>
 
@@ -388,7 +389,7 @@ L = \mathbb{E}_{q(x_0, \epsilon)} \left[\|\epsilon - \epsilon_\theta(x_t, t)\|^2
     <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://murphypei.github.io/blog/2024/07/aigc-ddpm.html" title="图像生成基础-DDPM">https://murphypei.github.io/blog/2024/07/aigc-ddpm.html</a>
+    <a href="https://murphypei.github.io/blog/2024/07/aigc-ddpm.html" title="图像生成基础：DDPM">https://murphypei.github.io/blog/2024/07/aigc-ddpm.html</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
@@ -417,8 +418,8 @@ L = \mathbb{E}_{q(x_0, \epsilon)} \left[\|\epsilon - \epsilon_\theta(x_t, t)\|^2
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
               
-                <a href="/blog/2024/07/llm-rlhf-ppo.html" rel="next" title="大模型RLHF训练中的PPO算法细节">
-                  <i class="fa fa-chevron-left"></i> 大模型RLHF训练中的PPO算法细节
+                <a href="/blog/2024/07/llm-rlhf-ppo.html" rel="next" title="大模型 RLHF 训练中的 PPO 算法细节">
+                  <i class="fa fa-chevron-left"></i> 大模型 RLHF 训练中的 PPO 算法细节
                 </a>
               
             </div>
@@ -481,7 +482,7 @@ L = \mathbb{E}_{q(x_0, \epsilon)} \left[\|\epsilon - \epsilon_\theta(x_t, t)\|^2
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#前向扩散过程-Forward-Diffusion-Process"><span class="nav-number">1.</span> <span class="nav-text">前向扩散过程 (Forward Diffusion Process)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#逆向生成过程-Reverse-Generation-Process"><span class="nav-number">2.</span> <span class="nav-text">逆向生成过程 (Reverse Generation Process)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#训练目标"><span class="nav-number">3.</span> <span class="nav-text">训练目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#损失函数"><span class="nav-number">4.</span> <span class="nav-text">损失函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#训练步骤"><span class="nav-number">5.</span> <span class="nav-text">训练步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生成步骤"><span class="nav-number">6.</span> <span class="nav-text">生成步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#背后原理"><span class="nav-number">7.</span> <span class="nav-text">背后原理</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#前向扩散过程（Forward-Diffusion-Process）"><span class="nav-number">1.1.</span> <span class="nav-text">前向扩散过程（Forward Diffusion Process）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#逆向生成过程（Reverse-Generation-Process）"><span class="nav-number">1.2.</span> <span class="nav-text">逆向生成过程（Reverse Generation Process）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#训练目标"><span class="nav-number">1.3.</span> <span class="nav-text">训练目标</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#损失函数"><span class="nav-number">1.4.</span> <span class="nav-text">损失函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#训练步骤"><span class="nav-number">1.5.</span> <span class="nav-text">训练步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#生成步骤"><span class="nav-number">1.6.</span> <span class="nav-text">生成步骤</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#背后原理"><span class="nav-number">1.7.</span> <span class="nav-text">背后原理</span></a></li></ol></li></ol></div>
         
       </div>
       <!--/noindex-->
