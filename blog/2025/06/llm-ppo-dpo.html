@@ -59,19 +59,19 @@
 </script>
 
   <meta name="description" content="已经接近 3 年没有更新博客了。今天立下一个 flag，开始准备 LLM 面试知识，主要是八股文为主，想到哪写到哪。第一篇没想到写啥，觉得对 PPO 和 DPO 比较了解，就先直接写这个吧。">
-<meta name="keywords" content="LLM,面试,rlhf,ppo,dpo">
+<meta name="keywords" content="LLM,rlhf,ppo,dpo">
 <meta property="og:type" content="article">
-<meta property="og:title" content="LLM 八股文：PPO 和 DPO">
-<meta property="og:url" content="https://murphypei.github.io/blog/2025/06/llm-interview-ppo-dpo.html">
+<meta property="og:title" content="LLM 训练：PPO 和 DPO">
+<meta property="og:url" content="https://murphypei.github.io/blog/2025/06/llm-ppo-dpo.html">
 <meta property="og:site_name" content="拾荒志">
 <meta property="og:description" content="已经接近 3 年没有更新博客了。今天立下一个 flag，开始准备 LLM 面试知识，主要是八股文为主，想到哪写到哪。第一篇没想到写啥，觉得对 PPO 和 DPO 比较了解，就先直接写这个吧。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2025-06-25T08:15:16.815Z">
+<meta property="og:updated_time" content="2025-07-01T12:41:02.120Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="LLM 八股文：PPO 和 DPO">
+<meta name="twitter:title" content="LLM 训练：PPO 和 DPO">
 <meta name="twitter:description" content="已经接近 3 年没有更新博客了。今天立下一个 flag，开始准备 LLM 面试知识，主要是八股文为主，想到哪写到哪。第一篇没想到写啥，觉得对 PPO 和 DPO 比较了解，就先直接写这个吧。">
   <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
-  <link rel="canonical" href="https://murphypei.github.io/blog/2025/06/llm-interview-ppo-dpo">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2025/06/llm-ppo-dpo">
 
 
 <script id="page-configurations">
@@ -85,7 +85,7 @@
   };
 </script>
 
-  <title>LLM 八股文：PPO 和 DPO | 拾荒志</title>
+  <title>LLM 训练：PPO 和 DPO | 拾荒志</title>
   <meta name="generator" content="Hexo 3.9.0">
   
 
@@ -236,7 +236,7 @@
   
   
   <div class="post-block post">
-    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2025/06/llm-interview-ppo-dpo.html">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2025/06/llm-ppo-dpo.html">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="AngryBirds">
@@ -248,7 +248,7 @@
       <meta itemprop="name" content="拾荒志">
     </span>
       <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">LLM 八股文：PPO 和 DPO
+        <h2 class="post-title" itemprop="name headline">LLM 训练：PPO 和 DPO
 
           
         </h2>
@@ -275,7 +275,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-06-25 16:15:16" itemprop="dateModified" datetime="2025-06-25T16:15:16+08:00">2025-06-25</time>
+                <time title="修改时间：2025-07-01 20:41:02" itemprop="dateModified" datetime="2025-07-01T20:41:02+08:00">2025-07-01</time>
               </span>
             
           
@@ -682,7 +682,7 @@ r(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{ref}(y|x)}</script><p>这个前
     <strong>本文作者： </strong>AngryBirds</li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://murphypei.github.io/blog/2025/06/llm-interview-ppo-dpo.html" title="LLM 八股文：PPO 和 DPO">https://murphypei.github.io/blog/2025/06/llm-interview-ppo-dpo.html</a>
+    <a href="https://murphypei.github.io/blog/2025/06/llm-ppo-dpo.html" title="LLM 训练：PPO 和 DPO">https://murphypei.github.io/blog/2025/06/llm-ppo-dpo.html</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
@@ -698,8 +698,6 @@ r(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{ref}(y|x)}</script><p>这个前
           <div class="post-tags">
             
               <a href="/tags/LLM/" rel="tag"># LLM</a>
-            
-              <a href="/tags/面试/" rel="tag"># 面试</a>
             
               <a href="/tags/rlhf/" rel="tag"># rlhf</a>
             
@@ -724,6 +722,10 @@ r(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{ref}(y|x)}</script><p>这个前
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2025/06/llm-hallucination-repetition.html" rel="prev" title="LLM 幻觉与重复问题">
+                  LLM 幻觉与重复问题 <i class="fa fa-chevron-right"></i>
+                </a>
               
             </div>
           </div>
@@ -793,7 +795,7 @@ r(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{ref}(y|x)}</script><p>这个前
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">176</span>
+          <span class="site-state-item-count">179</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1773,7 +1775,27 @@ r(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{ref}(y|x)}</script><p>这个前
         
           
         
-        <span class="site-state-item-count">455</span>
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">465</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>
@@ -1844,12 +1866,12 @@ r(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{ref}(y|x)}</script><p>这个前
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">618k</span>
+    <span title="站点总字数">631k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">17:10</span>
+    <span title="站点阅读时长">17:32</span>
 </div>
 
         
@@ -2003,7 +2025,7 @@ r(x, y) = \beta \log \frac{\pi_\theta(y|x)}{\pi_{ref}(y|x)}</script><p>这个前
       repo: 'murphypei.github.io',
       owner: 'murphypei',
       admin: ['murphypei'],
-      id: '0762ee8b03bd842f2f9e39b127d81897',
+      id: '1ff1dff1831af364acb7d7355c9ac5d6',
         language: 'zh-CN',
       
       distractionFreeMode: 'true'

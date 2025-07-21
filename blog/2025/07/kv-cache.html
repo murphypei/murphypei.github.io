@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="继续梳理 LLM 知识，这次写 KV Cache。KV Cache 是大语言模型推理过程中的重要优化技术，能够显著减少计算量，提高推理速度。本文将从 Attention 计算原理出发，详细推导 KV Cache 的数学等价性，并分析其优化效果。">
+<meta name="keywords" content="LLM,KV Cache,Attention,推理优化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LLM 推理： KV Cache 原理与优化">
+<meta property="og:url" content="https://murphypei.github.io/blog/2025/07/kv-cache.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="继续梳理 LLM 知识，这次写 KV Cache。KV Cache 是大语言模型推理过程中的重要优化技术，能够显著减少计算量，提高推理速度。本文将从 Attention 计算原理出发，详细推导 KV Cache 的数学等价性，并分析其优化效果。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2025-07-02T01:46:12.705Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LLM 推理： KV Cache 原理与优化">
+<meta name="twitter:description" content="继续梳理 LLM 知识，这次写 KV Cache。KV Cache 是大语言模型推理过程中的重要优化技术，能够显著减少计算量，提高推理速度。本文将从 Attention 计算原理出发，详细推导 KV Cache 的数学等价性，并分析其优化效果。">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2025/07/kv-cache">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>LLM 推理： KV Cache 原理与优化 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2025/07/kv-cache.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">LLM 推理： KV Cache 原理与优化
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2025-07-01 11:56:52" itemprop="dateCreated datePublished" datetime="2025-07-01T11:56:52+08:00">2025-07-01</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-07-02 09:46:12" itemprop="dateModified" datetime="2025-07-02T09:46:12+08:00">2025-07-02</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/LLM/" itemprop="url" rel="index"><span itemprop="name">LLM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>4.9k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>8 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>继续梳理 LLM 知识，这次写 KV Cache。KV Cache 是大语言模型推理过程中的重要优化技术，能够显著减少计算量，提高推理速度。本文将从 Attention 计算原理出发，详细推导 KV Cache 的数学等价性，并分析其优化效果。</p>
+<a id="more"></a>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>在大语言模型的推理过程中，生成式推理（Generative Inference）是一个自回归过程，模型需要逐个生成token。在这个过程中，大量的计算被重复执行，特别是Attention机制中的Key和Value矩阵计算。KV Cache技术通过缓存这些中间结果，避免了重复计算，从而显著提高了推理效率。</p>
+<p>本文将详细介绍KV Cache的工作原理，从Attention计算的数学原理出发，推导其等价性，并分析其在实际应用中的优化效果。</p>
+<h2 id="Attention机制回顾"><a href="#Attention机制回顾" class="headerlink" title="Attention机制回顾"></a>Attention机制回顾</h2><h3 id="标准Attention计算"><a href="#标准Attention计算" class="headerlink" title="标准Attention计算"></a>标准Attention计算</h3><p>在Transformer的Attention机制中，对于输入序列 $X = [x_1, x_2, …, x_n]$，Attention的计算过程如下：</p>
+<p><strong>1. 线性变换</strong></p>
+<script type="math/tex; mode=display">
+Q = XW_Q, \quad K = XW_K, \quad V = XW_V</script><p>其中：</p>
+<ul>
+<li>$W_Q, W_K, W_V$ 是查询、键、值的权重矩阵</li>
+<li>$Q, K, V$ 分别是查询、键、值的矩阵表示</li>
+</ul>
+<p><strong>2. Attention计算</strong></p>
+<script type="math/tex; mode=display">
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V</script><p>其中 $d_k$ 是键向量的维度。</p>
+<p><strong>3. 分步展开</strong><br>对于第 $i$ 个位置的输出，可以表示为：</p>
+<script type="math/tex; mode=display">
+\O_i = \sum_{j=1}^{n} \alpha_{ij} v_j</script><p>其中：</p>
+<script type="math/tex; mode=display">
+\alpha_{ij} = \frac{\exp\left(\frac{q_i^T k_j}{\sqrt{d_k}}\right)}{\sum_{l=1}^{n} \exp\left(\frac{q_i^T k_l}{\sqrt{d_k}}\right)}</script><h3 id="自回归生成过程"><a href="#自回归生成过程" class="headerlink" title="自回归生成过程"></a>自回归生成过程</h3><p>在生成式推理中，模型逐个生成token。假设当前已经生成了 $t$ 个token，要生成第 $t+1$ 个token：</p>
+<p><strong>输入序列</strong>：$X_{1:t} = [x_1, x_2, …, x_t]$</p>
+<p><strong>计算过程</strong>：</p>
+<ol>
+<li>计算 $Q_{1:t}, K_{1:t}, V_{1:t}$</li>
+<li>计算Attention输出</li>
+<li>生成下一个token $x_{t+1}$</li>
+<li>重复上述过程</li>
+</ol>
+<p><strong>问题</strong>：每次生成新token时，都需要重新计算整个序列的 $K$ 和 $V$ 矩阵，这导致了大量的重复计算。</p>
+<h2 id="KV-Cache的核心思想"><a href="#KV-Cache的核心思想" class="headerlink" title="KV Cache的核心思想"></a>KV Cache的核心思想</h2><h3 id="基本概念"><a href="#基本概念" class="headerlink" title="基本概念"></a>基本概念</h3><p>KV Cache的核心思想是：<strong>缓存已经计算过的Key和Value矩阵，避免重复计算</strong>。</p>
+<p><strong>缓存内容</strong>：</p>
+<ul>
+<li>$K_{cache} = [K_1, K_2, …, K_t]$：已生成token的Key矩阵</li>
+<li>$V_{cache} = [V_1, V_2, …, V_t]$：已生成token的Value矩阵</li>
+</ul>
+<p><strong>增量更新</strong>：</p>
+<ul>
+<li>生成新token $x_{t+1}$ 时，只计算 $K_{t+1}$ 和 $V_{t+1}$</li>
+<li>将新的Key和Value追加到缓存中</li>
+<li>使用完整的缓存进行Attention计算</li>
+</ul>
+<h3 id="数学等价性推导"><a href="#数学等价性推导" class="headerlink" title="数学等价性推导"></a>数学等价性推导</h3><h4 id="1-标准计算的数学表示"><a href="#1-标准计算的数学表示" class="headerlink" title="1. 标准计算的数学表示"></a>1. 标准计算的数学表示</h4><p>在标准计算中，生成第 $t+1$ 个token时：</p>
+<p><strong>输入</strong>：$X_{1:t+1} = [x_1, x_2, …, x_t, x_{t+1}]$</p>
+<p><strong>计算过程</strong>：</p>
+<script type="math/tex; mode=display">
+Q_{1:t+1} = X_{1:t+1}W_Q \\
+K_{1:t+1} = X_{1:t+1}W_K \\
+V_{1:t+1} = X_{1:t+1}W_V</script><p><strong>Attention输出</strong>：</p>
+<script type="math/tex; mode=display">
+\O_{t+1} = \sum_{j=1}^{t+1} \alpha_{(t+1)j} v_j</script><p>其中：</p>
+<script type="math/tex; mode=display">
+\alpha_{(t+1)j} = \frac{\exp\left(\frac{q_{t+1}^T k_j}{\sqrt{d_k}}\right)}{\sum_{l=1}^{t+1} \exp\left(\frac{q_{t+1}^T k_l}{\sqrt{d_k}}\right)}</script><h4 id="2-KV-Cache的计算表示"><a href="#2-KV-Cache的计算表示" class="headerlink" title="2. KV Cache的计算表示"></a>2. KV Cache的计算表示</h4><p>在KV Cache中，生成第 $t+1$ 个token时：</p>
+<p><strong>缓存状态</strong>：</p>
+<ul>
+<li>$K_{cache} = [K_1, K_2, …, K_t]$</li>
+<li>$V_{cache} = [V_1, V_2, …, V_t]$</li>
+</ul>
+<p><strong>增量计算</strong>：</p>
+<script type="math/tex; mode=display">
+q_{t+1} = x_{t+1}W_Q \\
+k_{t+1} = x_{t+1}W_K \\
+v_{t+1} = x_{t+1}W_V</script><p><strong>更新缓存</strong>：</p>
+<script type="math/tex; mode=display">
+K_{cache}^{new} = [K_{cache}, k_{t+1}] = [K_1, K_2, ..., K_t, K_{t+1}] \\
+V_{cache}^{new} = [V_{cache}, v_{t+1}] = [V_1, V_2, ..., V_t, V_{t+1}]</script><p><strong>Attention计算</strong>：</p>
+<script type="math/tex; mode=display">
+\O_{t+1} = \sum_{j=1}^{t+1} \alpha_{(t+1)j} v_j</script><p>其中：</p>
+<script type="math/tex; mode=display">
+\alpha_{(t+1)j} = \frac{\exp\left(\frac{q_{t+1}^T k_j}{\sqrt{d_k}}\right)}{\sum_{l=1}^{t+1} \exp\left(\frac{q_{t+1}^T k_l}{\sqrt{d_k}}\right)}</script><blockquote>
+<p>这里注意重点，$\O_{t+1}$，只和 $\alpha_{(t+1)j}$ 以及 $v_{i:t+1}$ 有关。而 $\alpha_{(t+1)j}$ 只和 $q_{t+1}$ 以及 $k_{i:t+1}$ 有关，这也是为何需要 KV  缓存，而不需要 Q 缓存的原因。这是 Attention 计算的核心，也是实现 KV cache 的关键。</p>
+</blockquote>
+<h4 id="3-等价性证明"><a href="#3-等价性证明" class="headerlink" title="3. 等价性证明"></a>3. 等价性证明</h4><p><strong>矩阵运算的线性性质</strong>：</p>
+<p>对于线性变换 $K = XW_K$，由于矩阵乘法的线性性质：</p>
+<script type="math/tex; mode=display">
+K_{1:t+1} = X_{1:t+1}W_K = [X_{1:t}, x_{t+1}]W_K = [X_{1:t}W_K, x_{t+1}W_K] = [K_{1:t}, K_{t+1}]</script><p>同理：</p>
+<script type="math/tex; mode=display">
+V_{1:t+1} = [V_{1:t}, V_{t+1}]</script><p><strong>Attention计算的等价性</strong>：</p>
+<p>在标准计算中：</p>
+<script type="math/tex; mode=display">
+\text{Attention}(Q_{1:t+1}, K_{1:t+1}, V_{1:t+1}) = \text{softmax}\left(\frac{Q_{1:t+1}K_{1:t+1}^T}{\sqrt{d_k}}\right)V_{1:t+1}</script><p>在KV Cache中：</p>
+<script type="math/tex; mode=display">
+\text{Attention}(q_{t+1}, [K_{cache}, k_{t+1}], [V_{cache}, v_{t+1}]) = \text{softmax}\left(\frac{q_{t+1}[K_{cache}, k_{t+1}]^T}{\sqrt{d_k}}\right)[V_{cache}, v_{t+1}]</script><p>由于：</p>
+<ul>
+<li>$[K_{cache}, k_{t+1}] = K_{1:t+1}$</li>
+<li>$[V_{cache}, v_{t+1}] = V_{1:t+1}$</li>
+<li>$q_{t+1}$ 是 $Q_{1:t+1}$ 的最后一行</li>
+</ul>
+<p>因此，两种计算方式在数学上完全等价。</p>
+<h3 id="计算复杂度分析"><a href="#计算复杂度分析" class="headerlink" title="计算复杂度分析"></a>计算复杂度分析</h3><h4 id="1-标准计算复杂度"><a href="#1-标准计算复杂度" class="headerlink" title="1. 标准计算复杂度"></a>1. 标准计算复杂度</h4><p><strong>第 $t+1$ 步的计算量</strong>：</p>
+<ul>
+<li>线性变换：$O((t+1) \times d_{model} \times d_k)$</li>
+<li>Attention计算：$O((t+1)^2 \times d_k)$</li>
+<li>总复杂度：$O((t+1) \times d_{model} \times d_k + (t+1)^2 \times d_k)$</li>
+</ul>
+<p><strong>累积计算量</strong>（生成 $n$ 个token）：</p>
+<script type="math/tex; mode=display">
+\sum_{t=1}^{n} O(t \times d_{model} \times d_k + t^2 \times d_k) = O(n^2 \times d_{model} \times d_k + n^3 \times d_k)</script><h4 id="2-KV-Cache计算复杂度"><a href="#2-KV-Cache计算复杂度" class="headerlink" title="2. KV Cache计算复杂度"></a>2. KV Cache计算复杂度</h4><p><strong>第 $t+1$ 步的计算量</strong>：</p>
+<ul>
+<li>线性变换：$O(d_{model} \times d_k)$（只计算新token）</li>
+<li>Attention计算：$O((t+1)^2 \times d_k)$</li>
+<li>总复杂度：$O(d_{model} \times d_k + (t+1)^2 \times d_k)$</li>
+</ul>
+<p><strong>累积计算量</strong>（生成 $n$ 个token）：</p>
+<script type="math/tex; mode=display">
+\sum_{t=1}^{n} O(d_{model} \times d_k + t^2 \times d_k) = O(n \times d_{model} \times d_k + n^3 \times d_k)</script><h4 id="3-优化效果"><a href="#3-优化效果" class="headerlink" title="3. 优化效果"></a>3. 优化效果</h4><p><strong>计算量减少</strong>：</p>
+<ul>
+<li>线性变换部分：从 $O(n^2 \times d_{model} \times d_k)$ 减少到 $O(n \times d_{model} \times d_k)$</li>
+<li>减少比例：$O(n)$ 倍</li>
+</ul>
+<p><strong>实际效果</strong>：</p>
+<ul>
+<li>对于长序列生成，计算量减少显著</li>
+<li>特别是在生成较长文本时，优化效果明显</li>
+</ul>
+<h2 id="KV-Cache的实现细节"><a href="#KV-Cache的实现细节" class="headerlink" title="KV Cache的实现细节"></a>KV Cache的实现细节</h2><h3 id="内存管理"><a href="#内存管理" class="headerlink" title="内存管理"></a>内存管理</h3><h4 id="1-缓存结构"><a href="#1-缓存结构" class="headerlink" title="1. 缓存结构"></a>1. 缓存结构</h4><p><strong>缓存格式</strong>：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 缓存结构示例</span></span><br><span class="line">kv_cache = &#123;</span><br><span class="line">    <span class="string">'key'</span>: torch.zeros(seq_len, num_layers, num_heads, head_dim),</span><br><span class="line">    <span class="string">'value'</span>: torch.zeros(seq_len, num_layers, num_heads, head_dim)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></p>
+<p><strong>内存布局</strong>：</p>
+<ul>
+<li>按层（layer）组织</li>
+<li>每层包含多个注意力头（attention heads）</li>
+<li>支持动态扩展</li>
+</ul>
+<h4 id="2-内存优化策略"><a href="#2-内存优化策略" class="headerlink" title="2. 内存优化策略"></a>2. 内存优化策略</h4><p><strong>预分配策略</strong>：</p>
+<ul>
+<li>根据最大序列长度预分配内存</li>
+<li>避免频繁的内存重新分配</li>
+</ul>
+<p><strong>内存复用</strong>：</p>
+<ul>
+<li>在推理过程中复用缓存空间</li>
+<li>减少内存碎片</li>
+</ul>
+<h3 id="增量更新机制"><a href="#增量更新机制" class="headerlink" title="增量更新机制"></a>增量更新机制</h3><h4 id="1-缓存更新"><a href="#1-缓存更新" class="headerlink" title="1. 缓存更新"></a>1. 缓存更新</h4><p><strong>更新流程</strong>：</p>
+<ol>
+<li>计算新token的Key和Value</li>
+<li>将新的Key和Value追加到缓存</li>
+<li>更新缓存的有效长度</li>
+</ol>
+<p><strong>代码示例</strong>：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">update_kv_cache</span><span class="params">(kv_cache, new_k, new_v, layer_idx)</span>:</span></span><br><span class="line">    <span class="comment"># 追加新的Key和Value到缓存</span></span><br><span class="line">    kv_cache[<span class="string">'key'</span>][layer_idx] = torch.cat([kv_cache[<span class="string">'key'</span>][layer_idx], new_k], dim=<span class="number">0</span>)</span><br><span class="line">    kv_cache[<span class="string">'value'</span>][layer_idx] = torch.cat([kv_cache[<span class="string">'value'</span>][layer_idx], new_v], dim=<span class="number">0</span>)</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-注意力计算"><a href="#2-注意力计算" class="headerlink" title="2. 注意力计算"></a>2. 注意力计算</h4><p><strong>使用缓存的Attention计算</strong>：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">attention_with_cache</span><span class="params">(query, kv_cache, layer_idx)</span>:</span></span><br><span class="line">    <span class="comment"># 获取缓存的Key和Value</span></span><br><span class="line">    cached_k = kv_cache[<span class="string">'key'</span>][layer_idx]</span><br><span class="line">    cached_v = kv_cache[<span class="string">'value'</span>][layer_idx]</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算注意力分数</span></span><br><span class="line">    scores = torch.matmul(query, cached_k.transpose(<span class="number">-2</span>, <span class="number">-1</span>)) / math.sqrt(d_k)</span><br><span class="line">    attention_weights = torch.softmax(scores, dim=<span class="number">-1</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算输出</span></span><br><span class="line">    output = torch.matmul(attention_weights, cached_v)</span><br><span class="line">    <span class="keyword">return</span> output</span><br></pre></td></tr></table></figure></p>
+<h3 id="多头注意力处理"><a href="#多头注意力处理" class="headerlink" title="多头注意力处理"></a>多头注意力处理</h3><h4 id="1-多头并行计算"><a href="#1-多头并行计算" class="headerlink" title="1. 多头并行计算"></a>1. 多头并行计算</h4><p><strong>缓存组织</strong>：</p>
+<ul>
+<li>每个注意力头独立缓存Key和Value</li>
+<li>支持并行计算</li>
+</ul>
+<p><strong>计算优化</strong>：<br><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">multi_head_attention_with_cache</span><span class="params">(query, kv_cache, layer_idx)</span>:</span></span><br><span class="line">    batch_size, num_heads, seq_len, head_dim = query.shape</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 并行计算所有注意力头</span></span><br><span class="line">    outputs = []</span><br><span class="line">    <span class="keyword">for</span> head_idx <span class="keyword">in</span> range(num_heads):</span><br><span class="line">        head_query = query[:, head_idx, :, :]</span><br><span class="line">        head_k = kv_cache[<span class="string">'key'</span>][layer_idx][:, head_idx, :, :]</span><br><span class="line">        head_v = kv_cache[<span class="string">'value'</span>][layer_idx][:, head_idx, :, :]</span><br><span class="line">        </span><br><span class="line">        head_output = attention_with_cache(head_query, head_k, head_v)</span><br><span class="line">        outputs.append(head_output)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> torch.cat(outputs, dim=<span class="number">1</span>)</span><br></pre></td></tr></table></figure></p>
+<h4 id="2-内存布局优化"><a href="#2-内存布局优化" class="headerlink" title="2. 内存布局优化"></a>2. 内存布局优化</h4><p><strong>连续内存布局</strong>：</p>
+<ul>
+<li>将多头数据存储在连续内存中</li>
+<li>提高缓存命中率</li>
+</ul>
+<p><strong>批处理优化</strong>：</p>
+<ul>
+<li>支持批量处理多个序列</li>
+<li>减少内存访问开销</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2025/07/kv-cache.html" title="LLM 推理： KV Cache 原理与优化">https://murphypei.github.io/blog/2025/07/kv-cache.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+            
+              <a href="/tags/KV-Cache/" rel="tag"># KV Cache</a>
+            
+              <a href="/tags/Attention/" rel="tag"># Attention</a>
+            
+              <a href="/tags/推理优化/" rel="tag"># 推理优化</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2025/06/text-retriveval.html" rel="next" title="LLM：RAG 中的文本检索技术">
+                  <i class="fa fa-chevron-left"></i> LLM：RAG 中的文本检索技术
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Attention机制回顾"><span class="nav-number">2.</span> <span class="nav-text">Attention机制回顾</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#标准Attention计算"><span class="nav-number">2.1.</span> <span class="nav-text">标准Attention计算</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自回归生成过程"><span class="nav-number">2.2.</span> <span class="nav-text">自回归生成过程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KV-Cache的核心思想"><span class="nav-number">3.</span> <span class="nav-text">KV Cache的核心思想</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#基本概念"><span class="nav-number">3.1.</span> <span class="nav-text">基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数学等价性推导"><span class="nav-number">3.2.</span> <span class="nav-text">数学等价性推导</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-标准计算的数学表示"><span class="nav-number">3.2.1.</span> <span class="nav-text">1. 标准计算的数学表示</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-KV-Cache的计算表示"><span class="nav-number">3.2.2.</span> <span class="nav-text">2. KV Cache的计算表示</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-等价性证明"><span class="nav-number">3.2.3.</span> <span class="nav-text">3. 等价性证明</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#计算复杂度分析"><span class="nav-number">3.3.</span> <span class="nav-text">计算复杂度分析</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-标准计算复杂度"><span class="nav-number">3.3.1.</span> <span class="nav-text">1. 标准计算复杂度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-KV-Cache计算复杂度"><span class="nav-number">3.3.2.</span> <span class="nav-text">2. KV Cache计算复杂度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-优化效果"><span class="nav-number">3.3.3.</span> <span class="nav-text">3. 优化效果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#KV-Cache的实现细节"><span class="nav-number">4.</span> <span class="nav-text">KV Cache的实现细节</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#内存管理"><span class="nav-number">4.1.</span> <span class="nav-text">内存管理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-缓存结构"><span class="nav-number">4.1.1.</span> <span class="nav-text">1. 缓存结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-内存优化策略"><span class="nav-number">4.1.2.</span> <span class="nav-text">2. 内存优化策略</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#增量更新机制"><span class="nav-number">4.2.</span> <span class="nav-text">增量更新机制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-缓存更新"><span class="nav-number">4.2.1.</span> <span class="nav-text">1. 缓存更新</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-注意力计算"><span class="nav-number">4.2.2.</span> <span class="nav-text">2. 注意力计算</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多头注意力处理"><span class="nav-number">4.3.</span> <span class="nav-text">多头注意力处理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-多头并行计算"><span class="nav-number">4.3.1.</span> <span class="nav-text">1. 多头并行计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-内存布局优化"><span class="nav-number">4.3.2.</span> <span class="nav-text">2. 内存布局优化</span></a></li></ol></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">179</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">465</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2025</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">631k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:32</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: 'fd933455838f324afe90f3f4a7314daf',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>
