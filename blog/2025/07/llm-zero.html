@@ -1,0 +1,1921 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="在大语言模型（LLM）训练中，显存不足是一个普遍存在的问题。随着模型规模的不断增长，单个 GPU 的显存容量成为了训练大规模模型的主要瓶颈。DeepSpeed ZeRO（Zero Redundancy Optimizer）技术通过创新的数据分片策略，有效解决了这一问题，使得我们能够训练远超单卡显存上限的超大规模模型。">
+<meta name="keywords" content="LLM,training,zero,deepspeed,memory">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LLM 训练：ZeRO 技术详解">
+<meta property="og:url" content="https://murphypei.github.io/blog/2025/07/llm-zero.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="在大语言模型（LLM）训练中，显存不足是一个普遍存在的问题。随着模型规模的不断增长，单个 GPU 的显存容量成为了训练大规模模型的主要瓶颈。DeepSpeed ZeRO（Zero Redundancy Optimizer）技术通过创新的数据分片策略，有效解决了这一问题，使得我们能够训练远超单卡显存上限的超大规模模型。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2025-07-23T09:38:12.961Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="LLM 训练：ZeRO 技术详解">
+<meta name="twitter:description" content="在大语言模型（LLM）训练中，显存不足是一个普遍存在的问题。随着模型规模的不断增长，单个 GPU 的显存容量成为了训练大规模模型的主要瓶颈。DeepSpeed ZeRO（Zero Redundancy Optimizer）技术通过创新的数据分片策略，有效解决了这一问题，使得我们能够训练远超单卡显存上限的超大规模模型。">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2025/07/llm-zero">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>LLM 训练：ZeRO 技术详解 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2025/07/llm-zero.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">LLM 训练：ZeRO 技术详解
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2025-07-23 06:08:12 / 修改时间：17:38:12" itemprop="dateCreated datePublished" datetime="2025-07-23T06:08:12+08:00">2025-07-23</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/LLM/" itemprop="url" rel="index"><span itemprop="name">LLM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>2.8k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>5 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>在大语言模型（LLM）训练中，显存不足是一个普遍存在的问题。随着模型规模的不断增长，单个 GPU 的显存容量成为了训练大规模模型的主要瓶颈。DeepSpeed ZeRO（Zero Redundancy Optimizer）技术通过创新的数据分片策略，有效解决了这一问题，使得我们能够训练远超单卡显存上限的超大规模模型。</p>
+<a id="more"></a>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>随着大语言模型规模的快速增长，从 GPT-3 的 175B 参数到 PaLM 的 540B 参数，再到更大的模型，显存需求呈指数级增长。传统的分布式训练方法虽然能够利用多 GPU 进行训练，但每个 GPU 仍然需要存储完整的模型参数、梯度和优化器状态，这严重限制了可训练的模型规模。</p>
+<p>ZeRO 技术通过<strong>数据并行</strong>与<strong>内存优化</strong>的结合，将模型训练中的大块数据（优化器状态、梯度和模型参数）分散到不同的 GPU 上，而非在每个 GPU 上都完整存储一份，从而显著降低了每个 GPU 的显存需求。</p>
+<h2 id="ZeRO-技术原理"><a href="#ZeRO-技术原理" class="headerlink" title="ZeRO 技术原理"></a>ZeRO 技术原理</h2><h3 id="传统数据并行的问题"><a href="#传统数据并行的问题" class="headerlink" title="传统数据并行的问题"></a>传统数据并行的问题</h3><p>在传统的数据并行训练中，每个 GPU 都需要存储：</p>
+<ol>
+<li><strong>模型参数</strong>：完整的模型权重</li>
+<li><strong>梯度</strong>：完整的梯度信息</li>
+<li><strong>优化器状态</strong>：如 Adam 优化器的动量、方差等状态</li>
+</ol>
+<p>对于大规模模型，这些数据占用的显存非常庞大。例如，一个 175B 参数的模型使用 Adam 优化器时，仅优化器状态就需要约 700GB 显存（每个参数需要 4 个 float32 值）。</p>
+<h3 id="ZeRO-的核心思想"><a href="#ZeRO-的核心思想" class="headerlink" title="ZeRO 的核心思想"></a>ZeRO 的核心思想</h3><p>ZeRO 的核心思想是<strong>消除冗余存储</strong>，通过分片技术将原本每个 GPU 都需要存储的完整数据分散到多个 GPU 上，实现显存的线性扩展。</p>
+<p><strong>关键洞察</strong>：</p>
+<ul>
+<li>在数据并行中，不同 GPU 上的模型参数是相同的</li>
+<li>梯度在反向传播后需要进行 All-Reduce 操作</li>
+<li>优化器状态与参数一一对应</li>
+</ul>
+<p>基于这些观察，ZeRO 提出了分阶段的内存优化策略。</p>
+<h2 id="ZeRO-的三个阶段"><a href="#ZeRO-的三个阶段" class="headerlink" title="ZeRO 的三个阶段"></a>ZeRO 的三个阶段</h2><h3 id="ZeRO-Stage-1：优化器状态分片（Optimizer-State-Sharding）"><a href="#ZeRO-Stage-1：优化器状态分片（Optimizer-State-Sharding）" class="headerlink" title="ZeRO-Stage 1：优化器状态分片（Optimizer State Sharding）"></a>ZeRO-Stage 1：优化器状态分片（Optimizer State Sharding）</h3><p><strong>原理</strong>：<br>将优化器状态分片存储在不同的 GPU 上，每个 GPU 只存储部分优化器状态。</p>
+<p><strong>具体做法</strong>：</p>
+<ul>
+<li>假设有 $N$ 个 GPU，模型参数为 $P$</li>
+<li>将优化器状态分成 $N$ 个分片，每个 GPU 存储 $P/N$ 个参数对应的优化器状态</li>
+<li>在参数更新时，每个 GPU 只更新自己负责的那部分参数</li>
+</ul>
+<p><strong>内存节省</strong>：</p>
+<ul>
+<li>优化器状态内存减少 $N$ 倍</li>
+<li>对于 Adam 优化器，每个参数需要 4 个 float32 值，节省效果显著</li>
+</ul>
+<h3 id="ZeRO-Stage-2：梯度分片（Gradient-Sharding）"><a href="#ZeRO-Stage-2：梯度分片（Gradient-Sharding）" class="headerlink" title="ZeRO-Stage 2：梯度分片（Gradient Sharding）"></a>ZeRO-Stage 2：梯度分片（Gradient Sharding）</h3><p><strong>原理</strong>：<br>在 Stage 1 的基础上，进一步将梯度分片存储。</p>
+<p><strong>具体做法</strong>：</p>
+<ul>
+<li>每个 GPU 只计算和存储部分梯度</li>
+<li>在反向传播结束时，通过 All-Reduce 操作收集完整的梯度</li>
+<li>然后每个 GPU 只更新自己负责的参数部分</li>
+</ul>
+<p><strong>内存节省</strong>：</p>
+<ul>
+<li>梯度内存减少 $N$ 倍</li>
+<li>与 Stage 1 结合，总内存节省更加显著</li>
+</ul>
+<h3 id="ZeRO-Stage-3：参数分片（Parameter-Sharding）"><a href="#ZeRO-Stage-3：参数分片（Parameter-Sharding）" class="headerlink" title="ZeRO-Stage 3：参数分片（Parameter Sharding）"></a>ZeRO-Stage 3：参数分片（Parameter Sharding）</h3><p><strong>原理</strong>：<br>在 Stage 1 和 Stage 2 的基础上，进一步将模型参数分片存储。</p>
+<p><strong>具体做法</strong>：</p>
+<ul>
+<li>模型参数也被分片存储在不同的 GPU 上</li>
+<li>在训练过程中，当需要某个层的所有参数时，通过 All-Gather 操作将所需参数动态地收集到当前 GPU</li>
+<li>这意味着在任何给定时间点，每个 GPU 上只完整存在模型参数的一部分</li>
+</ul>
+<p><strong>内存节省</strong>：</p>
+<ul>
+<li>模型参数内存减少 $N$ 倍</li>
+<li>实现了最大程度的内存优化</li>
+</ul>
+<h2 id="ZeRO-的具体实现"><a href="#ZeRO-的具体实现" class="headerlink" title="ZeRO 的具体实现"></a>ZeRO 的具体实现</h2><h3 id="通信模式"><a href="#通信模式" class="headerlink" title="通信模式"></a>通信模式</h3><p>ZeRO 使用了两种主要的通信模式：</p>
+<ol>
+<li><p><strong>All-Gather</strong>：用于参数收集</p>
+<ul>
+<li>当需要某个层的完整参数时，从所有 GPU 收集该层的参数分片</li>
+<li>通信开销：$O(P)$，其中 $P$ 是参数数量</li>
+</ul>
+</li>
+<li><p><strong>All-Reduce</strong>：用于梯度聚合</p>
+<ul>
+<li>在反向传播后，聚合所有 GPU 上的梯度分片</li>
+<li>通信开销：$O(P)$</li>
+</ul>
+</li>
+</ol>
+<h3 id="内存管理策略"><a href="#内存管理策略" class="headerlink" title="内存管理策略"></a>内存管理策略</h3><p><strong>按需加载机制</strong>：</p>
+<ul>
+<li>参数只在需要时才加载到 GPU 显存</li>
+<li>使用完毕后立即释放，避免长期占用显存</li>
+</ul>
+<p><strong>分片存储策略</strong>：</p>
+<ul>
+<li>优化器状态：静态分片，训练过程中保持不变</li>
+<li>梯度：动态分片，每次反向传播后重新分配</li>
+<li>参数：动态分片，根据计算需求动态加载</li>
+</ul>
+<h3 id="计算流程"><a href="#计算流程" class="headerlink" title="计算流程"></a>计算流程</h3><p><strong>前向传播</strong>：</p>
+<ol>
+<li>通过 All-Gather 收集当前层需要的参数</li>
+<li>执行前向计算</li>
+<li>释放不需要的参数</li>
+</ol>
+<p><strong>反向传播</strong>：</p>
+<ol>
+<li>通过 All-Gather 收集当前层需要的参数</li>
+<li>计算梯度</li>
+<li>将梯度分片存储</li>
+<li>释放参数</li>
+</ol>
+<p><strong>参数更新</strong>：</p>
+<ol>
+<li>通过 All-Reduce 聚合所有梯度分片</li>
+<li>每个 GPU 更新自己负责的参数部分</li>
+<li>更新对应的优化器状态</li>
+</ol>
+<h2 id="ZeRO-的变体技术"><a href="#ZeRO-的变体技术" class="headerlink" title="ZeRO 的变体技术"></a>ZeRO 的变体技术</h2><h3 id="ZeRO-Offload"><a href="#ZeRO-Offload" class="headerlink" title="ZeRO-Offload"></a>ZeRO-Offload</h3><p><strong>原理</strong>：<br>对于模型训练中一些对性能不那么敏感，但内存占用大的部分（如优化器状态、甚至梯度），将其从 GPU 显存转移到 CPU 内存或硬盘（NVMe SSD）。</p>
+<p><strong>具体做法</strong>：</p>
+<ul>
+<li>优化器状态存储在 CPU 内存中</li>
+<li>梯度可以存储在 CPU 内存或 NVMe SSD 中</li>
+<li>在需要时通过 PCIe 总线传输数据</li>
+</ul>
+<p><strong>优势</strong>：</p>
+<ul>
+<li>进一步减少 GPU 显存需求</li>
+<li>能够训练更大的模型</li>
+<li>成本相对较低</li>
+</ul>
+<p><strong>劣势</strong>：</p>
+<ul>
+<li>增加了 CPU-GPU 数据传输开销</li>
+<li>训练速度可能有所下降</li>
+</ul>
+<h3 id="ZeRO-FSDP（Fully-Sharded-Data-Parallelism）"><a href="#ZeRO-FSDP（Fully-Sharded-Data-Parallelism）" class="headerlink" title="ZeRO-FSDP（Fully Sharded Data Parallelism）"></a>ZeRO-FSDP（Fully Sharded Data Parallelism）</h3><p><strong>原理</strong>：<br>ZeRO-FSDP 是 ZeRO-Stage 3 的完整实现，实现了优化器状态、梯度和模型参数的全面分片。</p>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>最大程度的内存优化</li>
+<li>支持任意大小的模型训练</li>
+<li>通信开销相对较高</li>
+</ul>
+<h2 id="ZeRO-的收益分析"><a href="#ZeRO-的收益分析" class="headerlink" title="ZeRO 的收益分析"></a>ZeRO 的收益分析</h2><h3 id="内存节省"><a href="#内存节省" class="headerlink" title="内存节省"></a>内存节省</h3><p><strong>理论分析</strong>：</p>
+<ul>
+<li>Stage 1：优化器状态内存减少 $N$ 倍</li>
+<li>Stage 2：梯度内存减少 $N$ 倍</li>
+<li>Stage 3：参数内存减少 $N$ 倍</li>
+</ul>
+<p><strong>实际效果</strong>：<br>以 175B 参数模型为例：</p>
+<ul>
+<li>传统方法：每个 GPU 需要约 350GB 显存</li>
+<li>ZeRO-Stage 3：每个 GPU 只需要约 35GB 显存（使用 10 个 GPU）</li>
+<li>内存节省：约 90%</li>
+</ul>
+<h3 id="可训练模型规模"><a href="#可训练模型规模" class="headerlink" title="可训练模型规模"></a>可训练模型规模</h3><p><strong>扩展性</strong>：</p>
+<ul>
+<li>理论上可以训练任意大小的模型</li>
+<li>实际限制主要来自通信开销和训练效率</li>
+</ul>
+<p><strong>实际案例</strong>：</p>
+<ul>
+<li>GPT-3 175B：使用 ZeRO 技术成功训练</li>
+<li>PaLM 540B：使用 ZeRO 技术训练</li>
+<li>更大的模型：理论上可行</li>
+</ul>
+<h3 id="训练效率"><a href="#训练效率" class="headerlink" title="训练效率"></a>训练效率</h3><p><strong>通信开销</strong>：</p>
+<ul>
+<li>增加了 All-Gather 和 All-Reduce 操作</li>
+<li>通信开销与 GPU 数量成正比</li>
+<li>需要高效的网络连接</li>
+</ul>
+<p><strong>计算效率</strong>：</p>
+<ul>
+<li>参数加载/卸载的开销</li>
+<li>内存管理开销</li>
+<li>总体训练速度可能有所下降</li>
+</ul>
+<p><strong>权衡</strong>：</p>
+<ul>
+<li>内存节省 vs 训练速度</li>
+<li>模型规模 vs 训练效率</li>
+<li>成本 vs 性能</li>
+</ul>
+<h2 id="ZeRO-的适用场景"><a href="#ZeRO-的适用场景" class="headerlink" title="ZeRO 的适用场景"></a>ZeRO 的适用场景</h2><h3 id="适用场景"><a href="#适用场景" class="headerlink" title="适用场景"></a>适用场景</h3><ol>
+<li><p><strong>大规模模型训练</strong>：</p>
+<ul>
+<li>参数数量超过单卡显存容量</li>
+<li>需要训练超大模型</li>
+</ul>
+</li>
+<li><p><strong>显存受限环境</strong>：</p>
+<ul>
+<li>GPU 显存有限</li>
+<li>需要最大化模型规模</li>
+</ul>
+</li>
+<li><p><strong>研究场景</strong>：</p>
+<ul>
+<li>探索更大模型的效果</li>
+<li>验证模型规模对性能的影响</li>
+</ul>
+</li>
+</ol>
+<h3 id="不适用场景"><a href="#不适用场景" class="headerlink" title="不适用场景"></a>不适用场景</h3><ol>
+<li><p><strong>小规模模型</strong>：</p>
+<ul>
+<li>模型参数较少</li>
+<li>显存需求不高</li>
+</ul>
+</li>
+<li><p><strong>对训练速度要求极高</strong>：</p>
+<ul>
+<li>通信开销不可接受</li>
+<li>需要快速迭代</li>
+</ul>
+</li>
+<li><p><strong>网络条件较差</strong>：</p>
+<ul>
+<li>GPU 间通信带宽不足</li>
+<li>网络延迟较高</li>
+</ul>
+</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>ZeRO 技术通过创新的数据分片策略，有效解决了大语言模型训练中的显存瓶颈问题。其核心优势包括：</p>
+<ol>
+<li><strong>显著的内存节省</strong>：通过分片技术，内存需求随 GPU 数量线性减少</li>
+<li><strong>支持超大模型</strong>：理论上可以训练任意大小的模型</li>
+<li><strong>灵活的配置</strong>：提供三个阶段的渐进式优化</li>
+<li><strong>丰富的变体</strong>：ZeRO-Offload 等变体技术进一步扩展了应用场景</li>
+</ol>
+<p>虽然 ZeRO 技术会增加一定的通信开销和训练时间，但在训练大规模模型时，这些开销相对于显存限制的突破来说是值得的。随着大语言模型规模的不断增长，ZeRO 技术将继续发挥重要作用，为更大模型的训练提供技术支撑。</p>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2025/07/llm-zero.html" title="LLM 训练：ZeRO 技术详解">https://murphypei.github.io/blog/2025/07/llm-zero.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+            
+              <a href="/tags/training/" rel="tag"># training</a>
+            
+              <a href="/tags/zero/" rel="tag"># zero</a>
+            
+              <a href="/tags/deepspeed/" rel="tag"># deepspeed</a>
+            
+              <a href="/tags/memory/" rel="tag"># memory</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2025/07/llm-grpo.html" rel="next" title="LLM 训练：GRPO 算法详解">
+                  <i class="fa fa-chevron-left"></i> LLM 训练：GRPO 算法详解
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZeRO-技术原理"><span class="nav-number">2.</span> <span class="nav-text">ZeRO 技术原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#传统数据并行的问题"><span class="nav-number">2.1.</span> <span class="nav-text">传统数据并行的问题</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ZeRO-的核心思想"><span class="nav-number">2.2.</span> <span class="nav-text">ZeRO 的核心思想</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZeRO-的三个阶段"><span class="nav-number">3.</span> <span class="nav-text">ZeRO 的三个阶段</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ZeRO-Stage-1：优化器状态分片（Optimizer-State-Sharding）"><span class="nav-number">3.1.</span> <span class="nav-text">ZeRO-Stage 1：优化器状态分片（Optimizer State Sharding）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ZeRO-Stage-2：梯度分片（Gradient-Sharding）"><span class="nav-number">3.2.</span> <span class="nav-text">ZeRO-Stage 2：梯度分片（Gradient Sharding）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ZeRO-Stage-3：参数分片（Parameter-Sharding）"><span class="nav-number">3.3.</span> <span class="nav-text">ZeRO-Stage 3：参数分片（Parameter Sharding）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZeRO-的具体实现"><span class="nav-number">4.</span> <span class="nav-text">ZeRO 的具体实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#通信模式"><span class="nav-number">4.1.</span> <span class="nav-text">通信模式</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存管理策略"><span class="nav-number">4.2.</span> <span class="nav-text">内存管理策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#计算流程"><span class="nav-number">4.3.</span> <span class="nav-text">计算流程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZeRO-的变体技术"><span class="nav-number">5.</span> <span class="nav-text">ZeRO 的变体技术</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ZeRO-Offload"><span class="nav-number">5.1.</span> <span class="nav-text">ZeRO-Offload</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#ZeRO-FSDP（Fully-Sharded-Data-Parallelism）"><span class="nav-number">5.2.</span> <span class="nav-text">ZeRO-FSDP（Fully Sharded Data Parallelism）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZeRO-的收益分析"><span class="nav-number">6.</span> <span class="nav-text">ZeRO 的收益分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#内存节省"><span class="nav-number">6.1.</span> <span class="nav-text">内存节省</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#可训练模型规模"><span class="nav-number">6.2.</span> <span class="nav-text">可训练模型规模</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#训练效率"><span class="nav-number">6.3.</span> <span class="nav-text">训练效率</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ZeRO-的适用场景"><span class="nav-number">7.</span> <span class="nav-text">ZeRO 的适用场景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#适用场景"><span class="nav-number">7.1.</span> <span class="nav-text">适用场景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#不适用场景"><span class="nav-number">7.2.</span> <span class="nav-text">不适用场景</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">8.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">181</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">20</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">471</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2025</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">642k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">17:49</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '6c7a2f00e298f2f840cd99ab17866290',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>
