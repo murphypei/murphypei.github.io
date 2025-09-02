@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="最近在看打造 Agent 相关的研究，发现 Anthropic 他们的一篇文章写的特别好，有很多工程实践经验值得参考。虽然没有披露更多细节，但是也指出了很多方向。以下基本是原文翻译。">
+<meta name="keywords" content="LLM,多智能体,Claude,AI,Agent,工程实践">
+<meta property="og:type" content="article">
+<meta property="og:title" content="翻译《如何构建多智能体研究系统：Anthropic 的工程实践》">
+<meta property="og:url" content="https://murphypei.github.io/blog/2025/08/how-to-build-multi-agents.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="最近在看打造 Agent 相关的研究，发现 Anthropic 他们的一篇文章写的特别好，有很多工程实践经验值得参考。虽然没有披露更多细节，但是也指出了很多方向。以下基本是原文翻译。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/agent/multi-agent-architecture.webp">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/agent/multi-agent-process.webp">
+<meta property="og:updated_time" content="2025-09-01T07:07:33.482Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="翻译《如何构建多智能体研究系统：Anthropic 的工程实践》">
+<meta name="twitter:description" content="最近在看打造 Agent 相关的研究，发现 Anthropic 他们的一篇文章写的特别好，有很多工程实践经验值得参考。虽然没有披露更多细节，但是也指出了很多方向。以下基本是原文翻译。">
+<meta name="twitter:image" content="https://murphypei.github.io/images/posts/agent/multi-agent-architecture.webp">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2025/08/how-to-build-multi-agents">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>翻译《如何构建多智能体研究系统：Anthropic 的工程实践》 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2025/08/how-to-build-multi-agents.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">翻译《如何构建多智能体研究系统：Anthropic 的工程实践》
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2025-09-01 06:17:48 / 修改时间：15:07:33" itemprop="dateCreated datePublished" datetime="2025-09-01T06:17:48+08:00">2025-09-01</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Agent/" itemprop="url" rel="index"><span itemprop="name">Agent</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>6k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>10 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>最近在看打造 Agent 相关的研究，发现 Anthropic 他们的一篇文章写的特别好，有很多工程实践经验值得参考。虽然没有披露更多细节，但是也指出了很多方向。以下基本是原文翻译。</p>
+<a id="more"></a>
+<p>Claude 现在具备了研究功能，可以在网络、Google Workspace 以及任何集成系统中搜索，完成复杂任务。</p>
+<p>这个多智能体系统从原型到生产的历程，让我们学到了关于系统架构、工具设计和提示工程的重要经验。多智能体系统由多个智能体（大语言模型在循环中自主使用工具）协同工作组成。我们的研究功能涉及一个智能体，它根据用户查询规划研究过程，然后使用工具创建并行智能体，同时搜索信息。具有多个智能体的系统在智能体协调、评估和可靠性方面引入了新的挑战。</p>
+<p>本文分解了对我们有效的原则——我们希望您在构建自己的多智能体系统时会发现这些原则有用。</p>
+<h2 id="多智能体系统的好处"><a href="#多智能体系统的好处" class="headerlink" title="多智能体系统的好处"></a>多智能体系统的好处</h2><p>研究工作涉及开放性问题，很难提前预测所需的步骤。你无法为探索复杂主题硬编码固定路径，因为这个过程本质上是动态的和路径依赖的。当人们进行研究时，他们倾向于根据发现持续更新方法，跟进调查过程中出现的线索。</p>
+<p>这种不可预测性使 AI 智能体特别适合研究任务。研究需要灵活性，能够在调查展开时转向或探索切向连接。模型必须自主运行多轮，基于中间发现做出探索方向的决策。线性的一次性流水线无法处理这些任务。</p>
+<p>搜索的本质是压缩：从庞大语料库中提取洞察。子智能体通过在各自的上下文窗口中并行操作来促进压缩，同时探索问题的不同方面，然后为主研究智能体压缩最重要的 token。每个子智能体还提供了关注点分离——不同的工具、提示和探索轨迹——这减少了路径依赖，实现了彻底、独立的调查。</p>
+<p>一旦智能达到阈值，多智能体系统就成为扩展性能的重要方式。例如，虽然个体人类在过去 10 万年中变得更加智能，但在信息时代，人类社会因为我们的<strong>集体智能</strong>和协调能力而变得<strong>指数级</strong>更有能力。即使是通用智能体在单独操作时也面临限制；智能体群体可以完成更多任务。</p>
+<p>我们的内部评估显示，多智能体研究系统在广度优先查询方面表现尤其出色，这些查询涉及同时追求多个独立方向。我们发现，以 Claude Opus 4 为主智能体、Claude Sonnet 4 为子智能体的多智能体系统在我们的内部研究评估中比单智能体 Claude Opus 4 表现好 90.2%。例如，当被要求识别信息技术 S&amp;P 500 中所有公司的董事会成员时，多智能体系统通过将此分解为子智能体任务找到了正确答案，而单智能体系统在缓慢的顺序搜索中失败了。</p>
+<p>多智能体系统主要起作用，因为它们帮助花费足够的 token 来解决问题。在我们的分析中，三个因素解释了 BrowseComp 评估中 95% 的性能方差（该评估测试浏览智能体定位难以找到信息的能力）。我们发现，token 使用本身解释了 80% 的方差，工具调用次数和模型选择是另外两个解释因素。这一发现验证了我们的架构，该架构将工作分布在具有独立上下文窗口的智能体中，为并行推理增加更多容量。最新的 Claude 模型作为 token 使用的大效率倍增器，因为升级到 Claude Sonnet 4 比在 Claude Sonnet 3.7 上将 token 预算翻倍带来更大的性能提升。多智能体架构有效地扩展了超出单智能体限制的任务的 token 使用。</p>
+<p>有一个缺点：在实践中，这些架构快速消耗 token。在我们的数据中，智能体通常使用比聊天交互多约 4 倍的 token，而多智能体系统使用比聊天多约 15 倍的 token。对于经济可行性，多智能体系统需要任务的价值足够高，能够支付增加的性能成本。此外，一些需要所有智能体共享相同上下文或涉及智能体之间许多依赖关系的领域，目前不太适合多智能体系统。例如，大多数编码任务涉及的真正可并行化任务比研究少，而且 LLM 智能体还不擅长实时协调和委托给其他智能体。我们发现多智能体系统在涉及大量并行化、超出单个上下文窗口的信息以及与众多复杂工具接口的有价值任务中表现出色。</p>
+<h2 id="研究功能的架构概述"><a href="#研究功能的架构概述" class="headerlink" title="研究功能的架构概述"></a>研究功能的架构概述</h2><p>我们的研究系统使用编排器-工作者模式的多智能体架构，其中主智能体协调过程，同时委托给并行操作的专门子智能体。</p>
+<p><img src="/images/posts/agent/multi-agent-architecture.webp" alt="多智能体架构"></p>
+<p><em>多智能体架构实际应用：用户查询通过主智能体流动，主智能体创建专门的子智能体来并行搜索不同方面。</em></p>
+<p>当用户提交查询时，主智能体分析查询，制定策略，并生成子智能体来同时探索不同方面。如上图所示，子智能体作为智能过滤器，迭代使用搜索工具收集信息，在本例中是关于 2025 年的 AI 智能体公司，然后向主智能体返回公司列表，以便编制最终答案。</p>
+<p>使用检索增强生成（RAG）的传统方法使用静态检索。也就是说，它们获取与输入查询最相似的一些块集合，并使用这些块生成响应。相比之下，我们的架构使用多步搜索，动态找到相关信息，适应新发现，并分析结果以制定高质量答案。</p>
+<p><img src="/images/posts/agent/multi-agent-process.webp" alt="多智能体处理流程"></p>
+<p><em>流程图显示了我们多智能体研究系统的完整工作流程。当用户提交查询时，系统创建一个 LeadResearcher 智能体，进入迭代研究过程。LeadResearcher 首先思考方法并将其计划保存到内存中以持久化上下文，因为如果上下文窗口超过 200,000 个 token，它将被截断，保留计划很重要。然后它创建具有特定研究任务的专门子智能体（这里显示了两个，但可以是任意数量）。每个子智能体独立执行网络搜索，使用交错思考评估工具结果，并将发现返回给 LeadResearcher。LeadResearcher 综合这些结果并决定是否需要更多研究——如果需要，它可以创建额外的子智能体或完善其策略。一旦收集到足够的信息，系统退出研究循环并将所有发现传递给 CitationAgent，后者处理文档和研究报告以识别引用的特定位置。这确保所有声明都正确归属于其来源。最终的研究结果，连同引用，然后返回给用户。</em></p>
+<h2 id="研究智能体的提示工程和评估"><a href="#研究智能体的提示工程和评估" class="headerlink" title="研究智能体的提示工程和评估"></a>研究智能体的提示工程和评估</h2><p>多智能体系统与单智能体系统有关键差异，包括协调复杂性的快速增长。早期智能体犯了诸如为简单查询生成 50 个子智能体、无休止地搜索不存在的来源、以及过度更新相互干扰等错误。由于每个智能体都由提示引导，提示工程是我们改善这些行为的主要杠杆。以下是我们学到的一些提示智能体的原则：</p>
+<h3 id="1-像智能体一样思考"><a href="#1-像智能体一样思考" class="headerlink" title="1. 像智能体一样思考"></a>1. 像智能体一样思考</h3><p>要迭代提示，你必须理解它们的效果。为了帮助我们做到这一点，我们使用来自系统的确切提示和工具，通过我们的控制台构建了模拟，然后逐步观察智能体工作。这立即揭示了故障模式：智能体在已经有足够结果时继续工作，使用过于冗长的搜索查询，或选择错误的工具。有效的提示依赖于开发智能体的准确心理模型，这可以使最有影响力的变化变得明显。</p>
+<h3 id="2-教编排器如何委托"><a href="#2-教编排器如何委托" class="headerlink" title="2. 教编排器如何委托"></a>2. 教编排器如何委托</h3><p>在我们的系统中，主智能体将查询分解为子任务并向子智能体描述它们。每个子智能体需要一个目标、输出格式、使用工具和来源的指导，以及明确的任务边界。没有详细的任务描述，智能体会重复工作、留下空白或无法找到必要信息。我们开始允许主智能体给出简单、简短的指令，如”研究半导体短缺”，但发现这些指令通常足够模糊，子智能体会误解任务或执行与其他智能体完全相同的搜索。例如，一个子智能体探索 2021 年汽车芯片危机，而另外两个重复工作调查当前 2025 年供应链，没有有效的分工。</p>
+<h3 id="3-根据查询复杂性调整努力"><a href="#3-根据查询复杂性调整努力" class="headerlink" title="3. 根据查询复杂性调整努力"></a>3. 根据查询复杂性调整努力</h3><p>智能体很难判断不同任务的适当努力，所以我们在提示中嵌入了缩放规则。简单的事实查找只需要 1 个智能体进行 3-10 次工具调用，直接比较可能需要 2-4 个子智能体，每个进行 10-15 次调用，复杂研究可能使用超过 10 个子智能体，有明确划分的责任。这些明确的指导方针帮助主智能体有效分配资源，防止在简单查询上过度投资，这是我们早期版本中的常见故障模式。</p>
+<h3 id="4-工具设计和选择至关重要"><a href="#4-工具设计和选择至关重要" class="headerlink" title="4. 工具设计和选择至关重要"></a>4. 工具设计和选择至关重要</h3><p>智能体-工具接口与人机接口一样重要。使用正确的工具是高效的——通常，这是严格必要的。例如，智能体在网络上搜索包含学术术语的内容可能需要 Google Scholar，而不是通用网络搜索。我们设计工具时明确定义了它们的用途、限制和最佳用例。模糊的工具描述导致误用，从而产生无关结果和浪费的努力。我们还发现，为智能体提供太多工具选择可能令人困惑——策划的工具集比大量通用工具更有效。</p>
+<h3 id="5-建立明确的停止条件"><a href="#5-建立明确的停止条件" class="headerlink" title="5. 建立明确的停止条件"></a>5. 建立明确的停止条件</h3><p>智能体可能会陷入无限循环，不断搜索或细化已经足够的结果。我们设置了明确的完成标准：特定数量的来源、满足的关键信息要求，或达到的时间/调用限制。我们还教智能体识别何时找到了”足够好”的答案，而不是完美的答案，这在开放性研究中经常是现实的目标。</p>
+<p>评估多智能体系统需要新方法。传统指标如 BLEU 分数或困惑度无法捕捉复杂的多步骤研究过程的质量。我们开发了测量准确性、完整性、效率和可用性的定制评估。准确性检查智能体是否找到正确信息，完整性评估是否回答了查询的所有部分，效率测量达到结果所需的时间和资源，可用性评估最终输出对用户的有用性。</p>
+<p>我们还发现人工评估仍然至关重要。虽然自动化指标可以大规模捕捉基本质量，但人类判断对于评估细微差别、创造性和整体实用性是不可替代的。我们的提示帮助解决了这个问题。即使在自动化评估的世界中，手动测试仍然必不可少。</p>
+<p>多智能体系统具有涌现行为，这些行为在没有特定编程的情况下出现。例如，对主智能体的小改变可能不可预测地改变子智能体的行为方式。成功需要理解交互模式，而不仅仅是个体智能体行为。因此，这些智能体的最佳提示不仅仅是严格的指令，而是定义分工、问题解决方法和努力预算的协作框架。正确做到这一点依赖于仔细的提示和工具设计、可靠的启发式方法、可观察性和紧密的反馈循环。</p>
+<h2 id="生产可靠性和工程挑战"><a href="#生产可靠性和工程挑战" class="headerlink" title="生产可靠性和工程挑战"></a>生产可靠性和工程挑战</h2><p>在传统软件中，错误可能破坏功能、降低性能或导致中断。在智能体系统中，微小的变化会级联成大的行为变化，这使得为必须在长时间运行过程中维护状态的复杂智能体编写代码变得非常困难。</p>
+<h3 id="智能体有状态且错误会复合"><a href="#智能体有状态且错误会复合" class="headerlink" title="智能体有状态且错误会复合"></a>智能体有状态且错误会复合</h3><p>智能体可以长时间运行，在许多工具调用中维护状态。这意味着我们需要持久执行代码并处理沿途的错误。没有有效的缓解措施，轻微的系统故障对智能体来说可能是灾难性的。当错误发生时，我们不能只是从头开始重新启动：重新启动对用户来说是昂贵且令人沮丧的。相反，我们构建了可以从智能体发生错误时的位置恢复的系统。我们还使用模型的智能来优雅地处理问题：例如，让智能体知道工具何时失败并让它适应，效果出奇地好。我们将建立在 Claude 基础上的 AI 智能体的适应性与重试逻辑和定期检查点等确定性保障措施相结合。</p>
+<h3 id="调试受益于新方法"><a href="#调试受益于新方法" class="headerlink" title="调试受益于新方法"></a>调试受益于新方法</h3><p>智能体做出动态决策，在运行之间是非确定性的，即使使用相同的提示。这使调试变得更困难。例如，用户会报告智能体”没有找到明显信息”，但我们看不出原因。智能体是使用糟糕的搜索查询吗？选择差的来源吗？遇到工具故障吗？添加完整的生产跟踪让我们诊断智能体失败的原因并系统性地修复问题。除了标准可观察性，我们监控智能体决策模式和交互结构——所有这些都不监控个别对话的内容，以维护用户隐私。这种高级可观察性帮助我们诊断根本原因，发现意外行为，并修复常见故障。</p>
+<h3 id="部署需要仔细协调"><a href="#部署需要仔细协调" class="headerlink" title="部署需要仔细协调"></a>部署需要仔细协调</h3><p>智能体系统是几乎连续运行的提示、工具和执行逻辑的高度有状态网络。这意味着每当我们部署更新时，智能体可能处于其过程中的任何位置。因此，我们需要防止我们善意的代码更改破坏现有智能体。我们不能同时将每个智能体更新到新版本。相反，我们使用彩虹部署来避免干扰运行中的智能体，通过逐渐将流量从旧版本转移到新版本，同时保持两者同时运行。</p>
+<h3 id="同步执行创建瓶颈"><a href="#同步执行创建瓶颈" class="headerlink" title="同步执行创建瓶颈"></a>同步执行创建瓶颈</h3><p>目前，我们的主智能体同步执行子智能体，等待每组子智能体完成后再继续。这简化了协调，但在智能体之间的信息流中创建了瓶颈。例如，主智能体无法引导子智能体，子智能体无法协调，整个系统可能因等待单个子智能体完成搜索而被阻塞。异步执行将实现额外的并行性：智能体并发工作并在需要时创建新的子智能体。但这种异步性在结果协调、状态一致性和跨子智能体错误传播方面增加了挑战。随着模型能够处理更长更复杂的研究任务，我们预期性能增益将证明复杂性是合理的。</p>
+<h2 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h2><p>在构建 AI 智能体时，最后一英里通常成为大部分旅程。在开发机器上工作的代码库需要重要的工程才能成为可靠的生产系统。智能体系统中错误的复合性质意味着传统软件的小问题可能完全使智能体脱轨。一步失败可能导致智能体探索完全不同的轨迹，导致不可预测的结果。由于本文中描述的所有原因，原型和生产之间的差距通常比预期的更宽。</p>
+<p>尽管存在这些挑战，多智能体系统已被证明对开放性研究任务有价值。用户表示 Claude 帮助他们找到了没有考虑过的商业机会，导航复杂的医疗保健选项，解决棘手的技术错误，并通过发现他们单独不会找到的研究连接节省了数天的工作。多智能体研究系统可以通过仔细的工程、全面的测试、细致的提示和工具设计、健壮的操作实践，以及对当前智能体能力有深刻理解的研究、产品和工程团队之间的紧密协作，在规模上可靠运行。我们已经看到这些系统正在改变人们解决复杂问题的方式。</p>
+<p><em>人们今天使用研究功能的最常见方式。主要用例类别是：跨专业领域开发软件系统（10%），开发和优化专业和技术内容（8%），制定业务增长和收入生成策略（8%），协助学术研究和教育材料开发（7%），以及研究和验证关于人员、地点或组织的信息（5%）。</em></p>
+<h2 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h2><p>以下是多智能体系统的一些额外杂项提示。</p>
+<h3 id="改变状态的多轮智能体的终态评估"><a href="#改变状态的多轮智能体的终态评估" class="headerlink" title="改变状态的多轮智能体的终态评估"></a>改变状态的多轮智能体的终态评估</h3><p>评估在多轮对话中修改持久状态的智能体面临独特挑战。与只读研究任务不同，每个动作都可能改变后续步骤的环境，创建传统评估方法难以处理的依赖关系。我们发现专注于终态评估而不是逐轮分析是成功的。不是判断智能体是否遵循了特定过程，而是评估它是否达到了正确的最终状态。这种方法承认智能体可能找到实现相同目标的替代路径，同时仍确保它们提供预期结果。对于复杂工作流程，将评估分解为应该发生特定状态变化的离散检查点，而不是试图验证每个中间步骤。</p>
+<h3 id="长期对话管理"><a href="#长期对话管理" class="headerlink" title="长期对话管理"></a>长期对话管理</h3><p>生产智能体经常参与跨越数百轮的对话，需要仔细的上下文管理策略。随着对话延长，标准上下文窗口变得不足，需要智能的压缩和内存机制。我们实施了智能体总结已完成工作阶段并在继续新任务之前将重要信息存储在外部内存中的模式。当上下文限制接近时，智能体可以通过仔细的交接生成具有干净上下文的新子智能体，同时保持连续性。此外，它们可以从内存中检索存储的上下文，如研究计划，而不是在达到上下文限制时丢失先前的工作。这种分布式方法防止上下文溢出，同时在扩展交互中保持对话连贯性。</p>
+<h3 id="子智能体输出到文件系统以最小化”传话游戏”"><a href="#子智能体输出到文件系统以最小化”传话游戏”" class="headerlink" title="子智能体输出到文件系统以最小化”传话游戏”"></a>子智能体输出到文件系统以最小化”传话游戏”</h3><p>直接子智能体输出可以绕过主协调器处理某些类型的结果，提高保真度和性能。与其要求子智能体通过主智能体沟通一切，不如实施工件系统，专门智能体可以创建独立持久的输出。子智能体调用工具将其工作存储在外部系统中，然后将轻量级引用传回协调器。这防止在多阶段处理期间的信息丢失，并减少通过对话历史复制大输出的 token 开销。该模式特别适用于结构化输出，如代码、报告或数据可视化，其中子智能体的专门提示比通过通用协调器过滤产生更好的结果。</p>
+<p><em>参考文献：</em></p>
+<ul>
+<li><a href="https://www.anthropic.com/engineering/multi-agent-research-system" target="_blank" rel="noopener">原文链接</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2025/08/how-to-build-multi-agents.html" title="翻译《如何构建多智能体研究系统：Anthropic 的工程实践》">https://murphypei.github.io/blog/2025/08/how-to-build-multi-agents.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+            
+              <a href="/tags/多智能体/" rel="tag"># 多智能体</a>
+            
+              <a href="/tags/Claude/" rel="tag"># Claude</a>
+            
+              <a href="/tags/AI/" rel="tag"># AI</a>
+            
+              <a href="/tags/Agent/" rel="tag"># Agent</a>
+            
+              <a href="/tags/工程实践/" rel="tag"># 工程实践</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2025/08/rag-retrieval-quality.html" rel="next" title="RAG 中的检索核心问题">
+                  <i class="fa fa-chevron-left"></i> RAG 中的检索核心问题
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#多智能体系统的好处"><span class="nav-number">1.</span> <span class="nav-text">多智能体系统的好处</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#研究功能的架构概述"><span class="nav-number">2.</span> <span class="nav-text">研究功能的架构概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#研究智能体的提示工程和评估"><span class="nav-number">3.</span> <span class="nav-text">研究智能体的提示工程和评估</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-像智能体一样思考"><span class="nav-number">3.1.</span> <span class="nav-text">1. 像智能体一样思考</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-教编排器如何委托"><span class="nav-number">3.2.</span> <span class="nav-text">2. 教编排器如何委托</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-根据查询复杂性调整努力"><span class="nav-number">3.3.</span> <span class="nav-text">3. 根据查询复杂性调整努力</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-工具设计和选择至关重要"><span class="nav-number">3.4.</span> <span class="nav-text">4. 工具设计和选择至关重要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-建立明确的停止条件"><span class="nav-number">3.5.</span> <span class="nav-text">5. 建立明确的停止条件</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#生产可靠性和工程挑战"><span class="nav-number">4.</span> <span class="nav-text">生产可靠性和工程挑战</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#智能体有状态且错误会复合"><span class="nav-number">4.1.</span> <span class="nav-text">智能体有状态且错误会复合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#调试受益于新方法"><span class="nav-number">4.2.</span> <span class="nav-text">调试受益于新方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#部署需要仔细协调"><span class="nav-number">4.3.</span> <span class="nav-text">部署需要仔细协调</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#同步执行创建瓶颈"><span class="nav-number">4.4.</span> <span class="nav-text">同步执行创建瓶颈</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#结论"><span class="nav-number">5.</span> <span class="nav-text">结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#附录"><span class="nav-number">6.</span> <span class="nav-text">附录</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#改变状态的多轮智能体的终态评估"><span class="nav-number">6.1.</span> <span class="nav-text">改变状态的多轮智能体的终态评估</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#长期对话管理"><span class="nav-number">6.2.</span> <span class="nav-text">长期对话管理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#子智能体输出到文件系统以最小化”传话游戏”"><span class="nav-number">6.3.</span> <span class="nav-text">子智能体输出到文件系统以最小化”传话游戏”</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">185</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">485</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2025</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">658k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">18:16</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '894872b7c6723c078dd6df3e987d8ab6',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

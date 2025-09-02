@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="在构建一个高效的检索增强生成（RAG）系统时，一个常常被忽视但至关重要的环节是分块（Chunking）。这个过程是将大型文档切分成小块，以便 LLM 可以轻松地检索和理解。如果分块策略不当，即使拥有最先进的语言模型和向量数据库，你的 RAG 系统也可能表现不佳。">
+<meta name="keywords" content="chunk,LLM,RAG,retrieval,index,分块,检索">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RAG 分块策略">
+<meta property="og:url" content="https://murphypei.github.io/blog/2025/08/rag-chunking.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="在构建一个高效的检索增强生成（RAG）系统时，一个常常被忽视但至关重要的环节是分块（Chunking）。这个过程是将大型文档切分成小块，以便 LLM 可以轻松地检索和理解。如果分块策略不当，即使拥有最先进的语言模型和向量数据库，你的 RAG 系统也可能表现不佳。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2025-09-01T06:51:42.298Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RAG 分块策略">
+<meta name="twitter:description" content="在构建一个高效的检索增强生成（RAG）系统时，一个常常被忽视但至关重要的环节是分块（Chunking）。这个过程是将大型文档切分成小块，以便 LLM 可以轻松地检索和理解。如果分块策略不当，即使拥有最先进的语言模型和向量数据库，你的 RAG 系统也可能表现不佳。">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2025/08/rag-chunking">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>RAG 分块策略 | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2025/08/rag-chunking.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">RAG 分块策略
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2025-08-28 14:35:25" itemprop="dateCreated datePublished" datetime="2025-08-28T14:35:25+08:00">2025-08-28</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-09-01 14:51:42" itemprop="dateModified" datetime="2025-09-01T14:51:42+08:00">2025-09-01</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/RAG/" itemprop="url" rel="index"><span itemprop="name">RAG</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>1.7k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>3 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>在构建一个高效的检索增强生成（RAG）系统时，一个常常被忽视但至关重要的环节是<strong>分块（Chunking）</strong>。这个过程是将大型文档切分成小块，以便 LLM 可以轻松地检索和理解。如果分块策略不当，即使拥有最先进的语言模型和向量数据库，你的 RAG 系统也可能表现不佳。</p>
+<a id="more"></a>
+<p>本文将深入探讨为什么分块如此重要，以及如何通过几种核心策略来优化它。</p>
+<h2 id="什么是词块"><a href="#什么是词块" class="headerlink" title="什么是词块"></a>什么是词块</h2><p>将词块视为 RAG 系统中知识的原子单元 。每个词块应该：</p>
+<ul>
+<li><strong>语义完整</strong> ：包含单独来看有意义的连贯信息。</li>
+<li>语境丰富 ：包含足够的周围环境，无需外部参考即可理解。</li>
+<li>最佳尺寸 ：足够大以具有意义，足够小以便精确检索。</li>
+<li>边界感知 ：尊重句子、段落和章节等自然语言结构。</li>
+</ul>
+<p>这些要求经常相互冲突。语义完整的块可能太大，无法进行精确检索。大小合适的块可能会在边界处丢失关键上下文。这时，不同的分块策略就派上用场了。每种方法都有各自的优缺点，最佳选择取决于您的具体用例、文档类型和检索需求。</p>
+<h2 id="分块策略"><a href="#分块策略" class="headerlink" title="分块策略"></a>分块策略</h2><p>下面由浅入深，介绍不同的分块策略：</p>
+<h3 id="固定大小分块（简单基线）"><a href="#固定大小分块（简单基线）" class="headerlink" title="固定大小分块（简单基线）"></a>固定大小分块（简单基线）</h3><p>固定大小分块将文档拆分为预定大小的块，通常以以下方式测量：</p>
+<ul>
+<li>字符数 （例如，每块 1000 个字符）</li>
+<li>令牌数量 （例如，每块 256 个令牌）</li>
+<li>字数统计 （例如，每段 200 个字）</li>
+</ul>
+<p>重叠参数在这里至关重要。如果没有重叠，您可能会丢失跨越块边界的信息。重叠率为 20% 时，可以确保相邻块之间有一定的连续性。</p>
+<p>固定大小分块策略几乎不适用于任何场景，仅在有限计算资源的情况。固定大小分块适用的场景：</p>
+<ul>
+<li>有统一、简单的文档（博客、文章、小说）</li>
+<li>处理速度至关重要</li>
+<li>存储和计算资源严重有限</li>
+</ul>
+<h3 id="语义分块"><a href="#语义分块" class="headerlink" title="语义分块"></a>语义分块</h3><p>语义分块代表着思维的根本性转变。语义分块不再根据大小限制任意切割文本，而是根据语义和文档结构识别自然断点。语义分块需要更多的计算资源，但能带来更好的结果。</p>
+<p>核心见解：<strong>文档具有固有的语义边界，可以指导分块决策</strong>。</p>
+<p>语义分块的工作原理：</p>
+<ol>
+<li>句子分割 ：将文档分解成单个句子</li>
+<li>嵌入生成 ：为每个句子创建向量表示</li>
+<li>相似度分析 ：测量<strong>相邻句子</strong>之间的语义相似度</li>
+<li>边界检测 ：在相似度低于阈值的地方创建块边界</li>
+<li>组块 ：将连续相似的句子组合成连贯的组块</li>
+</ol>
+<p>高级语义技术：</p>
+<ul>
+<li>主题建模集成 ：使用基于 LDA 或 BERT 的主题模型来识别主题边界</li>
+<li>层次聚类 ：在分块之前按语义相似度对句子进行分组</li>
+<li>实体连续性 ：确保命名实体及其引用保持在同一块内</li>
+<li>话语标记 ：使用语言线索（但是、此外、总之）来识别界限</li>
+</ul>
+<p>语义分块适用于很多场景：</p>
+<ul>
+<li>文档质量差异很大</li>
+<li>上下文保存很重要</li>
+<li>准确性比速度更重要</li>
+</ul>
+<h3 id="分层文档分块"><a href="#分层文档分块" class="headerlink" title="分层文档分块"></a>分层文档分块</h3><p>对于具有嵌套结构的复杂文档（例如技术手册、法律合同或学术论文），分层分块可以保留文档的组织逻辑。这种方法认识到文档不是平面文本，而是具有章节、小节和逻辑层次的结构化知识。</p>
+<p>分层分块的主要优点：</p>
+<ul>
+<li>上下文继承 ：每个块都知道它在文档层次结构中的位置</li>
+<li>元数据保存 ：维护章节标题、级别和关系</li>
+<li>结构感知检索 ：您可以按不同的粒度进行检索（部分与小节）</li>
+<li>交叉引用处理 ：对其他部分的引用仍然有意义</li>
+</ul>
+<p>对于 200 页的技术手册，分层分块可能会创建：</p>
+<ol>
+<li>15 个章节级块（高级概述）</li>
+<li>127 个部分级块（详细解释）</li>
+<li>340 个子节级块（具体程序）</li>
+</ol>
+<p>在检索过程中，系统可以将查询与适当的细节级别进行匹配，并提供分层上下文。</p>
+<p>如果出现以下情况，则实施分层分块：</p>
+<ul>
+<li>文件结构清晰（手册、报告、学术论文）</li>
+<li>用户需要不同程度的细节</li>
+<li>交叉引用很常见</li>
+<li>文档格式结构良好</li>
+</ul>
+<h3 id="滑动窗口分块（重叠优化器）"><a href="#滑动窗口分块（重叠优化器）" class="headerlink" title="滑动窗口分块（重叠优化器）"></a>滑动窗口分块（重叠优化器）</h3><p>传统的组块方法会创建离散的、不重叠的组块。但是，如果最重要的信息恰好落在组块边界上，该怎么办呢？滑动窗口分块通过创建重叠块解决了这个问题，确保没有信息被遗漏。</p>
+<p>当 window_size=1000、stride=800 时，可获得 200 个字符的重叠（20%）。此重叠可确保：</p>
+<ol>
+<li>关键句子没有被拆分成多个部分</li>
+<li>上下文在相邻块之间自然流动</li>
+<li>检索有多次机会找到相关信息</li>
+</ol>
+<h3 id="自适应滑动窗口"><a href="#自适应滑动窗口" class="headerlink" title="自适应滑动窗口"></a>自适应滑动窗口</h3><p>高级实现根据内容密度调整窗口大小和步幅：</p>
+<ol>
+<li>常见问题解答文档 ：问题和答案受益于重叠的上下文</li>
+<li>法律文件 ：精确的语言界限至关重要</li>
+<li>技术程序 ：步骤参考先前的操作</li>
+<li>叙事内容 ：故事连续性至关重要</li>
+</ol>
+<h3 id="大模型分块"><a href="#大模型分块" class="headerlink" title="大模型分块"></a>大模型分块</h3><p>使用大语言模型进行递归分块： 最新的进展是使用 LLM 本身进行分块决策。</p>
+<h3 id="多模态分块"><a href="#多模态分块" class="headerlink" title="多模态分块"></a>多模态分块</h3><p>对于包含图像、表格和混合内容的文档。</p>
+<h3 id="基于查询模式的动态分块"><a href="#基于查询模式的动态分块" class="headerlink" title="基于查询模式的动态分块"></a>基于查询模式的动态分块</h3><p>最先进的系统根据文档的实际查询方式来调整分块。</p>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2025/08/rag-chunking.html" title="RAG 分块策略">https://murphypei.github.io/blog/2025/08/rag-chunking.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/chunk/" rel="tag"># chunk</a>
+            
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+            
+              <a href="/tags/RAG/" rel="tag"># RAG</a>
+            
+              <a href="/tags/retrieval/" rel="tag"># retrieval</a>
+            
+              <a href="/tags/index/" rel="tag"># index</a>
+            
+              <a href="/tags/分块/" rel="tag"># 分块</a>
+            
+              <a href="/tags/检索/" rel="tag"># 检索</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2025/07/agent-fc-mcp.html" rel="next" title="Agent 几个问题思考">
+                  <i class="fa fa-chevron-left"></i> Agent 几个问题思考
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2025/08/rag-retrieval-quality.html" rel="prev" title="RAG 中的检索核心问题">
+                  RAG 中的检索核心问题 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是词块"><span class="nav-number">1.</span> <span class="nav-text">什么是词块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#分块策略"><span class="nav-number">2.</span> <span class="nav-text">分块策略</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#固定大小分块（简单基线）"><span class="nav-number">2.1.</span> <span class="nav-text">固定大小分块（简单基线）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#语义分块"><span class="nav-number">2.2.</span> <span class="nav-text">语义分块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#分层文档分块"><span class="nav-number">2.3.</span> <span class="nav-text">分层文档分块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#滑动窗口分块（重叠优化器）"><span class="nav-number">2.4.</span> <span class="nav-text">滑动窗口分块（重叠优化器）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#自适应滑动窗口"><span class="nav-number">2.5.</span> <span class="nav-text">自适应滑动窗口</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#大模型分块"><span class="nav-number">2.6.</span> <span class="nav-text">大模型分块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#多模态分块"><span class="nav-number">2.7.</span> <span class="nav-text">多模态分块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基于查询模式的动态分块"><span class="nav-number">2.8.</span> <span class="nav-text">基于查询模式的动态分块</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">185</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">485</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2025</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">658k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">18:16</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '704da7b8997d99601fd0f2d13852f0fb',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>
