@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://murphypei.github.io/blog/2025/07/agent-fc-mcp.html</loc>
+    
+    <lastmod>2025-09-02T04:02:26.729Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2025/08/how-to-build-multi-agents.html</loc>
     
     <lastmod>2025-09-01T07:07:33.482Z</lastmod>
@@ -19,13 +26,6 @@
     <loc>https://murphypei.github.io/blog/2025/08/rag-retrieval-quality.html</loc>
     
     <lastmod>2025-09-01T06:51:39.086Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2025/07/agent-fc-mcp.html</loc>
-    
-    <lastmod>2025-09-01T06:51:34.738Z</lastmod>
     
   </url>
   
@@ -114,14 +114,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2022/06/go-select-timeout.html</loc>
+    <loc>https://murphypei.github.io/blog/2022/12/stl-rotate.html</loc>
     
     <lastmod>2025-06-25T02:00:04.078Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2022/12/stl-rotate.html</loc>
+    <loc>https://murphypei.github.io/blog/2022/06/go-select-timeout.html</loc>
     
     <lastmod>2025-06-25T02:00:04.078Z</lastmod>
     
@@ -156,14 +156,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2021/12/protobuf-debug.html</loc>
+    <loc>https://murphypei.github.io/blog/2021/11/vscode-cpp.html</loc>
     
     <lastmod>2025-06-25T02:00:04.062Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2021/11/vscode-cpp.html</loc>
+    <loc>https://murphypei.github.io/blog/2021/12/protobuf-debug.html</loc>
     
     <lastmod>2025-06-25T02:00:04.062Z</lastmod>
     
@@ -499,14 +499,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/07/longest-unrepeat-substring.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/06/link-sort.html</loc>
     
     <lastmod>2025-06-25T02:00:03.938Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/06/link-sort.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/07/longest-unrepeat-substring.html</loc>
     
     <lastmod>2025-06-25T02:00:03.938Z</lastmod>
     
@@ -541,14 +541,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/06/vps.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/05/thundernet.html</loc>
     
     <lastmod>2025-06-25T02:00:03.922Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/05/thundernet.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/06/vps.html</loc>
     
     <lastmod>2025-06-25T02:00:03.922Z</lastmod>
     
@@ -562,13 +562,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/05/epoll.html</loc>
-    
-    <lastmod>2025-06-25T02:00:03.914Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2019/04/gbdt.html</loc>
     
     <lastmod>2025-06-25T02:00:03.914Z</lastmod>
@@ -576,14 +569,21 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/cart-tree.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/05/epoll.html</loc>
+    
+    <lastmod>2025-06-25T02:00:03.914Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-4.html</loc>
     
     <lastmod>2025-06-25T02:00:03.910Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-4.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/04/cart-tree.html</loc>
     
     <lastmod>2025-06-25T02:00:03.910Z</lastmod>
     
@@ -597,14 +597,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-3.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/04/valgrind-memory-leaky.html</loc>
     
     <lastmod>2025-06-25T02:00:03.902Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/valgrind-memory-leaky.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-3.html</loc>
     
     <lastmod>2025-06-25T02:00:03.902Z</lastmod>
     
@@ -660,14 +660,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/03/pca-math.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/03/prune-net.html</loc>
     
     <lastmod>2025-06-25T02:00:03.878Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/03/prune-net.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/03/pca-math.html</loc>
     
     <lastmod>2025-06-25T02:00:03.878Z</lastmod>
     
@@ -688,14 +688,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/02/cpp-new-delete.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/02/vsftpd.html</loc>
     
     <lastmod>2025-06-25T02:00:03.870Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/02/vsftpd.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/02/cpp-new-delete.html</loc>
     
     <lastmod>2025-06-25T02:00:03.870Z</lastmod>
     
@@ -744,14 +744,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/12/jupyter-remote-ip.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/12/cpp-cow.html</loc>
     
     <lastmod>2025-06-25T02:00:03.850Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/12/cpp-cow.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/12/jupyter-remote-ip.html</loc>
     
     <lastmod>2025-06-25T02:00:03.850Z</lastmod>
     
@@ -863,6 +863,13 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2018/08/mxnet-symbol.html</loc>
+    
+    <lastmod>2025-06-25T02:00:03.810Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2018/08/mxnet-load-pretrained.html</loc>
     
     <lastmod>2025-06-25T02:00:03.810Z</lastmod>
@@ -877,13 +884,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/08/mxnet-symbol.html</loc>
-    
-    <lastmod>2025-06-25T02:00:03.810Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2018/08/mxnet-install-ndarray.html</loc>
     
     <lastmod>2025-06-25T02:00:03.806Z</lastmod>
@@ -891,14 +891,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/08/cpp-ifdefine.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/08/python-type-classobj.html</loc>
     
     <lastmod>2025-06-25T02:00:03.802Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/08/python-type-classobj.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/08/cpp-ifdefine.html</loc>
     
     <lastmod>2025-06-25T02:00:03.802Z</lastmod>
     
@@ -940,14 +940,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/07/kernel_method.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/07/numpy-meshgrid-ravel.html</loc>
     
     <lastmod>2025-06-25T02:00:03.790Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/07/numpy-meshgrid-ravel.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/07/kernel_method.html</loc>
     
     <lastmod>2025-06-25T02:00:03.790Z</lastmod>
     
@@ -982,14 +982,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/05/io-block-sync.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/04/linux-redirect-pipe.html</loc>
     
     <lastmod>2025-06-25T02:00:03.778Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/04/linux-redirect-pipe.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/05/io-block-sync.html</loc>
     
     <lastmod>2025-06-25T02:00:03.778Z</lastmod>
     
@@ -1024,14 +1024,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/03/python-env-manage.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/02/docker-image-container.html</loc>
     
     <lastmod>2025-06-25T02:00:03.766Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/02/docker-image-container.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/03/python-env-manage.html</loc>
     
     <lastmod>2025-06-25T02:00:03.766Z</lastmod>
     
@@ -1073,13 +1073,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/09/tcp-io-select.html</loc>
-    
-    <lastmod>2025-06-25T02:00:03.754Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2017/08/storm-message-ack.html</loc>
     
     <lastmod>2025-06-25T02:00:03.754Z</lastmod>
@@ -1087,14 +1080,21 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/08/java-antlr.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/09/tcp-io-select.html</loc>
+    
+    <lastmod>2025-06-25T02:00:03.754Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2017/08/tcp-ack-send-recv.html</loc>
     
     <lastmod>2025-06-25T02:00:03.750Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/08/tcp-ack-send-recv.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/08/java-antlr.html</loc>
     
     <lastmod>2025-06-25T02:00:03.750Z</lastmod>
     
@@ -1108,14 +1108,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/07/permucation-stl.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/07/quick-primers.html</loc>
     
     <lastmod>2025-06-25T02:00:03.746Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/07/quick-primers.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/07/permucation-stl.html</loc>
     
     <lastmod>2025-06-25T02:00:03.746Z</lastmod>
     
@@ -1164,14 +1164,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/05/python-pil.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/05/python-stack.html</loc>
     
     <lastmod>2025-06-25T02:00:03.722Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/05/python-stack.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/05/python-pil.html</loc>
     
     <lastmod>2025-06-25T02:00:03.722Z</lastmod>
     
@@ -1290,14 +1290,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/02/ipc.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/02/linux-process-thread.html</loc>
     
     <lastmod>2025-06-25T02:00:03.566Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/02/linux-process-thread.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/02/ipc.html</loc>
     
     <lastmod>2025-06-25T02:00:03.566Z</lastmod>
     
