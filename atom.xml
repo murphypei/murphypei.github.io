@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://murphypei.github.io/"/>
-  <updated>2025-09-01T07:07:33.482Z</updated>
+  <updated>2025-09-16T03:40:54.595Z</updated>
   <id>https://murphypei.github.io/</id>
   
   <author>
@@ -15,6 +15,36 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>让 LLM 输出规范 JSON 的方法</title>
+    <link href="https://murphypei.github.io//blog/2025/09/llm-output-json.html"/>
+    <id>https://murphypei.github.io//blog/2025/09/llm-output-json.html</id>
+    <published>2025-09-15T06:20:00.000Z</published>
+    <updated>2025-09-16T03:40:54.595Z</updated>
+    
+    <content type="html"><![CDATA[<p>在现代 AI 应用开发中，让大语言模型（LLM）生成结构化的 JSON 数据是一个关键需求。无论是构建 API 服务、数据处理流水线，还是与现有系统集成，结构化输出都是必不可少的。本文将深入探讨多种让 LLM 生成规范 JSON 的方法，从基础技巧到高级工程实践。</p><a id="more"></a><h3 id="为什么需要结构化输出？"><a href="#为什么需要结构化输出？" class="headerlink" title="为什么需要结构化输出？"></a>为什么需要结构化输出？</h3><p>在实际应用中，我们经常需要 LLM 的输出能够被程序直接解析和使用，而不是仅仅作为文本供人类阅读。结构化的 JSON 输出具有以下优势：</p><ul><li><strong>可解析性</strong>：程序可以直接解析和处理 JSON 数据</li><li><strong>类型安全</strong>：明确的字段类型和结构规范</li><li><strong>可验证性</strong>：可以通过 Schema 验证数据完整性</li><li><strong>易集成</strong>：与现有系统和 API 无缝集成</li></ul><h3 id="方法一：提示词-JSON-format"><a href="#方法一：提示词-JSON-format" class="headerlink" title="方法一：提示词 + JSON format"></a>方法一：提示词 + JSON format</h3><p>这是最常用的让模型输出 JSON 格式的方法了。首先就是 prompt 中声明要输出 JSON，配合一些样例 few shot，然后呢，类似 Azure、Gemini 这类的大模型调用接口，都有类似 response_format 可以指定输出 JSON 格式。</p><p>模式如下：<br>JSON 提示词描述 + JSON 样例（Few shot）+ JSON response_format 来约束大模型的 JSON 输出。</p><p>如何用比较好地用提示词描述 JSON 字段呢？网络上比较好的实践是用 Typescript 或者 Yaml 格式描述（LLM生成Json结构化数据的几种方案，个人目前认为最好的方式依然是`TypeScript约束Prompt + Yaml格），当然简单地就直接用列表描述就好。可以参考这篇文章：<a href="https://juejin.cn/post/7325429835387404307" target="_blank" rel="noopener">https://juejin.cn/post/7325429835387404307</a></p><p><strong>需要注意的点</strong>：</p><ul><li><ol><li>这个方法不能百分百保证。笔者在 gemini 2.5 pro，指定了 response_format 为 JSON，prompt 给了 few shot，在大型的 JSON 生成的时候，一样会失败。但是 gemini 2.5 pro 指定 json schema，生成成功率大幅度提高。</li></ol></li><li><ol><li>对于没有 json schema 参数的接口，few show 中的 json 样例非常重要。</li></ol></li></ul><p>再说一下这些 API 提供的 JSON response format，本质是一个 Constrained Decoding，即在预测下一字符时，把不符合 JSON 格式的丢掉，基本在高级模型可以非常稳定地输出 JSON 格式，所以还是会有一些极端 case 导致解码失败，或者解码后不是完整的 JSON 格式。</p><h3 id="方法二：Function-call"><a href="#方法二：Function-call" class="headerlink" title="方法二：Function call"></a>方法二：Function call</h3><p>本质和方法一其实是一样的…</p><h3 id="方法三：后处理"><a href="#方法三：后处理" class="headerlink" title="方法三：后处理"></a>方法三：后处理</h3><p>三个臭皮匠顶个诸葛亮，大模型输出的 JSON 不完美，那就做善后处理。笔者最开始用 GPT-4 生成 JSON 的时候，写了很多后处理的函数，包括：去掉 ```、修复转移错误、轻微语法问题等等。这些案例现在网上有很多，可以自行参考。</p><h3 id="方法四：大模型修复"><a href="#方法四：大模型修复" class="headerlink" title="方法四：大模型修复"></a>方法四：大模型修复</h3><p>在方法三的基础上，让大模型自己纠正输出的 JSON，其实比单独 JSON 解码要简单的多，大模型自己也能做好。但是这个方法的前提是，第一个模型输出的 JSON 内容是基本正确的，如果内容是错误的，后面的模型也很难纠正。</p><h3 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h3><p>总结下来就是，一套基本可用的链路就是：prompt + few shot / json schema + response formt + 后处理，这是 API 接口调用常规用法。笔者日常项目体验，目前比较强的模型基本这套链路能处理的生成 JSON 的规模已经很大了。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;p&gt;在现代 AI 应用开发中，让大语言模型（LLM）生成结构化的 JSON 数据是一个关键需求。无论是构建 API 服务、数据处理流水线，还是与现有系统集成，结构化输出都是必不可少的。本文将深入探讨多种让 LLM 生成规范 JSON 的方法，从基础技巧到高级工程实践。&lt;/p&gt;
+    
+    </summary>
+    
+      <category term="LLM" scheme="https://murphypei.github.io/categories/LLM/"/>
+    
+    
+      <category term="LLM" scheme="https://murphypei.github.io/tags/LLM/"/>
+    
+      <category term="JSON" scheme="https://murphypei.github.io/tags/JSON/"/>
+    
+      <category term="结构化输出" scheme="https://murphypei.github.io/tags/%E7%BB%93%E6%9E%84%E5%8C%96%E8%BE%93%E5%87%BA/"/>
+    
+      <category term="API" scheme="https://murphypei.github.io/tags/API/"/>
+    
+      <category term="schema" scheme="https://murphypei.github.io/tags/schema/"/>
+    
+  </entry>
   
   <entry>
     <title>翻译《如何构建多智能体研究系统：Anthropic 的工程实践》</title>
@@ -575,34 +605,6 @@
       <category term="proxyjump" scheme="https://murphypei.github.io/tags/proxyjump/"/>
     
       <category term="jump" scheme="https://murphypei.github.io/tags/jump/"/>
-    
-  </entry>
-  
-  <entry>
-    <title>C++ 使用 protobuf 踩坑的一次记录</title>
-    <link href="https://murphypei.github.io//blog/2021/12/protobuf-debug.html"/>
-    <id>https://murphypei.github.io//blog/2021/12/protobuf-debug.html</id>
-    <published>2021-12-01T02:40:42.000Z</published>
-    <updated>2025-06-25T02:00:04.062Z</updated>
-    
-    <content type="html"><![CDATA[<p>之前用 protobuf 都比较随意，直到用 protobuf 发布 SDK，遇到了一个坑，恰好遇到了手机的一些问题，导致连环坑。</p><a id="more"></a><h2 id="坑1："><a href="#坑1：" class="headerlink" title="坑1："></a>坑1：</h2><p>这个坑很常见，不仅仅对于我，大概情况如下：</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[libprotobuf ERROR /home/murphy/code/github/protobuf/src/google/protobuf/descriptor_database.cc:58] File already exists <span class="keyword">in</span> database: speech_ai.capt.proto[libprotobuf FATAL /home/murphy/code/github/protobuf/src/google/protobuf/descriptor.cc:1358] CHECK failed: GeneratedDatabase()-&gt;Add(encoded_file_descriptor, size): terminating with uncaught exception of <span class="built_in">type</span> google::protobuf::FatalException: CHECK failed: GeneratedDatabase()-&gt;Add(encoded_file_descriptor, size)</span><br></pre></td></tr></table></figure><p>这个错误原因是因为在两个编译目标（共享库或者可执行文件）中都引入了相同的 <code>*.pb.cc</code> 文件。举个例子：</p><ul><li>我们有个 <code>example.proto</code>，生成了 <code>example.pb.h</code> 和 <code>example.pb.cc</code> 两个文件。</li><li>首先编译一个共享库 <code>A.so</code>，编译的时候需要加入 <code>example.pb.cc</code> 文件，因为其中包含了函数定义。</li><li>编译一个可执行文件 <code>B.out</code>，用来测试 <code>A.so</code> 的接口是否合适，因为 <code>B.out</code> 中也用到了 <code>example.pb.cc</code> 中的函数定义，所以按照常规的想法，也需要加入到其中编译（不然会报 undefined reference 错误），并且 <code>B.out</code> 需要链接 <code>A.so</code>。</li></ul><p>如果这种常规做法，就会报上面类似的错误，我查询的原因可以总结如下（也怪我学艺不精，不太了解 protobuf 的内部机制）：<strong>protobuf 本身有一个 global 的 registry。每个 message type 都需要去那里注册一下，而且不能重复注册</strong>。上述的 <code>Add</code> 错误就是因为注册失败，原因就是因为 <code>A.so</code> 和 <code>B.out</code> 中重复注册了（两份 <code>pb.cc</code> 实现）。</p><ul><li>据说换成 protobuf-lite 就能避免这个问题，但是 Google 官方并没有对此表态。</li></ul><p>最常规的解决办法就是把所有 <code>pb.cc</code> 文件编译成一个共享库 <code>p.so</code>，然后 <code>A.so</code> 和 <code>B.out</code> 都去链接这个共享库。这里需要注意，编译的时候需要设置 <code>visibility=default</code>，把符号都打开（一般 SDK 都会隐藏符号）。</p><h2 id="坑2："><a href="#坑2：" class="headerlink" title="坑2："></a>坑2：</h2><p>这个坑很奇怪，大概如下：我使用 ndk 和 protobuf v3.6.1 编译了 android 的 <code>libprotobuf.so</code>，然后用这个共享库编译 android native 测序程序，运行遇到 Version verification failed，大概如下：</p><figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[libprotobuf FATAL /home/murphy/code/github/protobuf/src/google/protobuf/stubs/common.cc:79] This program was compiled against version 3.0.0 of the Protocol Buffer runtime library, <span class="built_in">which</span> is not compatible with the installed version (3.6.1).  Contact the program author <span class="keyword">for</span> an update.  If you compiled the program yourself, make sure that your headers are from the same version of Protocol Buffers as your link-time library.  (Version verification failed <span class="keyword">in</span> <span class="string">"external/protobuf/src/google/protobuf/any.pb.cc"</span>.)terminating with uncaught exception of <span class="built_in">type</span> google::protobuf::FatalException: This program was compiled against version 3.0.0 of the Protocol Buffer runtime library, <span class="built_in">which</span> is not compatible with the installed version (3.6.1).  Contact the program author <span class="keyword">for</span> an update.  If you compiled the program yourself, make sure that your headers are from the same version of Protocol Buffers as your link-time library.  (Version verification failed <span class="keyword">in</span> <span class="string">"external/protobuf/src/google/protobuf/any.pb.cc"</span>.)</span><br></pre></td></tr></table></figure><p>在 android 使用 gdbserver 调试发现（<a href="https://murphypei.github.io/blog/2021/09/android-gdbserver.html">教程</a>），<code>/system/lib64/</code> 下面有个 <code>protobuf.so</code>，这个 so 的版本是 v3.0.0，但是我们编译的程序理论上是用 v3.6.1 编译的。看上去这里运行的时候，链接的是 v3.6.1，但是 v3.6.1 的符号没有覆盖默认的 v3.0.0 的符号，导致 <code>GOOGLE_PROTOBUF_VERSION</code> 这个符号变成了 <code>3000000</code> 而不是 <code>3006001</code>，所以就会失败。</p><p>这个问题没有找到解决方案，我换了一个测试手机，没有复现这个问题，所以猜测可能是之前的测试手机有一些问题，如果遇到这个问题，建议换个测试手机试试。</p>]]></content>
-    
-    <summary type="html">
-    
-      &lt;p&gt;之前用 protobuf 都比较随意，直到用 protobuf 发布 SDK，遇到了一个坑，恰好遇到了手机的一些问题，导致连环坑。&lt;/p&gt;
-    
-    </summary>
-    
-      <category term="C/C++" scheme="https://murphypei.github.io/categories/C-C/"/>
-    
-    
-      <category term="registry" scheme="https://murphypei.github.io/tags/registry/"/>
-    
-      <category term="protobuf" scheme="https://murphypei.github.io/tags/protobuf/"/>
-    
-      <category term="共享库" scheme="https://murphypei.github.io/tags/%E5%85%B1%E4%BA%AB%E5%BA%93/"/>
-    
-      <category term="protoc" scheme="https://murphypei.github.io/tags/protoc/"/>
     
   </entry>
   
