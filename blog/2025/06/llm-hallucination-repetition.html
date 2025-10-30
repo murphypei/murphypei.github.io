@@ -66,7 +66,7 @@
 <meta property="og:site_name" content="拾荒志">
 <meta property="og:description" content="LLM 的幻觉和重复问题是 LLM 应用中的核心挑战，也是面试中经常被问到的问题。本文将从底层机理出发，深入分析这两个问题的成因，并探讨有效的解决方案。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2025-07-01T12:40:54.832Z">
+<meta property="og:updated_time" content="2025-10-23T07:06:12.476Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LLM 幻觉与重复问题">
 <meta name="twitter:description" content="LLM 的幻觉和重复问题是 LLM 应用中的核心挑战，也是面试中经常被问到的问题。本文将从底层机理出发，深入分析这两个问题的成因，并探讨有效的解决方案。">
@@ -275,7 +275,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-07-01 20:40:54" itemprop="dateModified" datetime="2025-07-01T20:40:54+08:00">2025-07-01</time>
+                <time title="修改时间：2025-10-23 15:06:12" itemprop="dateModified" datetime="2025-10-23T15:06:12+08:00">2025-10-23</time>
               </span>
             
           
@@ -310,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>3.5k</span>
+              <span>3.4k</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -338,9 +338,9 @@
 <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>大语言模型（LLM）在近年来取得了巨大的成功，但同时也面临着两个关键问题：<strong>幻觉（Hallucination）</strong>和<strong>重复（Repetition）</strong>。这些问题不仅影响了模型的实用性，也阻碍了其在关键领域的应用。本文将从底层机理出发，深入分析这两个问题的成因，并探讨有效的解决方案。</p>
 <h2 id="幻觉问题（Hallucination）"><a href="#幻觉问题（Hallucination）" class="headerlink" title="幻觉问题（Hallucination）"></a>幻觉问题（Hallucination）</h2><h3 id="幻觉的基本概念"><a href="#幻觉的基本概念" class="headerlink" title="幻觉的基本概念"></a>幻觉的基本概念</h3><p>幻觉是指LLM生成的内容与事实不符，包括：</p>
 <ul>
-<li><strong>事实性幻觉</strong>：生成错误的事实信息</li>
-<li><strong>逻辑性幻觉</strong>：推理过程存在逻辑错误</li>
-<li><strong>引用性幻觉</strong>：虚构不存在的引用或来源</li>
+<li><strong>事实性幻觉</strong>：生成错误的事实信息。</li>
+<li><strong>逻辑性幻觉</strong>：推理过程存在逻辑错误，前后矛盾不一致。</li>
+<li><strong>指令性幻觉</strong>：指令遵循不一致，比如要求用英语回答，用中文回答。</li>
 </ul>
 <h3 id="幻觉产生的底层机理"><a href="#幻觉产生的底层机理" class="headerlink" title="幻觉产生的底层机理"></a>幻觉产生的底层机理</h3><h4 id="1-训练数据质量问题"><a href="#1-训练数据质量问题" class="headerlink" title="1. 训练数据质量问题"></a>1. 训练数据质量问题</h4><p><strong>数据噪声与错误</strong></p>
 <ul>
@@ -368,14 +368,6 @@
 <li><strong>缺乏事实验证</strong>：模型无法验证生成内容的真实性</li>
 <li><strong>过度依赖训练数据</strong>：当遇到训练数据中未覆盖的情况时，容易产生幻觉</li>
 </ol>
-<p><strong>物理机制解释</strong>：</p>
-<p>从物理学的角度来看，Attention机制类似于一个自旋浴系统：</p>
-<ul>
-<li><strong>自旋状态</strong>：每个token对应一个自旋向量 $\mathbf{S}_i$</li>
-<li><strong>相互作用</strong>：通过2体相互作用计算注意力权重</li>
-<li><strong>相位分离</strong>：在特定条件下，系统会出现”好”与”坏”内容的相位分离</li>
-</ul>
-<p>这种物理机制解释了为什么模型在某些情况下会倾向于生成不准确的内容。</p>
 <h4 id="3-训练目标与事实性不匹配"><a href="#3-训练目标与事实性不匹配" class="headerlink" title="3. 训练目标与事实性不匹配"></a>3. 训练目标与事实性不匹配</h4><p><strong>最大似然估计的局限性</strong></p>
 <ul>
 <li>训练目标是最小化预测下一个token的损失</li>
@@ -387,7 +379,7 @@
 <li>训练过程中没有明确的事实性约束</li>
 <li>模型无法区分事实性内容和创造性内容</li>
 </ul>
-<h3 id="缓解和消除幻觉的方法"><a href="#缓解和消除幻觉的方法" class="headerlink" title="缓解和消除幻觉的方法"></a>缓解和消除幻觉的方法</h3><h4 id="1-数据层面的改进"><a href="#1-数据层面的改进" class="headerlink" title="1. 数据层面的改进"></a>1. 数据层面的改进</h4><p><strong>高质量数据收集</strong></p>
+<h3 id="缓解和消除幻觉的方法"><a href="#缓解和消除幻觉的方法" class="headerlink" title="缓解和消除幻觉的方法"></a>缓解和消除幻觉的方法</h3><h4 id="1-训练数据层面改进"><a href="#1-训练数据层面改进" class="headerlink" title="1. 训练数据层面改进"></a>1. 训练数据层面改进</h4><p><strong>高质量数据收集</strong></p>
 <ul>
 <li>结合多个高质量数据源</li>
 <li>使用事实性强的数据（如维基百科、学术论文）</li>
@@ -405,7 +397,7 @@
 <li>使用检索增强生成（RAG）技术</li>
 <li>结合外部知识库进行训练</li>
 </ul>
-<h4 id="2-模型架构的改进"><a href="#2-模型架构的改进" class="headerlink" title="2. 模型架构的改进"></a>2. 模型架构的改进</h4><p><strong>改进的Attention机制</strong></p>
+<h4 id="2-模型推理的改进"><a href="#2-模型推理的改进" class="headerlink" title="2. 模型推理的改进"></a>2. 模型推理的改进</h4><p><strong>改进的Attention机制</strong></p>
 <ul>
 <li>引入多步推理机制</li>
 <li>使用思维链（Chain-of-Thought）提示</li>
@@ -518,7 +510,7 @@
 <li>对过长的重复序列进行惩罚</li>
 <li>鼓励模型生成更简洁的内容</li>
 </ul>
-<h4 id="2-模型架构的改进-1"><a href="#2-模型架构的改进-1" class="headerlink" title="2. 模型架构的改进"></a>2. 模型架构的改进</h4><p><strong>改进的注意力机制</strong></p>
+<h4 id="2-模型架构的改进"><a href="#2-模型架构的改进" class="headerlink" title="2. 模型架构的改进"></a>2. 模型架构的改进</h4><p><strong>改进的注意力机制</strong></p>
 <p><strong>相对位置编码</strong></p>
 <ul>
 <li>使用相对位置编码代替绝对位置编码</li>
@@ -760,7 +752,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#幻觉问题（Hallucination）"><span class="nav-number">2.</span> <span class="nav-text">幻觉问题（Hallucination）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#幻觉的基本概念"><span class="nav-number">2.1.</span> <span class="nav-text">幻觉的基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#幻觉产生的底层机理"><span class="nav-number">2.2.</span> <span class="nav-text">幻觉产生的底层机理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-训练数据质量问题"><span class="nav-number">2.2.1.</span> <span class="nav-text">1. 训练数据质量问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Attention机制的局限性"><span class="nav-number">2.2.2.</span> <span class="nav-text">2. Attention机制的局限性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-训练目标与事实性不匹配"><span class="nav-number">2.2.3.</span> <span class="nav-text">3. 训练目标与事实性不匹配</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓解和消除幻觉的方法"><span class="nav-number">2.3.</span> <span class="nav-text">缓解和消除幻觉的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-数据层面的改进"><span class="nav-number">2.3.1.</span> <span class="nav-text">1. 数据层面的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-模型架构的改进"><span class="nav-number">2.3.2.</span> <span class="nav-text">2. 模型架构的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-训练策略的改进"><span class="nav-number">2.3.3.</span> <span class="nav-text">3. 训练策略的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-推理阶段的改进"><span class="nav-number">2.3.4.</span> <span class="nav-text">4. 推理阶段的改进</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重复问题（Repetition）"><span class="nav-number">3.</span> <span class="nav-text">重复问题（Repetition）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#重复问题的基本概念"><span class="nav-number">3.1.</span> <span class="nav-text">重复问题的基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重复产生的底层机理"><span class="nav-number">3.2.</span> <span class="nav-text">重复产生的底层机理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-训练数据的重复模式"><span class="nav-number">3.2.1.</span> <span class="nav-text">1. 训练数据的重复模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-生成策略的影响"><span class="nav-number">3.2.2.</span> <span class="nav-text">2. 生成策略的影响</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-上下文窗口的限制"><span class="nav-number">3.2.3.</span> <span class="nav-text">3. 上下文窗口的限制</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓解和消除重复的方法"><span class="nav-number">3.3.</span> <span class="nav-text">缓解和消除重复的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-解码策略的改进"><span class="nav-number">3.3.1.</span> <span class="nav-text">1. 解码策略的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-模型架构的改进-1"><span class="nav-number">3.3.2.</span> <span class="nav-text">2. 模型架构的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-训练策略的改进-1"><span class="nav-number">3.3.3.</span> <span class="nav-text">3. 训练策略的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-推理阶段的改进-1"><span class="nav-number">3.3.4.</span> <span class="nav-text">4. 推理阶段的改进</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#幻觉与重复问题的关系"><span class="nav-number">4.</span> <span class="nav-text">幻觉与重复问题的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#共同根源"><span class="nav-number">4.1.</span> <span class="nav-text">共同根源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#相互影响"><span class="nav-number">4.2.</span> <span class="nav-text">相互影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#联合解决方案"><span class="nav-number">4.3.</span> <span class="nav-text">联合解决方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#未来发展方向"><span class="nav-number">5.</span> <span class="nav-text">未来发展方向</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#理论突破"><span class="nav-number">5.1.</span> <span class="nav-text">理论突破</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#技术融合"><span class="nav-number">5.2.</span> <span class="nav-text">技术融合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#评估体系"><span class="nav-number">5.3.</span> <span class="nav-text">评估体系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">7.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#幻觉问题（Hallucination）"><span class="nav-number">2.</span> <span class="nav-text">幻觉问题（Hallucination）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#幻觉的基本概念"><span class="nav-number">2.1.</span> <span class="nav-text">幻觉的基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#幻觉产生的底层机理"><span class="nav-number">2.2.</span> <span class="nav-text">幻觉产生的底层机理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-训练数据质量问题"><span class="nav-number">2.2.1.</span> <span class="nav-text">1. 训练数据质量问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Attention机制的局限性"><span class="nav-number">2.2.2.</span> <span class="nav-text">2. Attention机制的局限性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-训练目标与事实性不匹配"><span class="nav-number">2.2.3.</span> <span class="nav-text">3. 训练目标与事实性不匹配</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓解和消除幻觉的方法"><span class="nav-number">2.3.</span> <span class="nav-text">缓解和消除幻觉的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-训练数据层面改进"><span class="nav-number">2.3.1.</span> <span class="nav-text">1. 训练数据层面改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-模型推理的改进"><span class="nav-number">2.3.2.</span> <span class="nav-text">2. 模型推理的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-训练策略的改进"><span class="nav-number">2.3.3.</span> <span class="nav-text">3. 训练策略的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-推理阶段的改进"><span class="nav-number">2.3.4.</span> <span class="nav-text">4. 推理阶段的改进</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#重复问题（Repetition）"><span class="nav-number">3.</span> <span class="nav-text">重复问题（Repetition）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#重复问题的基本概念"><span class="nav-number">3.1.</span> <span class="nav-text">重复问题的基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#重复产生的底层机理"><span class="nav-number">3.2.</span> <span class="nav-text">重复产生的底层机理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-训练数据的重复模式"><span class="nav-number">3.2.1.</span> <span class="nav-text">1. 训练数据的重复模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-生成策略的影响"><span class="nav-number">3.2.2.</span> <span class="nav-text">2. 生成策略的影响</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-上下文窗口的限制"><span class="nav-number">3.2.3.</span> <span class="nav-text">3. 上下文窗口的限制</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#缓解和消除重复的方法"><span class="nav-number">3.3.</span> <span class="nav-text">缓解和消除重复的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-解码策略的改进"><span class="nav-number">3.3.1.</span> <span class="nav-text">1. 解码策略的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-模型架构的改进"><span class="nav-number">3.3.2.</span> <span class="nav-text">2. 模型架构的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-训练策略的改进-1"><span class="nav-number">3.3.3.</span> <span class="nav-text">3. 训练策略的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-推理阶段的改进-1"><span class="nav-number">3.3.4.</span> <span class="nav-text">4. 推理阶段的改进</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#幻觉与重复问题的关系"><span class="nav-number">4.</span> <span class="nav-text">幻觉与重复问题的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#共同根源"><span class="nav-number">4.1.</span> <span class="nav-text">共同根源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#相互影响"><span class="nav-number">4.2.</span> <span class="nav-text">相互影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#联合解决方案"><span class="nav-number">4.3.</span> <span class="nav-text">联合解决方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#未来发展方向"><span class="nav-number">5.</span> <span class="nav-text">未来发展方向</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#理论突破"><span class="nav-number">5.1.</span> <span class="nav-text">理论突破</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#技术融合"><span class="nav-number">5.2.</span> <span class="nav-text">技术融合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#评估体系"><span class="nav-number">5.3.</span> <span class="nav-text">评估体系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文献"><span class="nav-number">7.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
         
       </div>
       <!--/noindex-->
@@ -1901,12 +1893,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">659k</span>
+    <span title="站点总字数">661k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">18:18</span>
+    <span title="站点阅读时长">18:21</span>
 </div>
 
         
@@ -2067,7 +2059,7 @@
     });
     gitalk.render('gitalk-container');
   }, window.Gitalk);
-</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</script>
 
-<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script></body>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
 </html>

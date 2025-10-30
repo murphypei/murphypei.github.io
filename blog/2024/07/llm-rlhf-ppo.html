@@ -74,7 +74,7 @@
 <meta property="og:image" content="https://murphypei.github.io/images/posts/llm/ppo/ref.webp">
 <meta property="og:image" content="https://murphypei.github.io/images/posts/llm/ppo/critic.webp">
 <meta property="og:image" content="https://murphypei.github.io/images/posts/llm/ppo/reward.webp">
-<meta property="og:updated_time" content="2025-07-21T11:41:47.156Z">
+<meta property="og:updated_time" content="2025-10-23T07:53:31.335Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="大模型 RLHF 训练中的 PPO 算法细节">
 <meta name="twitter:description" content="虽然了解大模型训练中的 RLHF 训练，但是都是有点不够深刻，特别是 PPO 算法的细节。">
@@ -284,7 +284,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-07-21 19:41:47" itemprop="dateModified" datetime="2025-07-21T19:41:47+08:00">2025-07-21</time>
+                <time title="修改时间：2025-10-23 15:53:31" itemprop="dateModified" datetime="2025-10-23T15:53:31+08:00">2025-10-23</time>
               </span>
             
           
@@ -319,7 +319,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>3.1k</span>
+              <span>4.8k</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -329,7 +329,7 @@
               
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
               
-              <span>5 分钟</span>
+              <span>8 分钟</span>
             </span>
           
 
@@ -375,7 +375,7 @@ V_t = R_t + \gamma V_{t+1}</script><p>其中：</p>
 </ul>
 <p>这里最需要注意的是：$V_{t+1}$ 同样包含了现在和未来的奖励，但是对于 $V_{t}$ 来说，它就相当于未来潜在收益。</p>
 <h2 id="NLP-和强化学习"><a href="#NLP-和强化学习" class="headerlink" title="NLP 和强化学习"></a>NLP 和强化学习</h2><p><img src="/images/posts/llm/ppo/nlp-rl.webp" alt></p>
-<p>这里的 NLP 是特质生成模型。</p>
+<p>这里的 NLP 是特指生成模型。</p>
 <p>生成模型的推理执行过程：给模型一个 prompt，让模型能生成符合人类喜好的 response。再回想一下 GPT 模型做推理的过程：每个时刻 $t$ 只产生一个 token，即 token 是一个一个蹦出来的，先有上一个 token，再有下一个 token。</p>
 <p>结合上面的图，分解一下这个过程：</p>
 <ol>
@@ -395,11 +395,24 @@ V_t = R_t + \gamma V_{t+1}</script><p>其中：</p>
 <p>现在大家都知道 PPO 有 4 个模型，上面我们说了 3 个，还有 1 个，这里将 4 个模型都列出来：</p>
 <ul>
 <li><strong>Actor Model</strong>：PPO 训练的模型，也是我们最终要用于应用的模型。</li>
-<li><strong>Critic Model</strong>：即时收益 $V_t$，反映的是当前输出的潜在价值。</li>
-<li><strong>Reward Model</strong>：整体收益的打分模型，也是上面的 $R_t$。</li>
+<li><strong>Critic Model</strong>：价值函数，反映的是当前环境和状态下，该动作的预期<strong>长期收益</strong> $V_t$。</li>
+<li><strong>Reward Model</strong>：奖励函数，一个标量，表示当前prompt+响应的整体质量，也是上面的 $R_t$。</li>
 <li><strong>Reference Model</strong>：这个模型是额外增加的，主要是在 RLHF 阶段给语言模型增加一些”约束”，防止语言模型训歪（朝不受控制的方向更新，效果可能越来越差）。这个看 Loss 就能明白了。</li>
 </ul>
-<h3 id="哪些模型需要更新参数？"><a href="#哪些模型需要更新参数？" class="headerlink" title="哪些模型需要更新参数？"></a>哪些模型需要更新参数？</h3><p>Actor Model 和 Critic Model。Actor 肯定是很好理解的，所以不多说了，Critic Model 为什么也要更新？主要是这里存在一个难点：怎么评估总体收益呢？我们自己随口一说评估总体收益，但是这个是很难的，因为没有真的标签（有监督）。所以我们需要通过一个模型来判断，而且更重要的是，这个判断模型的能力，<strong>要不断提升能力</strong>，才能做好这件事。</p>
+<p>再次强调一下<strong>奖励模型和价值模型的区别</strong>：</p>
+<p>Reward Model (奖励模型) $\text{RM}$</p>
+<ul>
+<li>作用： 它是根据人类偏好数据训练出来的模型，用来取代传统 RL 中的手动奖励函数。</li>
+<li>计算对象 (即时收益)： $\text{RM}$ 的输出是一个标量分数，表示 (提示 Prompt + 完整响应 Response) 这个序列的整体质量。</li>
+<li>结论： $\text{RM}$ 给出的是对整个生成序列的即时/单一评估分数，但这个分数代表的是对最终整体表现的评估。在 RLHF 中，它为强化学习提供了一个稀疏 (Sparse) 的奖励信号。</li>
+</ul>
+<p>Critic Model (评论家模型) $\text{V}$</p>
+<ul>
+<li>作用： 评估当前状态（State）或状态-动作对（State-Action Pair）的长期价值，指导 Actor（即 LLM 本身）的策略更新。</li>
+<li>计算对象 (整体收益)： $\text{V}$ 的输出是一个标量分数，表示从当前状态（$s$）开始，遵循当前策略一直到结束所能获得的期望累积折扣奖励 (Expected Cumulative Discounted Reward)，即 $V(s) = \mathbb{E}[\sum_{t’=t}^{T} \gamma^{t’-t} r_{t’}]$。</li>
+<li>结论： $\text{V}$ 估算的是未来的整体收益。它通过时序差分 (Temporal Difference, TD) 学习，帮助解决强化学习中的信用分配问题 (Credit Assignment Problem)。</li>
+</ul>
+<h3 id="哪些模型需要更新参数？"><a href="#哪些模型需要更新参数？" class="headerlink" title="哪些模型需要更新参数？"></a>哪些模型需要更新参数？</h3><p>Actor Model 和 Critic Model。Actor 肯定是很好理解的，所以不多说了，Critic Model 为什么也要更新？主要是这里存在一个难点：怎么评估潜在收益呢？我们自己随口一说评估总体收益，但是这个是很难的，因为没有真的标签（有监督）。所以我们需要通过一个模型来判断，而且更重要的是，这个判断模型的能力，<strong>要不断提升能力</strong>，才能做好这件事。</p>
 <h3 id="Actor-Model"><a href="#Actor-Model" class="headerlink" title="Actor Model"></a>Actor Model</h3><p><img src="/images/posts/llm/ppo/actor.webp" alt></p>
 <p>我们的最终目的是让 Actor 模型能产生符合人类喜好的 response。所以我们的策略是，先喂给 Actor 一条 prompt（这里假设 batch_size = 1，所以是 1 条 prompt），让它生成对应的 response。然后，我们再将”prompt + response”送入我们的”奖励-loss”计算体系中去算得最后的 loss，用于更新 actor。</p>
 <h3 id="Reference-Model"><a href="#Reference-Model" class="headerlink" title="Reference Model"></a>Reference Model</h3><p>Reference Model 一般也用 SFT 阶段得到的 SFT 模型做初始化，在训练过程中，它的参数是冻结的。Ref 模型的主要作用是防止 Actor”训歪”，那么它具体是怎么做到这一点的呢？</p>
@@ -426,7 +439,25 @@ V_t = R_t + \gamma V_{t+1}</script><p>其中：</p>
 <li>奖励的标量是怎么得到的呢？将输入的最后一个 token（认为包含了整个序列 token 的注意力）的隐藏层（4096 维）输入到一个 1 维的 FC 层，就输出一个标量。</li>
 </ul>
 <h2 id="RLHF-的-Loss-计算"><a href="#RLHF-的-Loss-计算" class="headerlink" title="RLHF 的 Loss 计算"></a>RLHF 的 Loss 计算</h2><p>我已经看过太多次了，所以不想重新写这个了，直接看原文或者网上搜一下就知道了。注意每一项对应 ref、critic、reward 模型，结合前面讲解的各个模型的作用，应该能很好地理解这个 Loss 的含义。</p>
-
+<p>这里重点讲一下<strong>如何计算每次 Token 的优势估计</strong>。</p>
+<p>PPO (使用 GAE) 中每个 Token 优势估计的计算逻辑核心目标是计算 $\mathbf{A}(s_t, a_t)$，即在状态 $s_t$ 采取动作 $a_t$ 的额外好处。</p>
+<p>步骤 1：计算 Token 级别的即时奖励 ($r_t$)。</p>
+<script type="math/tex; mode=display">r_t = \underbrace{r_{\text{RM}, t}}_{\text{稀疏 RM 奖励}} - \underbrace{\beta \cdot \log \left(\frac{\pi_{\theta}(a_t|s_t)}{\pi_{\text{SFT}}(a_t|s_t)}\right)}_{\text{KL 惩罚}}</script><ul>
+<li>$r_{\text{RM}, t}$ (稀疏 RM 奖励):<ul>
+<li>$t = 1 \text{ 到 } T-1$ (中间 $\text{Token}$): $0$</li>
+<li>$t = T$ (最后一个 $\text{Token}$): $r_{\text{final}}$ ($\text{RM}$ 的输出)</li>
+</ul>
+</li>
+<li>KL 惩罚项: 每个 $\text{Token}$ 都有一个负值 (如果 $\text{Policy}$ 偏离 $\text{SFT}$ 模型)。<br>结果： 得到了一个包含稀疏 RM 信号和密集 KL 惩罚的 $\text{Token}$ 序列即时奖励 $[r_1, r_2, \dots, r_T]$。</li>
+</ul>
+<p>步骤 2：计算 $\text{Critic}$ 模型的时序差分 (TD) 误差 ($\delta_t$)</p>
+<p>这是 $\text{GAE}$ 的基础，结合 $r_t$ 和 Critic 模型 $V$ 的结果。</p>
+<script type="math/tex; mode=display">\delta_t = \underbrace{r_t}_{\text{即时奖励}} + \underbrace{\gamma V(s_{t+1})}_{\text{下一状态价值}} - \underbrace{V(s_t)}_{\text{当前状态价值}}</script><ul>
+<li>$V(s_t)$ 和 $V(s_{t+1})$: 由 $\text{Critic Model}$ 对 $\text{Token}$ 序列的隐藏状态进行评估所得。</li>
+<li>$\delta_t$ 衡量了实际观测到的短期收益（$r_t + \gamma V(s_{t+1})$）与 模型原本估计的长期收益（$V(s_t)$）之间的差异。</li>
+</ul>
+<p>步骤 3：使用 GAE 平滑估计优势函数 ($\mathbf{A}_t$)最后，使用 $\text{GAE}$ 公式，将一系列 $\text{TD}$ 误差平滑地组合起来，得到最终用于 PPO 策略更新的优势估计：</p>
+<script type="math/tex; mode=display">\mathbf{A}_t^{\text{GAE}(\gamma, \lambda)} = \sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}</script>
     </div>
 
     
@@ -1678,12 +1709,12 @@ V_t = R_t + \gamma V_{t+1}</script><p>其中：</p>
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">659k</span>
+    <span title="站点总字数">661k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">18:18</span>
+    <span title="站点阅读时长">18:21</span>
 </div>
 
         
@@ -1844,7 +1875,7 @@ V_t = R_t + \gamma V_{t+1}</script><p>其中：</p>
     });
     gitalk.render('gitalk-container');
   }, window.Gitalk);
-</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</script>
 
-<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script></body>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
 </html>

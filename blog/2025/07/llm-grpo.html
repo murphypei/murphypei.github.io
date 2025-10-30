@@ -58,18 +58,18 @@
   };
 </script>
 
-  <meta name="description" content="在上一篇博客中，我们详细介绍了 PPO 和 DPO 算法。今天我们来深入探讨 GRPO（Group Relative Policy Optimization）算法，这是 PPO 的一个重要改进版本。GRPO 的核心创新在于改进了优势函数的计算方式，使得训练更加稳定和高效。">
+  <meta name="description" content="在之前的 PPO 细节探讨中，我们详细介绍了 PPO 算法。今天我们来深入探讨 GRPO（Group Relative Policy Optimization）算法，这是 PPO 的一个重要改进版本。GRPO 的核心创新在于改进了优势函数的计算方式，使得训练更加稳定和高效。">
 <meta name="keywords" content="LLM,rlhf,ppo,grpo,advantage">
 <meta property="og:type" content="article">
 <meta property="og:title" content="LLM 训练：GRPO 算法详解">
 <meta property="og:url" content="https://murphypei.github.io/blog/2025/07/llm-grpo.html">
 <meta property="og:site_name" content="拾荒志">
-<meta property="og:description" content="在上一篇博客中，我们详细介绍了 PPO 和 DPO 算法。今天我们来深入探讨 GRPO（Group Relative Policy Optimization）算法，这是 PPO 的一个重要改进版本。GRPO 的核心创新在于改进了优势函数的计算方式，使得训练更加稳定和高效。">
+<meta property="og:description" content="在之前的 PPO 细节探讨中，我们详细介绍了 PPO 算法。今天我们来深入探讨 GRPO（Group Relative Policy Optimization）算法，这是 PPO 的一个重要改进版本。GRPO 的核心创新在于改进了优势函数的计算方式，使得训练更加稳定和高效。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2025-07-23T12:04:59.989Z">
+<meta property="og:updated_time" content="2025-10-23T07:52:51.924Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="LLM 训练：GRPO 算法详解">
-<meta name="twitter:description" content="在上一篇博客中，我们详细介绍了 PPO 和 DPO 算法。今天我们来深入探讨 GRPO（Group Relative Policy Optimization）算法，这是 PPO 的一个重要改进版本。GRPO 的核心创新在于改进了优势函数的计算方式，使得训练更加稳定和高效。">
+<meta name="twitter:description" content="在之前的 PPO 细节探讨中，我们详细介绍了 PPO 算法。今天我们来深入探讨 GRPO（Group Relative Policy Optimization）算法，这是 PPO 的一个重要改进版本。GRPO 的核心创新在于改进了优势函数的计算方式，使得训练更加稳定和高效。">
   <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
   <link rel="canonical" href="https://murphypei.github.io/blog/2025/07/llm-grpo">
 
@@ -264,11 +264,19 @@
                 
               
 
-              <time title="创建时间：2025-07-23 01:43:43 / 修改时间：20:04:59" itemprop="dateCreated datePublished" datetime="2025-07-23T01:43:43+08:00">2025-07-23</time>
+              <time title="创建时间：2025-07-23 01:43:43" itemprop="dateCreated datePublished" datetime="2025-07-23T01:43:43+08:00">2025-07-23</time>
             </span>
           
             
 
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-10-23 15:52:51" itemprop="dateModified" datetime="2025-10-23T15:52:51+08:00">2025-10-23</time>
+              </span>
             
           
             <span class="post-meta-item">
@@ -302,7 +310,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>5.1k</span>
+              <span>5k</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -325,7 +333,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>在上一篇博客中，我们详细介绍了 PPO 和 DPO 算法。今天我们来深入探讨 GRPO（Group Relative Policy Optimization）算法，这是 PPO 的一个重要改进版本。GRPO 的核心创新在于改进了优势函数的计算方式，使得训练更加稳定和高效。</p>
+        <p>在<a href="https://murphypei.github.io/blog/2024/07/llm-rlhf-ppo.html">之前的 PPO 细节探讨</a>中，我们详细介绍了 PPO 算法。今天我们来深入探讨 GRPO（Group Relative Policy Optimization）算法，这是 PPO 的一个重要改进版本。GRPO 的核心创新在于改进了优势函数的计算方式，使得训练更加稳定和高效。</p>
 <a id="more"></a>
 <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>在 RLHF（Reinforcement Learning from Human Feedback）训练中，PPO 算法虽然表现良好，但在优势函数计算方面存在一些局限性。GRPO 算法通过引入分组相对优势计算，解决了 PPO 中的一些问题，特别是在处理长序列生成任务时表现更加稳定。</p>
 <h2 id="PPO-计算过程详解"><a href="#PPO-计算过程详解" class="headerlink" title="PPO 计算过程详解"></a>PPO 计算过程详解</h2><p>在深入 GRPO 之前，我们先详细回顾 PPO 的计算过程，特别是优势函数的计算，这是理解 GRPO 改进的关键。</p>
@@ -373,7 +381,11 @@
 </ul>
 </li>
 </ol>
-<h3 id="优势函数的详细计算"><a href="#优势函数的详细计算" class="headerlink" title="优势函数的详细计算"></a>优势函数的详细计算</h3><h4 id="GAE（通用优势估计）算法"><a href="#GAE（通用优势估计）算法" class="headerlink" title="GAE（通用优势估计）算法"></a>GAE（通用优势估计）算法</h4><p>GAE 是 PPO 中计算优势函数的核心技术。对于序列中的每个位置 <code>t</code>，优势函数定义为：</p>
+<blockquote>
+<p>这里和之前讲 PPO 可能会混淆，这里应该如此理解，如果只有奖励信号，那么只能拿到一个稀疏的奖励序列（最后一个有值，前面为0）。为了让每个 token 都能参与指导 Actor（Policy）模型的更新，所以有了 critic（价值）模型**。</p>
+</blockquote>
+<h3 id="优势函数的详细计算"><a href="#优势函数的详细计算" class="headerlink" title="优势函数的详细计算"></a>优势函数的详细计算</h3><h4 id="GAE（通用优势估计）算法"><a href="#GAE（通用优势估计）算法" class="headerlink" title="GAE（通用优势估计）算法"></a>GAE（通用优势估计）算法</h4><p>GAE 是 PPO 中计算优势函数的核心技术。<strong>GAE 的目的是因为奖励是稀疏信号，要回传评估每个 token 的收益，一定要牢记这一点</strong>。</p>
+<p>对于序列中的每个位置 <code>t</code>，优势函数定义为：</p>
 <script type="math/tex; mode=display">
 A_t = \delta_t + \gamma \lambda \delta_{t+1} + \gamma^2 \lambda^2 \delta_{t+2} + ... + \gamma^{T-t} \lambda^{T-t} \delta_T</script><p>其中：</p>
 <ul>
@@ -387,12 +399,6 @@ A_t = \delta_t + \gamma \lambda \delta_{t+1} + \gamma^2 \lambda^2 \delta_{t+2} +
 <li>如果 $\lambda = 0$，则 $A_t = \delta_t$，只考虑一步的时序差分</li>
 <li>如果 $\lambda = 1$，则 $A_t = \sum_{k=t}^T \gamma^{k-t} r_k - V_t$，考虑所有未来奖励</li>
 <li>$\lambda$ 在 0 和 1 之间，平衡了偏差和方差</li>
-</ul>
-<h4 id="优势函数的物理意义"><a href="#优势函数的物理意义" class="headerlink" title="优势函数的物理意义"></a>优势函数的物理意义</h4><p>优势函数 $A_t$ 的直观含义是：</p>
-<ul>
-<li>在 <code>t</code> 时刻选择 <code>token_t</code> 这个动作，比 Critic 模型平均预测的要好多少</li>
-<li>如果 <code>A_t &gt; 0</code>，说明这是个”惊喜”的好动作</li>
-<li>如果 <code>A_t &lt; 0</code>，说明这是个”糟糕”的动作</li>
 </ul>
 <h3 id="PPO-损失函数计算"><a href="#PPO-损失函数计算" class="headerlink" title="PPO 损失函数计算"></a>PPO 损失函数计算</h3><p>现在我们有了每一步的 <code>log_probs_t</code>、<code>V_t</code> 和 <code>A_t</code>，可以计算整个序列的总损失：</p>
 <ol>
@@ -425,14 +431,15 @@ A_t = \delta_t + \gamma \lambda \delta_{t+1} + \gamma^2 \lambda^2 \delta_{t+2} +
 <li><strong>扩展性差</strong>：在数十亿甚至千亿参数的语言模型上应用 PPO 时，价值网络的训练和更新会消耗大量的计算资源</li>
 </ul>
 <p>为了解决这些问题，<strong>DeepSeek 提出了一种新的强化学习算法——组相对策略优化（GRPO），旨在减少对价值网络的依赖，同时保持策略更新的稳定性和高效性。</strong></p>
-<h3 id="2-2-GRPO-核心思想"><a href="#2-2-GRPO-核心思想" class="headerlink" title="2.2 GRPO 核心思想"></a>2.2 GRPO 核心思想</h3><p><strong>GRPO 的核心思想是通过组内相对奖励来优化策略模型，而不是依赖传统的批评模型（critic model）</strong>。具体来说，GRPO 会在每个状态下采样一组动作，然后根据这些动作的相对表现来调整策略，而不是依赖一个单独的价值网络来估计每个动作的价值。</p>
+<h3 id="2-2-GRPO-核心思想"><a href="#2-2-GRPO-核心思想" class="headerlink" title="2.2 GRPO 核心思想"></a>2.2 GRPO 核心思想</h3><p><strong>GRPO 的核心思想是通过组内相对奖励来优化 Actor（Policy）模型，而不是依赖传统的 Critic（Value）模型</strong>。具体来说，GRPO 会在每个状态下采样一组动作，然后根据这些动作的相对表现来调整策略，而不是依赖一个单独的价值网络来估计每个动作的价值。</p>
 <p><strong>GRPO 的核心优势</strong>：</p>
 <ol>
 <li><strong>减少计算负担</strong>：通过避免维护一个与策略模型大小相当的价值网络，GRPO 显著降低了训练过程中的内存占用和计算代价</li>
 <li><strong>提高训练稳定性</strong>：GRPO 通过组内比较来估计优势函数，减少了策略更新的方差，从而确保了更稳定的学习过程</li>
 <li><strong>增强策略更新的可控性</strong>：GRPO 引入了 KL 散度约束，防止策略更新过于剧烈，从而保持了策略分布的稳定性</li>
 </ol>
-<h3 id="2-3-GRPO-算法流程"><a href="#2-3-GRPO-算法流程" class="headerlink" title="2.3 GRPO 算法流程"></a>2.3 GRPO 算法流程</h3><p>GRPO 算法的流程可以分为以下几个关键步骤：</p>
+<h3 id="2-3-GRPO-算法流程"><a href="#2-3-GRPO-算法流程" class="headerlink" title="2.3 GRPO 算法流程"></a>2.3 GRPO 算法流程</h3><p>首先明确，<strong>原始的 GRPO 实现中，为了简化，不再采用 GAE 来评估每个 token 的奖励，而是采用整体奖励来评估相对优势，然后将优势平均给所有的 token，这是重中之重，要牢记</strong>。</p>
+<p>GRPO 算法的流程可以分为以下几个关键步骤：</p>
 <h4 id="步骤一：采样动作组"><a href="#步骤一：采样动作组" class="headerlink" title="步骤一：采样动作组"></a>步骤一：采样动作组</h4><p>对于每个输入状态 $s$，GRPO 从当前策略 $\pi_\theta$ 中采样一组动作 $a_1, a_2, …, a_G$。这些动作的采样基于策略模型的概率分布，确保了多样性。</p>
 <h4 id="步骤二：奖励评估"><a href="#步骤二：奖励评估" class="headerlink" title="步骤二：奖励评估"></a>步骤二：奖励评估</h4><p>每个采样动作 $a_i$ 都会通过奖励函数 $R$ 进行评估，得到对应的奖励值 $r_i$。奖励函数可以根据具体任务设计，例如在数学推理任务中，奖励函数可以基于答案的正确性。</p>
 <h4 id="步骤三：计算相对优势"><a href="#步骤三：计算相对优势" class="headerlink" title="步骤三：计算相对优势"></a>步骤三：计算相对优势</h4><p>将每个动作的奖励值进行归一化处理，得到相对优势 $\tilde{A}_i$。具体来说，相对优势可以通过以下公式计算：</p>
@@ -523,13 +530,6 @@ A_t = \delta_t + \gamma \lambda \delta_{t+1} + \gamma^2 \lambda^2 \delta_{t+2} +
 <li><strong>超参数敏感性</strong>：组大小、KL 散度约束等超参数需要仔细调优</li>
 <li><strong>任务依赖性</strong>：GRPO 的效果可能因具体任务而异，需要根据任务特点进行调整</li>
 </ol>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>GRPO 算法通过引入分组相对优势计算，成功解决了 PPO 在大语言模型微调中的计算负担和稳定性问题。其核心创新在于：</p>
-<ol>
-<li><strong>消除价值网络依赖</strong>：通过组内相对比较替代传统的价值网络估计</li>
-<li><strong>提高训练稳定性</strong>：通过相对优势和 KL 散度约束确保策略更新的稳定性</li>
-<li><strong>降低计算成本</strong>：减少了一半的网络参数和计算量</li>
-</ol>
-<p>GRPO 算法为大规模语言模型的强化学习微调提供了一个更加高效和稳定的解决方案，特别是在数学推理和代码生成等任务中表现出了显著的优势。随着大语言模型规模的不断增长，GRPO 这类轻量级强化学习算法的重要性将越来越突出。</p>
 
     </div>
 
@@ -643,7 +643,7 @@ A_t = \delta_t + \gamma \lambda \delta_{t+1} + \gamma^2 \lambda^2 \delta_{t+2} +
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PPO-计算过程详解"><span class="nav-number">2.</span> <span class="nav-text">PPO 计算过程详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PPO-的两阶段训练过程"><span class="nav-number">2.1.</span> <span class="nav-text">PPO 的两阶段训练过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#阶段一：Rollout（经验收集-前向传播阶段）"><span class="nav-number">2.1.1.</span> <span class="nav-text">阶段一：Rollout（经验收集/前向传播阶段）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#阶段二：Optimization（优化-反向传播阶段）"><span class="nav-number">2.1.2.</span> <span class="nav-text">阶段二：Optimization（优化/反向传播阶段）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优势函数的详细计算"><span class="nav-number">2.2.</span> <span class="nav-text">优势函数的详细计算</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#GAE（通用优势估计）算法"><span class="nav-number">2.2.1.</span> <span class="nav-text">GAE（通用优势估计）算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#优势函数的物理意义"><span class="nav-number">2.2.2.</span> <span class="nav-text">优势函数的物理意义</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PPO-损失函数计算"><span class="nav-number">2.3.</span> <span class="nav-text">PPO 损失函数计算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRPO-算法详解"><span class="nav-number">3.</span> <span class="nav-text">GRPO 算法详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-GRPO-算法背景与动机"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 GRPO 算法背景与动机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-GRPO-核心思想"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 GRPO 核心思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-GRPO-算法流程"><span class="nav-number">3.3.</span> <span class="nav-text">2.3 GRPO 算法流程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤一：采样动作组"><span class="nav-number">3.3.1.</span> <span class="nav-text">步骤一：采样动作组</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤二：奖励评估"><span class="nav-number">3.3.2.</span> <span class="nav-text">步骤二：奖励评估</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤三：计算相对优势"><span class="nav-number">3.3.3.</span> <span class="nav-text">步骤三：计算相对优势</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤四：策略更新"><span class="nav-number">3.3.4.</span> <span class="nav-text">步骤四：策略更新</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-GRPO-的数学原理"><span class="nav-number">3.4.</span> <span class="nav-text">2.4 GRPO 的数学原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-GRPO-vs-PPO-的对比"><span class="nav-number">3.5.</span> <span class="nav-text">2.5 GRPO vs PPO 的对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-GRPO-的实现细节"><span class="nav-number">3.6.</span> <span class="nav-text">2.6 GRPO 的实现细节</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-1-组大小选择"><span class="nav-number">3.6.1.</span> <span class="nav-text">2.6.1 组大小选择</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-2-奖励归一化"><span class="nav-number">3.6.2.</span> <span class="nav-text">2.6.2 奖励归一化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-3-KL-散度约束"><span class="nav-number">3.6.3.</span> <span class="nav-text">2.6.3 KL 散度约束</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-GRPO-在数学推理任务中的表现"><span class="nav-number">3.7.</span> <span class="nav-text">2.7 GRPO 在数学推理任务中的表现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-GRPO-的局限性"><span class="nav-number">3.8.</span> <span class="nav-text">2.8 GRPO 的局限性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#引言"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#PPO-计算过程详解"><span class="nav-number">2.</span> <span class="nav-text">PPO 计算过程详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PPO-的两阶段训练过程"><span class="nav-number">2.1.</span> <span class="nav-text">PPO 的两阶段训练过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#阶段一：Rollout（经验收集-前向传播阶段）"><span class="nav-number">2.1.1.</span> <span class="nav-text">阶段一：Rollout（经验收集/前向传播阶段）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#阶段二：Optimization（优化-反向传播阶段）"><span class="nav-number">2.1.2.</span> <span class="nav-text">阶段二：Optimization（优化/反向传播阶段）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#优势函数的详细计算"><span class="nav-number">2.2.</span> <span class="nav-text">优势函数的详细计算</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#GAE（通用优势估计）算法"><span class="nav-number">2.2.1.</span> <span class="nav-text">GAE（通用优势估计）算法</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PPO-损失函数计算"><span class="nav-number">2.3.</span> <span class="nav-text">PPO 损失函数计算</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRPO-算法详解"><span class="nav-number">3.</span> <span class="nav-text">GRPO 算法详解</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-GRPO-算法背景与动机"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 GRPO 算法背景与动机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-GRPO-核心思想"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 GRPO 核心思想</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-GRPO-算法流程"><span class="nav-number">3.3.</span> <span class="nav-text">2.3 GRPO 算法流程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤一：采样动作组"><span class="nav-number">3.3.1.</span> <span class="nav-text">步骤一：采样动作组</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤二：奖励评估"><span class="nav-number">3.3.2.</span> <span class="nav-text">步骤二：奖励评估</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤三：计算相对优势"><span class="nav-number">3.3.3.</span> <span class="nav-text">步骤三：计算相对优势</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#步骤四：策略更新"><span class="nav-number">3.3.4.</span> <span class="nav-text">步骤四：策略更新</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-GRPO-的数学原理"><span class="nav-number">3.4.</span> <span class="nav-text">2.4 GRPO 的数学原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-5-GRPO-vs-PPO-的对比"><span class="nav-number">3.5.</span> <span class="nav-text">2.5 GRPO vs PPO 的对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-6-GRPO-的实现细节"><span class="nav-number">3.6.</span> <span class="nav-text">2.6 GRPO 的实现细节</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-1-组大小选择"><span class="nav-number">3.6.1.</span> <span class="nav-text">2.6.1 组大小选择</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-2-奖励归一化"><span class="nav-number">3.6.2.</span> <span class="nav-text">2.6.2 奖励归一化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-6-3-KL-散度约束"><span class="nav-number">3.6.3.</span> <span class="nav-text">2.6.3 KL 散度约束</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-7-GRPO-在数学推理任务中的表现"><span class="nav-number">3.7.</span> <span class="nav-text">2.7 GRPO 在数学推理任务中的表现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-8-GRPO-的局限性"><span class="nav-number">3.8.</span> <span class="nav-text">2.8 GRPO 的局限性</span></a></li></ol></li></ol></div>
         
       </div>
       <!--/noindex-->
@@ -1784,12 +1784,12 @@ A_t = \delta_t + \gamma \lambda \delta_{t+1} + \gamma^2 \lambda^2 \delta_{t+2} +
     <span class="post-meta-item-icon">
       <i class="fa fa-area-chart"></i>
     </span>
-    <span title="站点总字数">659k</span>
+    <span title="站点总字数">661k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">18:18</span>
+    <span title="站点阅读时长">18:21</span>
 </div>
 
         
@@ -1950,7 +1950,7 @@ A_t = \delta_t + \gamma \lambda \delta_{t+1} + \gamma^2 \lambda^2 \delta_{t+2} +
     });
     gitalk.render('gitalk-container');
   }, window.Gitalk);
-</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</script>
 
-<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script></body>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
 </html>
