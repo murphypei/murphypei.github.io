@@ -74,7 +74,7 @@
 <meta property="og:image" content="https://murphypei.github.io/images/posts/llm/ppo/ref.webp">
 <meta property="og:image" content="https://murphypei.github.io/images/posts/llm/ppo/critic.webp">
 <meta property="og:image" content="https://murphypei.github.io/images/posts/llm/ppo/reward.webp">
-<meta property="og:updated_time" content="2025-10-23T07:53:31.335Z">
+<meta property="og:updated_time" content="2025-10-30T03:32:05.377Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="大模型 RLHF 训练中的 PPO 算法细节">
 <meta name="twitter:description" content="虽然了解大模型训练中的 RLHF 训练，但是都是有点不够深刻，特别是 PPO 算法的细节。">
@@ -284,7 +284,7 @@
                   <i class="fa fa-calendar-check-o"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2025-10-23 15:53:31" itemprop="dateModified" datetime="2025-10-23T15:53:31+08:00">2025-10-23</time>
+                <time title="修改时间：2025-10-30 11:32:05" itemprop="dateModified" datetime="2025-10-30T11:32:05+08:00">2025-10-30</time>
               </span>
             
           
@@ -319,7 +319,7 @@
               
                 <span class="post-meta-item-text">本文字数：</span>
               
-              <span>4.8k</span>
+              <span>4.7k</span>
             </span>
           
             <span class="post-meta-item" title="阅读时长">
@@ -400,17 +400,17 @@ V_t = R_t + \gamma V_{t+1}</script><p>其中：</p>
 <li><strong>Reference Model</strong>：这个模型是额外增加的，主要是在 RLHF 阶段给语言模型增加一些”约束”，防止语言模型训歪（朝不受控制的方向更新，效果可能越来越差）。这个看 Loss 就能明白了。</li>
 </ul>
 <p>再次强调一下<strong>奖励模型和价值模型的区别</strong>：</p>
-<p>Reward Model (奖励模型) $\text{RM}$</p>
+<p>Reward Model (奖励模型) RM</p>
 <ul>
 <li>作用： 它是根据人类偏好数据训练出来的模型，用来取代传统 RL 中的手动奖励函数。</li>
-<li>计算对象 (即时收益)： $\text{RM}$ 的输出是一个标量分数，表示 (提示 Prompt + 完整响应 Response) 这个序列的整体质量。</li>
-<li>结论： $\text{RM}$ 给出的是对整个生成序列的即时/单一评估分数，但这个分数代表的是对最终整体表现的评估。在 RLHF 中，它为强化学习提供了一个稀疏 (Sparse) 的奖励信号。</li>
+<li>计算对象 (即时收益)： RM 的输出是一个标量分数，表示 (提示 Prompt + 完整响应 Response) 这个序列的整体质量。</li>
+<li>结论： RM 给出的是对整个生成序列的即时/单一评估分数，但这个分数代表的是对最终整体表现的评估。在 RLHF 中，它为强化学习提供了一个稀疏 (Sparse) 的奖励信号。</li>
 </ul>
-<p>Critic Model (评论家模型) $\text{V}$</p>
+<p>Critic Model (评论家模型) V</p>
 <ul>
 <li>作用： 评估当前状态（State）或状态-动作对（State-Action Pair）的长期价值，指导 Actor（即 LLM 本身）的策略更新。</li>
-<li>计算对象 (整体收益)： $\text{V}$ 的输出是一个标量分数，表示从当前状态（$s$）开始，遵循当前策略一直到结束所能获得的期望累积折扣奖励 (Expected Cumulative Discounted Reward)，即 $V(s) = \mathbb{E}[\sum_{t’=t}^{T} \gamma^{t’-t} r_{t’}]$。</li>
-<li>结论： $\text{V}$ 估算的是未来的整体收益。它通过时序差分 (Temporal Difference, TD) 学习，帮助解决强化学习中的信用分配问题 (Credit Assignment Problem)。</li>
+<li>计算对象 (整体收益)： V 的输出是一个标量分数，表示从当前状态（$s$）开始，遵循当前策略一直到结束所能获得的期望累积折扣奖励 (Expected Cumulative Discounted Reward)，即 $V(s) = \mathbb{E}[\sum_{t’=t}^{T} \gamma^{t’-t} r_{t’}]$。</li>
+<li>结论： V 估算的是未来的整体收益。它通过时序差分 (Temporal Difference, TD) 学习，帮助解决强化学习中的信用分配问题 (Credit Assignment Problem)。</li>
 </ul>
 <h3 id="哪些模型需要更新参数？"><a href="#哪些模型需要更新参数？" class="headerlink" title="哪些模型需要更新参数？"></a>哪些模型需要更新参数？</h3><p>Actor Model 和 Critic Model。Actor 肯定是很好理解的，所以不多说了，Critic Model 为什么也要更新？主要是这里存在一个难点：怎么评估潜在收益呢？我们自己随口一说评估总体收益，但是这个是很难的，因为没有真的标签（有监督）。所以我们需要通过一个模型来判断，而且更重要的是，这个判断模型的能力，<strong>要不断提升能力</strong>，才能做好这件事。</p>
 <h3 id="Actor-Model"><a href="#Actor-Model" class="headerlink" title="Actor Model"></a>Actor Model</h3><p><img src="/images/posts/llm/ppo/actor.webp" alt></p>
@@ -444,19 +444,19 @@ V_t = R_t + \gamma V_{t+1}</script><p>其中：</p>
 <p>步骤 1：计算 Token 级别的即时奖励 ($r_t$)。</p>
 <script type="math/tex; mode=display">r_t = \underbrace{r_{\text{RM}, t}}_{\text{稀疏 RM 奖励}} - \underbrace{\beta \cdot \log \left(\frac{\pi_{\theta}(a_t|s_t)}{\pi_{\text{SFT}}(a_t|s_t)}\right)}_{\text{KL 惩罚}}</script><ul>
 <li>$r_{\text{RM}, t}$ (稀疏 RM 奖励):<ul>
-<li>$t = 1 \text{ 到 } T-1$ (中间 $\text{Token}$): $0$</li>
-<li>$t = T$ (最后一个 $\text{Token}$): $r_{\text{final}}$ ($\text{RM}$ 的输出)</li>
+<li>$t = 1 \text{ 到 } T-1$ (中间 token): $0$</li>
+<li>$t = T$ (最后一个 token): $r_{\text{final}}$ (RM 的输出)</li>
 </ul>
 </li>
-<li>KL 惩罚项: 每个 $\text{Token}$ 都有一个负值 (如果 $\text{Policy}$ 偏离 $\text{SFT}$ 模型)。<br>结果： 得到了一个包含稀疏 RM 信号和密集 KL 惩罚的 $\text{Token}$ 序列即时奖励 $[r_1, r_2, \dots, r_T]$。</li>
+<li>KL 惩罚项: 每个 token 都有一个负值 (如果 Policy 偏离 SFT 模型)。<br>结果： 得到了一个包含稀疏 RM 信号和密集 KL 惩罚的 token 序列即时奖励 $[r_1, r_2, \dots, r_T]$。</li>
 </ul>
-<p>步骤 2：计算 $\text{Critic}$ 模型的时序差分 (TD) 误差 ($\delta_t$)</p>
-<p>这是 $\text{GAE}$ 的基础，结合 $r_t$ 和 Critic 模型 $V$ 的结果。</p>
+<p>步骤 2：计算 Critic 模型的时序差分 (TD) 误差 ($\delta_t$)</p>
+<p>这是 GAE 的基础，结合 $r_t$ 和 Critic 模型 $V$ 的结果。</p>
 <script type="math/tex; mode=display">\delta_t = \underbrace{r_t}_{\text{即时奖励}} + \underbrace{\gamma V(s_{t+1})}_{\text{下一状态价值}} - \underbrace{V(s_t)}_{\text{当前状态价值}}</script><ul>
-<li>$V(s_t)$ 和 $V(s_{t+1})$: 由 $\text{Critic Model}$ 对 $\text{Token}$ 序列的隐藏状态进行评估所得。</li>
+<li>$V(s_t)$ 和 $V(s_{t+1})$: 由 Critic Model 对 token 序列的隐藏状态进行评估所得。</li>
 <li>$\delta_t$ 衡量了实际观测到的短期收益（$r_t + \gamma V(s_{t+1})$）与 模型原本估计的长期收益（$V(s_t)$）之间的差异。</li>
 </ul>
-<p>步骤 3：使用 GAE 平滑估计优势函数 ($\mathbf{A}_t$)最后，使用 $\text{GAE}$ 公式，将一系列 $\text{TD}$ 误差平滑地组合起来，得到最终用于 PPO 策略更新的优势估计：</p>
+<p>步骤 3：使用 GAE 平滑估计优势函数 ($\mathbf{A}_t$)最后，使用 GAE 公式，将一系列 TD 误差平滑地组合起来，得到最终用于 PPO 策略更新的优势估计：</p>
 <script type="math/tex; mode=display">\mathbf{A}_t^{\text{GAE}(\gamma, \lambda)} = \sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}</script>
     </div>
 
