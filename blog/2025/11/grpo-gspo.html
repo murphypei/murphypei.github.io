@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="GSPO (Group Sequence Policy Optimization) 作为 GRPO (Generalized Reinforcement Policy Optimization) 的升级版，通过将优化粒度从 “token 级” 提升到 “序列级”，从根本上解决了 GRPO 在训练大模型 (特别是 MoE 模型) 时的不稳定问题，同时保持了 GRPO 的轻量特性。">
+<meta name="keywords" content="LLM,GRPO,GSPO,强化学习">
+<meta property="og:type" content="article">
+<meta property="og:title" content="大模型训练方法：GRPO 和 GSPO">
+<meta property="og:url" content="https://murphypei.github.io/blog/2025/11/grpo-gspo.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="GSPO (Group Sequence Policy Optimization) 作为 GRPO (Generalized Reinforcement Policy Optimization) 的升级版，通过将优化粒度从 “token 级” 提升到 “序列级”，从根本上解决了 GRPO 在训练大模型 (特别是 MoE 模型) 时的不稳定问题，同时保持了 GRPO 的轻量特性。">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2025-11-18T09:05:19.005Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="大模型训练方法：GRPO 和 GSPO">
+<meta name="twitter:description" content="GSPO (Group Sequence Policy Optimization) 作为 GRPO (Generalized Reinforcement Policy Optimization) 的升级版，通过将优化粒度从 “token 级” 提升到 “序列级”，从根本上解决了 GRPO 在训练大模型 (特别是 MoE 模型) 时的不稳定问题，同时保持了 GRPO 的轻量特性。">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2025/11/grpo-gspo">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>大模型训练方法：GRPO 和 GSPO | 拾荒志</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2025/11/grpo-gspo.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">大模型训练方法：GRPO 和 GSPO
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2025-11-18 16:20:00 / 修改时间：17:05:19" itemprop="dateCreated datePublished" datetime="2025-11-18T16:20:00+08:00">2025-11-18</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/LLM/" itemprop="url" rel="index"><span itemprop="name">LLM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>6.8k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>11 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>GSPO (Group Sequence Policy Optimization) 作为 GRPO (Generalized Reinforcement Policy Optimization) 的升级版，通过将优化粒度从 “token 级” 提升到 “序列级”，从根本上解决了 GRPO 在训练大模型 (特别是 MoE 模型) 时的不稳定问题，同时保持了 GRPO 的轻量特性。</p>
+<a id="more"></a>
+<h2 id="大模型强化学习"><a href="#大模型强化学习" class="headerlink" title="大模型强化学习"></a>大模型强化学习</h2><p>要理解 GRPO 和 GSPO，我们可以从 “大模型强化学习的核心目标” 说起：让模型生成的内容更符合人类偏好（比如更有用、更安全）。为了实现这个目标，需要一种 “策略优化算法” 来调整模型的生成策略 —— 而 GRPO 和 GSPO 都是这类算法，只是优化的 “视角” 和 “粒度” 不同。</p>
+<p>先从基础概念入手：什么是 “策略优化”？</p>
+<p>大模型生成文本的过程，本质是一个 “策略选择” 过程：比如用户问 “推荐一部电影”，模型需要从海量可能的回答中，选一个 “人类觉得最好” 的（比如 “《肖申克的救赎》，因为它探讨了希望与自由…”）。“策略优化” 的作用，就是告诉模型 “哪些回答更好”，并调整模型参数，让它下次更可能生成这类好回答。</p>
+<p>这里的关键是 “如何衡量回答的好坏”—— 通常用 “奖励（Reward）” 表示：人类觉得好的回答，奖励高；不好的，奖励低。算法的任务就是 “根据奖励调整模型”，让模型多生成高奖励的回答。</p>
+<h3 id="GRPO：逐个词调整的-“精细派”"><a href="#GRPO：逐个词调整的-“精细派”" class="headerlink" title="GRPO：逐个词调整的 “精细派”"></a>GRPO：逐个词调整的 “精细派”</h3><p>GRPO 全称是Generalized Reinforcement Policy Optimization（广义强化策略优化），它是为了解决传统算法（比如 PPO）在大模型上 “计算量大、难训练” 的问题而设计的轻量版算法。</p>
+<p><strong>核心思路：“逐词优化”（Token 级优化）</strong>。大模型生成文本是 “逐词（Token）生成” 的（比如先想第一个词 “《肖申克”，再想第二个词 “的救赎》”，直到句子结束）。GRPO 的优化粒度和生成过程一致：针对每个词单独计算 “调整幅度”。</p>
+<h3 id="GSPO：整体评价的-“全局派”"><a href="#GSPO：整体评价的-“全局派”" class="headerlink" title="GSPO：整体评价的 “全局派”"></a>GSPO：整体评价的 “全局派”</h3><p>GSPO 全称是Group Sequence Policy Optimization（群组序列策略优化），它是 GRPO 的升级版，核心改进是把优化粒度从 “单个词” 提升到 “整个句子 / 序列”。</p>
+<p><strong>核心思路：“整句优化”（序列级优化）</strong>。GSPO 认为：“人类评价一个回答好不好，是看整个句子，而不是单个词”。因此，优化也应该从 “整体” 出发：</p>
+<ul>
+<li>模型生成多个候选回答（比如针对 “推荐电影”，生成 3 个回答：A、B、C）；</li>
+<li>给每个完整回答打分（比如 A 得 9 分，B 得 7 分，C 得 5 分）；</li>
+<li>直接比较这些完整回答的 “整体好坏”，调整模型参数：让模型更倾向于生成高分数的完整序列（如 A），而不是纠结于某个词的调整。</li>
+</ul>
+<h2 id="GRPO-和-GSPO-具体计算方式"><a href="#GRPO-和-GSPO-具体计算方式" class="headerlink" title="GRPO 和 GSPO 具体计算方式"></a>GRPO 和 GSPO 具体计算方式</h2><p>上面是一个很宽泛的概念，我认为要想理解这两种方法，必须从具体例子出发来了解他们究竟是如何计算奖励的。</p>
+<h3 id="GRPO-具体计算方式"><a href="#GRPO-具体计算方式" class="headerlink" title="GRPO 具体计算方式"></a>GRPO 具体计算方式</h3><p>GRPO 将整体奖励”分摊”到每个 token 并调整其生成概率的过程，核心基于<strong>策略梯度 (Policy Gradient)</strong> 的思想，同时结合了<strong>重要性采样 (Importance Sampling)</strong> 来稳定训练。具体计算可分为 3 个关键步骤，我们用你提到的例子”《肖申克的救赎》，很好看”（假设成序列为 $y = [y_1, y_2, y_3, y_4, y_5]$，其中 $y_1$=《，$y_2$=肖申克，$y_3$=的救赎》，$y_4$=，，$y_5$=很好看）来拆解：</p>
+<h4 id="第一步：定义”每个-token-的奖励贡献”——用”累积奖励”分摊整体奖励"><a href="#第一步：定义”每个-token-的奖励贡献”——用”累积奖励”分摊整体奖励" class="headerlink" title="第一步：定义”每个 token 的奖励贡献”——用”累积奖励”分摊整体奖励"></a>第一步：定义”每个 token 的奖励贡献”——用”累积奖励”分摊整体奖励</h4><p>GRPO 认为，一个 token 的”贡献”不仅取决于它最终的整体奖励，还取决于它在序列中的位置：<strong>越靠前的 token，对后续 token 的生成影响更大，因此需要承担更多奖励权重</strong>。</p>
+<p>具体通过<strong>折扣累积奖励 (Discounted Return)</strong> 计算每个 token 的贡献，公式为：</p>
+<script type="math/tex; mode=display">G_t = r_t + \gamma \cdot r_{t+1} + \gamma^2 \cdot r_{t+2} + \ldots + \gamma^{L-t} \cdot r_L</script><p>其中：</p>
+<ul>
+<li>$G_t$ 是第 $t$ 个 token 的”累积奖励贡献”；</li>
+<li>$r_t$ 是第 $t$ 步的即时奖励（大模型场景中，通常只有序列结束时才有整体奖励，即只有 $r_L = 整体奖励$，前面的 $r_1$ 到 $r_{L-1}$ 都为 0）；</li>
+<li>$\gamma$ 是折扣因子（通常取 0.95~0.99），作用是”让近期的 token（靠近奖励的 token）获得更高权重”。</li>
+</ul>
+<p><strong>例子计算：</strong></p>
+<p>假设整体奖励 $r_5 = 8$ 分（只有最后一个 token 有奖励），$\gamma = 0.9$，序列长度 $L = 5$：</p>
+<ul>
+<li>$G_5$（第 5 个 token “很好看”的贡献）：$r_5 = 8$（因为后面没有 token 了）；</li>
+<li>$G_4$（第 4 个 token “，”的贡献）：$\gamma \cdot r_5 = 0.9 \times 8 = 7.2$；</li>
+<li>$G_3$（第 3 个 token “的救赎）”的贡献）：$\gamma^2 \cdot r_5 = 0.9^2 \times 8 = 6.48$；</li>
+<li>$G_2$（第 2 个 token “肖申克”的贡献）：$\gamma^3 \cdot r_5 = 0.9^3 \times 8 \approx 5.83$；</li>
+<li>$G_1$（第 1 个 token “《”的贡献）：$\gamma^4 \cdot r_5 = 0.9^4 \times 8 \approx 5.25$。</li>
+</ul>
+<p>这样，整体奖励 8 分就被”分摊”到了各个 token，且越靠近结尾的 token（如”很好看”）获得贡献值越高。</p>
+<h4 id="第二步：计算”重要性比率”——衡量新旧策略的差异"><a href="#第二步：计算”重要性比率”——衡量新旧策略的差异" class="headerlink" title="第二步：计算”重要性比率”——衡量新旧策略的差异"></a>第二步：计算”重要性比率”——衡量新旧策略的差异</h4><p>GRPO 的核心是通过”重要性比率”判断：新策略（待更新的模型）生成某个 token 的概率，相比旧策略（更新前的模型）是否更优。</p>
+<p>每个 token 的重要性比率公式为：</p>
+<script type="math/tex; mode=display">w_t = \frac{\pi_\theta(y_t|x, y_1 \ldots y_{t-1})}{\pi_{old}(y_t|x, y_1 \ldots y_{t-1})}</script><p>其中：</p>
+<ul>
+<li>$\pi_\theta$ 是当前模型（新策略）生成 token $y_t$ 的概率（给定输入 x 和前文 $y_1 \ldots y_{t-1}$）；</li>
+<li>$\pi_{old}$ 是更新前的模型（旧策略）生成同一个 token 的概率；</li>
+<li>$w_t$ 越大，说明新策略比旧策略更”倾向于”生成这个 token（在当前上下文下）。</li>
+</ul>
+<p><strong>例子计算：</strong></p>
+<p>假设输入 x 是”推荐一部电影”，旧模型和新模型对各个 token 的生成概率如下（简化为百分比）：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>token 位置</th>
+<th>token 内容</th>
+<th>旧策略概率 $\pi_{old}$</th>
+<th>新策略概率 $\pi_\theta$</th>
+<th>重要性比率 $w_t$（新/旧）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>t = 1</td>
+<td>《</td>
+<td>30%</td>
+<td>40%</td>
+<td>40%/30% ≈ 1.33</td>
+</tr>
+<tr>
+<td>t = 2</td>
+<td>肖申克</td>
+<td>20%</td>
+<td>25%</td>
+<td>25%/20% = 1.25</td>
+</tr>
+<tr>
+<td>t = 3</td>
+<td>的救赎）</td>
+<td>15%</td>
+<td>18%</td>
+<td>18%/15% = 1.20</td>
+</tr>
+<tr>
+<td>t = 4</td>
+<td>，</td>
+<td>80%</td>
+<td>70%</td>
+<td>70%/80% = 0.875</td>
+</tr>
+<tr>
+<td>t = 5</td>
+<td>很好看</td>
+<td>40%</td>
+<td>60%</td>
+<td>60%/40% = 1.50</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="第三步：计算梯度并更新模型——让”高贡献-高比率”的-token-更易被生成"><a href="#第三步：计算梯度并更新模型——让”高贡献-高比率”的-token-更易被生成" class="headerlink" title="第三步：计算梯度并更新模型——让”高贡献+高比率”的 token 更易被生成"></a>第三步：计算梯度并更新模型——让”高贡献+高比率”的 token 更易被生成</h4><p>GRPO 的最终目标是调整模型参数 $\theta$，使得”对奖励贡献高（$G_t$ 大）且新策略更倾向于生成（$w_t$ 大）”的 token 更易被生成，在未来被生成的概率更高。</p>
+<p>梯度更新公式（简化版）为：</p>
+<script type="math/tex; mode=display">\nabla_\theta J(\theta) \approx \sum_{t=1}^{L} \left( \min(w_t, 1 + \epsilon) \cdot \max(w_t, 1 - \epsilon) \cdot G_t \cdot \nabla_\theta \log \pi_\theta(y_t|x, y_1 \ldots y_{t-1}) \right)</script><p>其中：</p>
+<ul>
+<li>$\nabla_\theta J(\theta)$ 是模型目标函数的梯度（即”调整方向”）；</li>
+<li>$\min(w_t, 1 + \epsilon) \cdot \max(w_t, 1 - \epsilon)$ 是”截断操作”（类似 PPO 的 clip），$\epsilon$ 常取 0.2，作用是限制 $w_t$ 的极端值（避免梯度爆炸）；</li>
+<li>$\nabla_\theta \log \pi_\theta(\ldots)$ 是”token 生成概率的对数梯度”，表示”如何调整参数能够提高该 token 的生成概率”。</li>
+</ul>
+<p><strong>例子计算：</strong></p>
+<p>结合前两步的结果（$\epsilon = 0.2$）：</p>
+<ol>
+<li><p>先对 $w_t$ 做截断：</p>
+<ul>
+<li>$w_1 = 1.33 \rightarrow$ 截断到 $1 + \epsilon = 1.2$（因为 1.33&gt;1.2）；</li>
+<li>$w_2 = 1.25 \rightarrow$ 截断到 1.2；</li>
+<li>$w_3 = 1.20 \rightarrow$ 保留 1.2；</li>
+<li>$w_4 = 0.875 \rightarrow$ 截断到 $1 - \epsilon = 0.8$（因为 0.875&lt;0.8）；</li>
+<li>$w_5 = 1.50 \rightarrow$ 截断到 1.2。</li>
+</ul>
+</li>
+<li><p>计算每个 token 的梯度权重（截断后 $w_t \times G_t$）：</p>
+<ul>
+<li>t = 1: 1.2 × 5.25 ≈ 6.3；</li>
+<li>t = 2: 1.2 × 5.83 ≈ 7.0；</li>
+<li>t = 3: 1.2 × 6.48 ≈ 7.78；</li>
+<li>t = 4: 0.8 × 7.2 ≈ 5.76；</li>
+<li>t = 5: 1.2 × 8 = 9.6。</li>
+</ul>
+</li>
+<li><p>模型参数会沿着这些权重的方向更新：</p>
+<ul>
+<li>权重为正且越大（如 t = 5 的 9.6），对应 token（”很好看”）的生成概率会被<strong>显著提高</strong>；</li>
+<li>权重较小（如 t = 4 的 5.76），对应 token（”，”）的生成概率会被<strong>轻微提高</strong>（因为权重为正）；</li>
+<li>如果某个 token 的权重为负（比如奖励为负时），其生成概率会被<strong>降低</strong>。</li>
+</ul>
+</li>
+</ol>
+<p><strong>总结：GRPO 的”token 级优化”逻辑</strong></p>
+<ol>
+<li>用<strong>折扣累积奖励</strong>将整体奖励分摊到各个 token，体现位置对奖励的影响；</li>
+<li>用<strong>重要性比率</strong>衡量新旧策略对同一token的改进；</li>
+<li>结合两者计算梯度，让<strong>高贡献奖励且新策略更倾向于生成</strong>的 token 更易被生成。</li>
+</ol>
+<p>这种方式的优点是<strong>贴合模型逐词生成的过程</strong>，计算轻量；但缺点是<strong>忽略序列整体逻辑</strong>（比如某个 token 单独看贡献高，但组合起来不通顺），这也是 GSPO 转向<strong>序列级优化</strong>的核心原因。</p>
+<h3 id="GSPO-具体计算方式"><a href="#GSPO-具体计算方式" class="headerlink" title="GSPO 具体计算方式"></a>GSPO 具体计算方式</h3><p>GSPO (Group Sequence Policy Optimization) 的核心是<strong>跳过逐词分摊奖励，直接对完整序列做整体优化</strong>，计算逻辑更接近人类对”回答好坏”的直观判断（即”整体评价”）。我们依然采用”推荐电影”的例子来拆解，假设模型生成了 3 个候选回答（序列），并得到人类打分（奖励），具体计算分为 4 步：</p>
+<h4 id="第一步：生成候选序列并分组（核心是”对比好坏”）"><a href="#第一步：生成候选序列并分组（核心是”对比好坏”）" class="headerlink" title="第一步：生成候选序列并分组（核心是”对比好坏”）"></a>第一步：生成候选序列并分组（核心是”对比好坏”）</h4><p>GSPO 的优化依赖<strong>序列之间的比较</strong>，而非单个序列的孤立分析。具体来说：</p>
+<ol>
+<li>模型针对同一个输入（如”推荐一部电影”）生成多个候选回答（比如 3 个序列）；</li>
+<li>给每个完整序列打一个整体奖励分（人类或奖励模型评分）；</li>
+<li>按奖励高低将序列分成”好答案”（高奖励）和”差答案”（低奖励）。</li>
+</ol>
+<p><strong>例子：</strong></p>
+<p>输入：”推荐一部电影”</p>
+<p>生成 3 个候选序列及奖励：</p>
+<ul>
+<li>序列 $y_A$：”《肖申克的救赎》，它探讨了希望与自由，非常经典” → 奖励 $r_A = 9$ 分（好答案）</li>
+<li>序列 $y_B$：”《肖申克的救赎》，很好看” → 奖励 $r_B = 8$ 分（好答案）  </li>
+<li>序列 $y_C$：”《肖申克》，还行” → 奖励 $r_C = 5$ 分（差答案）</li>
+</ul>
+<p>分组结果：好答案 = $\{y_A, y_B\}$，差答案 = $\{y_C\}$</p>
+<h4 id="第二步：计算”序列级重要性比率”（衡量新旧策略对完整序列的偏好）"><a href="#第二步：计算”序列级重要性比率”（衡量新旧策略对完整序列的偏好）" class="headerlink" title="第二步：计算”序列级重要性比率”（衡量新旧策略对完整序列的偏好）"></a>第二步：计算”序列级重要性比率”（衡量新旧策略对完整序列的偏好）</h4><p>GSPO 不关心单个词的概率，只关注<strong>新策略（待更新的模型）生成某个完整序列的概率</strong>与<strong>旧策略（更新前的模型）生成该序列的概率</strong>的比值。由于为不同序列长度可能不同（比如 $y_A$ 长，$y_C$ 短），直接比概率会不公平（长序列概率天然更低），所以需要归一化处理。</p>
+<p><strong>序列级重要性比率公式（核心创新）：</strong></p>
+<script type="math/tex; mode=display">s(y) = \left(\frac{\pi_\theta(y|x)}{\pi_{old}(y|x)}\right)^{\frac{1}{L}}</script><p>其中：</p>
+<ul>
+<li>$\pi_\theta(y|x)$ 是新策略生成完整序列 $y$ 的概率（即所有 token 概率的乘积：$\pi_\theta(y_1|x) \times \pi_\theta(y_2|x, y_1) \times \ldots \times \pi_\theta(y_L|x, y_1 \ldots y_{L-1})$）；</li>
+<li>$\pi_{old}(y|x)$ 是旧策略生成该序列的概率；</li>
+<li>$L$ 是序列的长度（token 数量）；</li>
+<li>开 $L$ 次方根（$1/L$ 次方）是为了<strong>归一化长度差异</strong>，让不同长度的序列可以公平比较（避免长序列因概率乘积小而被低估）。</li>
+</ul>
+<p><strong>例子计算：</strong></p>
+<p>假设旧策略和新策略对 3 个序列的整体概率如下（简化为乘积结果）：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>序列</th>
+<th>长度 $L$</th>
+<th>旧策略概率 $\pi_{old}(y\</th>
+<th>x)$</th>
+<th>新策略概率 $\pi_\theta(y\</th>
+<th>x)$</th>
+<th>比率（新/旧）</th>
+<th>归一化比率 $s(y)$（开 $L$ 次方）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$y_A$</td>
+<td>7</td>
+<td>$10^{-9}$（因长度长，概率低）</td>
+<td>$2 \times 10^{-9}$</td>
+<td>2</td>
+<td>$2^{1/7} \approx 1.104$</td>
+</tr>
+<tr>
+<td>$y_B$</td>
+<td>5</td>
+<td>$10^{-7}$（长度中等，概率较高）</td>
+<td>$1.5 \times 10^{-7}$</td>
+<td>1.5</td>
+<td>$1.5^{1/5} \approx 1.084$</td>
+</tr>
+<tr>
+<td>$y_C$</td>
+<td>3</td>
+<td>$10^{-5}$（长度短，概率高）</td>
+<td>$0.8 \times 10^{-5}$</td>
+<td>0.8</td>
+<td>$0.8^{1/3} \approx 0.928$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>可以看到：归一化后，长序列 $y_A$ 的比率（1.104）没有被长度拖累，能和短序列公平比较。</p>
+<h4 id="第三步：计算”群组优势”（明确模型该向哪些序列学习）"><a href="#第三步：计算”群组优势”（明确模型该向哪些序列学习）" class="headerlink" title="第三步：计算”群组优势”（明确模型该向哪些序列学习）"></a>第三步：计算”群组优势”（明确模型该向哪些序列学习）</h4><p>GSPO 的核心是让模型<strong>多学好答案的序列，少学差答案的序列</strong>，因此需要计算<strong>好答案相对于差答案的优势</strong>。</p>
+<p><strong>群组优势公式：</strong></p>
+<script type="math/tex; mode=display">A = \frac{1}{|G_{good}|} \sum_{y \in G_{good}} s(y) - \frac{1}{|G_{bad}|} \sum_{y \in G_{bad}} s(y)</script><p>其中：</p>
+<ul>
+<li>$G_{good}$ 是好答案集合，$|G_{good}|$ 是好答案数量；</li>
+<li>$G_{bad}$ 是差答案集合，$|G_{bad}|$ 是差答案数量；</li>
+<li>$A$ 为正，说明新策略目前更倾向生成好答案序列（方向正确）；$A$ 为负，则需要调整。</li>
+</ul>
+<p><strong>例子计算：</strong></p>
+<p>好答案有 2 个序列，差答案有 1 个：</p>
+<script type="math/tex; mode=display">A = \frac{s(y_A) + s(y_B)}{2} - s(y_C) = \frac{1.104 + 1.084}{2} - 0.928 \approx 1.094 - 0.928 = 0.166</script><p>$A = 0.166 &gt; 0$，说明新策略当前对好答案的偏好优于差答案，是积极信号。</p>
+<h4 id="第四步：计算梯度并更新模型（让好答案序列更易被生成）"><a href="#第四步：计算梯度并更新模型（让好答案序列更易被生成）" class="headerlink" title="第四步：计算梯度并更新模型（让好答案序列更易被生成）"></a>第四步：计算梯度并更新模型（让好答案序列更易被生成）</h4><p>GSPO 的梯度更新目标是：<strong>提高好答案序列的生成概率，降低差答案序列的生成概率</strong>，且更新幅度由<strong>群组优势</strong>和<strong>序列重要性比率</strong>共同决定。</p>
+<p><strong>梯度更新公式（简化版）：</strong></p>
+<script type="math/tex; mode=display">\nabla_\theta J(\theta) \approx \left(\frac{1}{|G_{good}|} \sum_{y \in G_{good}} s(y) \cdot \nabla_\theta \log \pi_\theta(y|x)\right) - \left(\frac{1}{|G_{bad}|} \sum_{y \in G_{bad}} s(y) \cdot \nabla_\theta \log \pi_\theta(y|x)\right)</script><p>其中：</p>
+<ul>
+<li>$\nabla_\theta \log \pi_\theta(y|x)$ 是<strong>完整序列生成概率的对数梯度</strong>，表示<strong>如何调整参数能够提高该序列的整体生成概率</strong>；</li>
+<li>公式本质是<strong>好答案的平均梯度</strong>减去<strong>差答案的平均梯度</strong>，强制模型向好答案的方向优化。</li>
+</ul>
+<p><strong>例子计算：</strong></p>
+<p>假设 3 个序列的对数梯度分别为（简化值）：</p>
+<ul>
+<li>$\nabla \log \pi(y_A|x) = 5$（调整参数能显著提高 $y_A$ 的概率）；</li>
+<li>$\nabla \log \pi(y_B|x) = 3$（调整参数能中等提高 $y_B$ 的概率）；</li>
+<li>$\nabla \log \pi(y_C|x) = 2$（调整参数能轻微提高 $y_C$ 的概率）。</li>
+</ul>
+<p>则梯度为：</p>
+<script type="math/tex; mode=display">\nabla J(\theta) \approx \left(\frac{1.104 \times 5 + 1.084 \times 3}{2}\right) - (0.928 \times 2)</script><script type="math/tex; mode=display">\approx \left(\frac{5.52 + 3.252}{2}\right) - 1.856 \approx 4.386 - 1.856 = 2.53</script><p>梯度为正，说明模型参数会沿着这个方向更新，最终效果是：</p>
+<ul>
+<li>$y_A$ 和 $y_B$（好答案）的整体生成概率会<strong>显著提高</strong>；</li>
+<li>$y_C$（差答案）的生成概率会<strong>相对降低</strong>。</li>
+</ul>
+<p><strong>总结：GSPO 的”序列级优化”逻辑</strong></p>
+<ol>
+<li><strong>不折分奖励</strong>：直接用完整序列的整体奖励分组（好/差），避免 GRPO 中”奖励分摊到 token”的逻辑矛盾；</li>
+<li><strong>序列级比率</strong>：通过几何平均（开长度次方）归一化不同长度序列的概率，公平比较；  </li>
+<li><strong>群组对比学习</strong>：用<strong>好答案平均梯度 - 差答案平均梯度</strong>更新模型，强制模型向整体优质的序列学习。</li>
+</ol>
+<p>这种方式的核心优势是：<strong>优化目标与人类评价逻辑完全一致</strong>（关注整体），因此生成的序列更连贯，且在长文本、MoE 模型中更稳定（无需处理 token 级波动）。</p>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2025/11/grpo-gspo.html" title="大模型训练方法：GRPO 和 GSPO">https://murphypei.github.io/blog/2025/11/grpo-gspo.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fa fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+            
+              <a href="/tags/GRPO/" rel="tag"># GRPO</a>
+            
+              <a href="/tags/GSPO/" rel="tag"># GSPO</a>
+            
+              <a href="/tags/强化学习/" rel="tag"># 强化学习</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2025/09/llm-output-json.html" rel="next" title="让 LLM 输出规范 JSON 的方法">
+                  <i class="fa fa-chevron-left"></i> 让 LLM 输出规范 JSON 的方法
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#大模型强化学习"><span class="nav-number">1.</span> <span class="nav-text">大模型强化学习</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GRPO：逐个词调整的-“精细派”"><span class="nav-number">1.1.</span> <span class="nav-text">GRPO：逐个词调整的 “精细派”</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GSPO：整体评价的-“全局派”"><span class="nav-number">1.2.</span> <span class="nav-text">GSPO：整体评价的 “全局派”</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRPO-和-GSPO-具体计算方式"><span class="nav-number">2.</span> <span class="nav-text">GRPO 和 GSPO 具体计算方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GRPO-具体计算方式"><span class="nav-number">2.1.</span> <span class="nav-text">GRPO 具体计算方式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#第一步：定义”每个-token-的奖励贡献”——用”累积奖励”分摊整体奖励"><span class="nav-number">2.1.1.</span> <span class="nav-text">第一步：定义”每个 token 的奖励贡献”——用”累积奖励”分摊整体奖励</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第二步：计算”重要性比率”——衡量新旧策略的差异"><span class="nav-number">2.1.2.</span> <span class="nav-text">第二步：计算”重要性比率”——衡量新旧策略的差异</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第三步：计算梯度并更新模型——让”高贡献-高比率”的-token-更易被生成"><span class="nav-number">2.1.3.</span> <span class="nav-text">第三步：计算梯度并更新模型——让”高贡献+高比率”的 token 更易被生成</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GSPO-具体计算方式"><span class="nav-number">2.2.</span> <span class="nav-text">GSPO 具体计算方式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#第一步：生成候选序列并分组（核心是”对比好坏”）"><span class="nav-number">2.2.1.</span> <span class="nav-text">第一步：生成候选序列并分组（核心是”对比好坏”）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第二步：计算”序列级重要性比率”（衡量新旧策略对完整序列的偏好）"><span class="nav-number">2.2.2.</span> <span class="nav-text">第二步：计算”序列级重要性比率”（衡量新旧策略对完整序列的偏好）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第三步：计算”群组优势”（明确模型该向哪些序列学习）"><span class="nav-number">2.2.3.</span> <span class="nav-text">第三步：计算”群组优势”（明确模型该向哪些序列学习）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#第四步：计算梯度并更新模型（让好答案序列更易被生成）"><span class="nav-number">2.2.4.</span> <span class="nav-text">第四步：计算梯度并更新模型（让好答案序列更易被生成）</span></a></li></ol></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">187</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">492</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &rarr; https://github.com/murphypei" rel="noopener" target="_blank"><i class="fa fa-fw fa-github"></i>GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank"><i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https://www.zhihu.com/people/guo-jia-66-80/activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2025</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">667k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">18:32</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+<script src="/js/utils.js?v=7.3.0"></script><script src="/js/motion.js?v=7.3.0"></script>
+<script src="/js/schemes/muse.js?v=7.3.0"></script>
+
+<script src="/js/next-boot.js?v=7.3.0"></script>
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '8aeb5cedb26e118e4131911a97d1f1b7',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>
