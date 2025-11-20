@@ -66,7 +66,7 @@
 <meta property="og:site_name" content="拾荒志">
 <meta property="og:description" content="GSPO (Group Sequence Policy Optimization) 作为 GRPO (Generalized Reinforcement Policy Optimization) 的升级版，通过将优化粒度从 “token 级” 提升到 “序列级”，从根本上解决了 GRPO 在训练大模型 (特别是 MoE 模型) 时的不稳定问题，同时保持了 GRPO 的轻量特性。">
 <meta property="og:locale" content="zh-CN">
-<meta property="og:updated_time" content="2025-11-18T09:05:19.005Z">
+<meta property="og:updated_time" content="2025-11-20T03:37:45.632Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="大模型训练方法：GRPO 和 GSPO">
 <meta name="twitter:description" content="GSPO (Group Sequence Policy Optimization) 作为 GRPO (Generalized Reinforcement Policy Optimization) 的升级版，通过将优化粒度从 “token 级” 提升到 “序列级”，从根本上解决了 GRPO 在训练大模型 (特别是 MoE 模型) 时的不稳定问题，同时保持了 GRPO 的轻量特性。">
@@ -264,11 +264,19 @@
                 
               
 
-              <time title="创建时间：2025-11-18 16:20:00 / 修改时间：17:05:19" itemprop="dateCreated datePublished" datetime="2025-11-18T16:20:00+08:00">2025-11-18</time>
+              <time title="创建时间：2025-11-18 16:20:00" itemprop="dateCreated datePublished" datetime="2025-11-18T16:20:00+08:00">2025-11-18</time>
             </span>
           
             
 
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2025-11-20 11:37:45" itemprop="dateModified" datetime="2025-11-20T11:37:45+08:00">2025-11-20</time>
+              </span>
             
           
             <span class="post-meta-item">
@@ -1920,6 +1928,56 @@
   
 
   
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
 
   
 
@@ -1942,7 +2000,7 @@
     });
     gitalk.render('gitalk-container');
   }, window.Gitalk);
-</script>
+</script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 
-<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script></body>
 </html>
