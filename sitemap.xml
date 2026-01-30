@@ -74,7 +74,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2025/08/rag-retrieval-quality.html</loc>
+    <loc>https://murphypei.github.io/blog/2025/07/agent-fc-mcp.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -92,7 +92,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2025/07/agent-fc-mcp.html</loc>
+    <loc>https://murphypei.github.io/blog/2025/08/rag-retrieval-quality.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -164,7 +164,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2022/03/shared-unique-ptr.html</loc>
+    <loc>https://murphypei.github.io/blog/2022/06/go-select-timeout.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -182,7 +182,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2022/06/go-select-timeout.html</loc>
+    <loc>https://murphypei.github.io/blog/2022/03/shared-unique-ptr.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -218,25 +218,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2021/07/lru.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2021/09/android-gdbserver.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2021/10/asr-fbank-mfcc.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -254,7 +236,25 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2021/10/asr-fbank-mfcc.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2021/12/protobuf-debug.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2021/07/lru.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -290,7 +290,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2021/02/opengl-render.html</loc>
+    <loc>https://murphypei.github.io/blog/2021/05/torch-barrier-trap.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -299,7 +299,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2021/03/cpp-sizeof.html</loc>
+    <loc>https://murphypei.github.io/blog/2021/02/opengl-render.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -326,16 +326,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2021/05/torch-barrier-trap.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2020/04/tf-serialize-format.html</loc>
+    <loc>https://murphypei.github.io/blog/2021/03/cpp-sizeof.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -381,6 +372,15 @@
   
   <url>
     <loc>https://murphypei.github.io/blog/2020/09/relu-dying.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2020/04/tf-serialize-format.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -443,7 +443,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2020/04/memory-align.html</loc>
+    <loc>https://murphypei.github.io/blog/2020/03/mle-map.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -452,7 +452,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2020/03/mle-map.html</loc>
+    <loc>https://murphypei.github.io/blog/2020/04/memory-align.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -470,7 +470,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/11/neural-network-quantization.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/11/stl-binary.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -479,7 +479,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/11/stl-binary.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/11/neural-network-quantization.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -506,7 +506,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/12/git-lfs.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/12/sigmoid-gradient.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -515,7 +515,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/12/sigmoid-gradient.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/12/git-lfs.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -623,7 +623,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/08/tensorflow-show-layer.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/08/clion-show-dynamic-array.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -632,7 +632,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/08/clion-show-dynamic-array.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/08/tensorflow-show-layer.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -650,7 +650,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/08/vm-black-screen.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/08/socket-ready.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -659,7 +659,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/08/socket-ready.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/08/vm-black-screen.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -731,34 +731,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/cart-tree.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2019/05/epoll.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2019/04/gbdt.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2019/05/xgboost.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -776,7 +749,34 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2019/04/cart-tree.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2019/06/vps.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2019/05/xgboost.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2019/04/gbdt.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -794,7 +794,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-1.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/04/cpp-std-ref.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -812,15 +812,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/cpp-std-ref.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-2.html</loc>
     
     <lastmod>2026-01-07</lastmod>
@@ -830,7 +821,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-3.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-1.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -840,6 +831,15 @@
   
   <url>
     <loc>https://murphypei.github.io/blog/2019/04/valgrind-memory-leaky.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2019/04/cpp-concurrent-3.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -884,7 +884,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/03/prune-net.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/03/pca-math.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -893,7 +893,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/03/pca-math.html</loc>
+    <loc>https://murphypei.github.io/blog/2019/03/prune-net.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -920,25 +920,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2019/01/cpp-custom-iostream.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2019/01/jupyter-virtualenvs.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2019/01/linux-heap.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -965,7 +947,25 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2019/01/cpp-custom-iostream.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2019/02/cpp-new-delete.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2019/01/linux-heap.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -992,7 +992,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/12/jupyter-remote-ip.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/12/cpp_interface.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1001,7 +1001,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/12/cpp-macros-uitls.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/12/jupyter-remote-ip.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1019,7 +1019,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/12/cpp_interface.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/12/cpp-macros-uitls.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1037,7 +1037,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/11/cmake-install-find-package.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/11/awk-simple.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1046,7 +1046,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/11/pip-upgrade-issue.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/11/cmake-install-find-package.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1064,16 +1064,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/11/awk-simple.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2018/08/mxnet-load-pretrained.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/11/pip-upgrade-issue.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1100,6 +1091,15 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2018/09/git-delete-submodule.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2018/09/get-pid.html</loc>
     
     <lastmod>2026-01-07</lastmod>
@@ -1109,7 +1109,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/09/git-push-fail.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/08/mxnet-load-pretrained.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1118,7 +1118,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/09/git-delete-submodule.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/09/git-push-fail.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1226,15 +1226,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/06/pythom-memory-manage.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2018/07/kernel_method.html</loc>
     
     <lastmod>2026-01-07</lastmod>
@@ -1253,6 +1244,15 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2018/08/cpp-template-spearation.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2018/08/cpp-inline-define.html</loc>
     
     <lastmod>2026-01-07</lastmod>
@@ -1262,7 +1262,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/08/cpp-template-spearation.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/06/pythom-memory-manage.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1289,15 +1289,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/04/linux-apt-apt-get.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2018/04/mysql-transcation.html</loc>
     
     <lastmod>2026-01-07</lastmod>
@@ -1307,7 +1298,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/04/docker-registry.html</loc>
+    <loc>https://murphypei.github.io/blog/2018/04/linux-apt-apt-get.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1326,6 +1317,15 @@
   
   <url>
     <loc>https://murphypei.github.io/blog/2018/05/io-block-sync.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2018/04/docker-registry.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1370,6 +1370,24 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2017/12/python-multiprocess.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2018/01/batch-normalization.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2018/02/docker-image-container.html</loc>
     
     <lastmod>2026-01-07</lastmod>
@@ -1388,16 +1406,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2018/01/batch-normalization.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2017/12/python-multiprocess.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/08/java-antlr.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1415,16 +1424,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/08/java-antlr.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2017/08/tcp-ack-send-recv.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/08/cpp11-multithread.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1442,7 +1442,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/08/cpp11-multithread.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/08/tcp-ack-send-recv.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1460,7 +1460,25 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/blog/2017/06/windows-glog.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/blog/2017/06/qt-multithread.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2017/06/python-distributed-spider.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1478,24 +1496,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/06/windows-glog.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2017/06/wireshark-local.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2017/07/go-jsonrpc.html</loc>
     
     <lastmod>2026-01-07</lastmod>
@@ -1505,7 +1505,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/06/python-distributed-spider.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/06/wireshark-local.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1550,25 +1550,16 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/05/live-cherry.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/blog/2017/05/python-GIL.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2017/05/vs-link-error1107.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2017/05/python-stack.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1586,7 +1577,16 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/05/python-stack.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/05/python-GIL.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2017/05/live-cherry.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1613,7 +1613,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/05/cpp-multi-threads.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/04/singleton-cpp.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1622,7 +1622,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/04/singleton-cpp.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/05/cpp-multi-threads.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1649,15 +1649,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/02/struct-mnist.html</loc>
-    
-    <lastmod>2026-01-07</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/blog/2017/03/cpp-object-memory-model.html</loc>
     
     <lastmod>2026-01-07</lastmod>
@@ -1668,6 +1659,15 @@
   
   <url>
     <loc>https://murphypei.github.io/blog/2017/03/get-post-different.html</loc>
+    
+    <lastmod>2026-01-07</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/blog/2017/02/struct-mnist.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1703,7 +1703,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/02/cpp-inner-class.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/02/linux-process-thread.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1712,7 +1712,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/blog/2017/02/linux-process-thread.html</loc>
+    <loc>https://murphypei.github.io/blog/2017/02/cpp-inner-class.html</loc>
     
     <lastmod>2026-01-07</lastmod>
     
@@ -1765,7 +1765,35 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/%E7%BA%BF%E7%A8%8B/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/C/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E8%99%9A%E5%87%BD%E6%95%B0/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E8%99%9A%E7%BB%A7%E6%89%BF/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1793,7 +1821,21 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E7%BA%BF%E7%A8%8B/</loc>
+    <loc>https://murphypei.github.io/tags/GET/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/POST/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/web/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1822,48 +1864,6 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/struct/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E8%99%9A%E5%87%BD%E6%95%B0/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E8%99%9A%E7%BB%A7%E6%89%BF/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/GET/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/POST/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/web/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -1975,6 +1975,20 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/Singleton/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -2004,20 +2018,6 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/tmux/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/Singleton/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2087,34 +2087,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/cherry/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/GIL/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/CPython/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%85%A8%E5%B1%80%E8%A7%A3%E9%87%8A%E9%94%81/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/%E9%93%BE%E6%8E%A5%E9%94%99%E8%AF%AF/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -2129,27 +2101,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/pillow/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/PIL/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/stack/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -2158,34 +2109,6 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/%E6%A0%88/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/qt/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/golang/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E6%8C%87%E9%92%88/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%8F%82%E6%95%B0%E4%BC%A0%E9%80%92/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2213,35 +2136,28 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/wireshark/</loc>
+    <loc>https://murphypei.github.io/tags/pillow/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/localhost/</loc>
+    <loc>https://murphypei.github.io/tags/PIL/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E6%8A%93%E5%8C%85/</loc>
+    <loc>https://murphypei.github.io/tags/%E5%9B%BE%E5%83%8F%E5%A4%84%E7%90%86/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/json/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/rpc/</loc>
+    <loc>https://murphypei.github.io/tags/qt/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2276,14 +2192,77 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E7%B4%A0%E6%95%B0%E5%BA%8F%E5%88%97/</loc>
+    <loc>https://murphypei.github.io/tags/golang/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/primer/</loc>
+    <loc>https://murphypei.github.io/tags/%E6%8C%87%E9%92%88/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%8F%82%E6%95%B0%E4%BC%A0%E9%80%92/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/json/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/rpc/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/wireshark/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/localhost/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E6%8A%93%E5%8C%85/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/GIL/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/CPython/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%85%A8%E5%B1%80%E8%A7%A3%E9%87%8A%E9%94%81/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2318,28 +2297,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/TCP/</loc>
+    <loc>https://murphypei.github.io/tags/%E7%B4%A0%E6%95%B0%E5%BA%8F%E5%88%97/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/send/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/recv/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/ack/</loc>
+    <loc>https://murphypei.github.io/tags/primer/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2361,20 +2326,6 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/acker/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%BF%83%E8%B7%B3%E6%A3%80%E6%B5%8B/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/KeepAlive/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2409,7 +2360,56 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/Docker/</loc>
+    <loc>https://murphypei.github.io/tags/cherry/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/TCP/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/send/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/recv/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/ack/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%A4%9A%E8%BF%9B%E7%A8%8B/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/multiprocessing/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2423,21 +2423,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E7%94%9F%E6%B4%BB/</loc>
+    <loc>https://murphypei.github.io/tags/BN/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E9%9A%8F%E7%AC%94/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E6%BF%80%E5%8A%B1/</loc>
+    <loc>https://murphypei.github.io/tags/Docker/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2479,6 +2472,41 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/%E7%94%9F%E6%B4%BB/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E9%9A%8F%E7%AC%94/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E6%BF%80%E5%8A%B1/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%BF%83%E8%B7%B3%E6%A3%80%E6%B5%8B/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/KeepAlive/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/urllib/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -2494,6 +2522,20 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/beautifulsoup/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E4%BA%8B%E5%8A%A1/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/ACID/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2528,14 +2570,28 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E4%BA%8B%E5%8A%A1/</loc>
+    <loc>https://murphypei.github.io/tags/%E9%87%8D%E5%AE%9A%E5%90%91/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/ACID/</loc>
+    <loc>https://murphypei.github.io/tags/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E7%AE%A1%E9%81%93/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2564,62 +2620,6 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/insecure/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/BN/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%A4%9A%E8%BF%9B%E7%A8%8B/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/multiprocessing/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E9%87%8D%E5%AE%9A%E5%90%91/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E6%96%87%E4%BB%B6%E6%8F%8F%E8%BF%B0%E7%AC%A6/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E7%AE%A1%E9%81%93/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2655,34 +2655,6 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/%E7%BA%BF%E6%80%A7%E6%8F%92%E5%80%BC/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/gc/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2731,6 +2703,27 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/%E6%A8%A1%E6%9D%BF/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%AE%9A%E4%B9%89/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%A3%B0%E6%98%8E/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/inline/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -2759,27 +2752,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E6%A8%A1%E6%9D%BF/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%AE%9A%E4%B9%89/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%A3%B0%E6%98%8E/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/max/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -2788,6 +2760,34 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/argmax/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%BC%95%E7%94%A8%E8%AE%A1%E6%95%B0/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/gc/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2885,20 +2885,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/module/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/pretrained/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/%E8%81%9A%E7%B1%BB%E7%AE%97%E6%B3%95/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -2941,21 +2927,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/shell/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/bash/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/pid/</loc>
+    <loc>https://murphypei.github.io/tags/module/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2969,7 +2941,7 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/push/</loc>
+    <loc>https://murphypei.github.io/tags/submodule/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -2997,7 +2969,35 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/submodule/</loc>
+    <loc>https://murphypei.github.io/tags/shell/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/bash/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/pid/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/pretrained/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/push/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -3039,6 +3039,20 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/awk/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/%E6%89%93%E5%8C%85/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -3047,27 +3061,6 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/find-package/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/extern/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E6%95%B0%E7%BB%84/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%9C%B0%E5%9D%80%E7%AC%A6%E5%8F%B7/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -3095,6 +3088,27 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/extern/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E6%95%B0%E7%BB%84/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%9C%B0%E5%9D%80%E7%AC%A6%E5%8F%B7/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/%E8%AE%AD%E7%BB%83%E5%8F%82%E6%95%B0/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -3110,90 +3124,6 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/momentum/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/iPython/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/jupyter/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/notebook/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/macro/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/debug/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/stream/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/streambuf/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/ios/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/string/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/copy-on-write/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/awk/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E6%96%87%E6%9C%AC%E5%A4%84%E7%90%86/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -3228,21 +3158,49 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/heap/</loc>
+    <loc>https://murphypei.github.io/tags/iPython/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/chunk/</loc>
+    <loc>https://murphypei.github.io/tags/jupyter/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E5%A0%86%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</loc>
+    <loc>https://murphypei.github.io/tags/notebook/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/string/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/copy-on-write/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/macro/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/debug/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -3291,7 +3249,49 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/stream/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/streambuf/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/ios/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/new/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/heap/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/chunk/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%A0%86%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -3354,27 +3354,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E5%8D%B7%E7%A7%AF%E7%BD%91%E7%BB%9C/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/prune/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E7%BD%91%E7%BB%9C%E8%A3%81%E5%89%AA/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/PCA/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -3390,6 +3369,27 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/%E7%89%B9%E5%BE%81%E5%80%BC/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%8D%B7%E7%A7%AF%E7%BD%91%E7%BB%9C/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/prune/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E7%BD%91%E7%BB%9C%E8%A3%81%E5%89%AA/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -3418,6 +3418,69 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/CART/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/dmlc/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/tensorboard/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/ref/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/bind/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%9B%BE/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/DFS/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/BFS/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E9%80%92%E5%BD%92/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/mutex/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -3459,76 +3522,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/dmlc/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/tensorboard/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%9B%BE/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/DFS/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/BFS/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E9%80%92%E5%BD%92/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/ref/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/bind/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/mutex/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/condition-variable/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/valgrind/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -3557,13 +3550,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/%E5%90%8C%E6%AD%A5/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -3578,7 +3564,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E5%89%AA%E6%9E%9D/</loc>
+    <loc>https://murphypei.github.io/tags/condition-variable/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -3586,20 +3579,6 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/cpp/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/GBDT/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/XGBoost/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -3628,6 +3607,13 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/spatial-attention/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%89%AA%E6%9E%9D/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -3697,6 +3683,20 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/GBDT/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/XGBoost/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/link/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -3726,20 +3726,6 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/%E6%BB%91%E5%8A%A8%E7%AA%97%E5%8F%A3%E6%B3%95/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/stdout/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/stderr/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -3781,6 +3767,34 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/stdout/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/stderr/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/IDE/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/clion/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/TensorFlow/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -3809,20 +3823,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/IDE/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/clion/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/c/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -3838,34 +3838,6 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/Windows/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/vm/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/vmware/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/virtualbox/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -3929,6 +3901,34 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/caffe/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/Windows/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/vm/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/vmware/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/virtualbox/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -4033,6 +4033,27 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/binary/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/lower-bound/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/upper-bound/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/kernel/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -4075,27 +4096,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/binary/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/lower-bound/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/upper-bound/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/%E7%86%B5/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -4131,27 +4131,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/LFS/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/migrate/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/gitattributes/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/sigmoid/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -4167,6 +4146,27 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/%E6%A2%AF%E5%BA%A6%E7%88%86%E7%82%B8/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/LFS/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/migrate/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/gitattributes/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -4229,6 +4229,20 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/%E6%9C%80%E5%A4%A7%E4%BC%BC%E7%84%B6/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E6%9C%80%E5%A4%A7%E5%90%8E%E9%AA%8C%E6%A6%82%E7%8E%87/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -4250,41 +4264,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E6%9C%80%E5%A4%A7%E4%BC%BC%E7%84%B6/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E6%9C%80%E5%A4%A7%E5%90%8E%E9%AA%8C%E6%A6%82%E7%8E%87/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%BA%8F%E5%88%97%E5%8C%96/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/protobuf/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/pbtxt/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/resnet/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -4300,6 +4279,20 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/%E6%A8%A1%E5%9E%8B%E9%80%80%E5%8C%96/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E7%A7%BB%E5%8A%A8/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%AE%8C%E7%BE%8E%E8%BD%AC%E5%8F%91/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -4376,20 +4369,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E7%A7%BB%E5%8A%A8/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%AE%8C%E7%BE%8E%E8%BD%AC%E5%8F%91/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/ReLU/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -4411,14 +4390,21 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/Python-h/</loc>
+    <loc>https://murphypei.github.io/tags/%E5%BA%8F%E5%88%97%E5%8C%96/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/apt-pkg/</loc>
+    <loc>https://murphypei.github.io/tags/protobuf/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/pbtxt/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -4453,6 +4439,48 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/Python-h/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/apt-pkg/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/pytorch/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/distribute/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/barrier/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/DDP/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/OpenGL/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -4475,13 +4503,6 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/shader/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/sizeof/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -4537,34 +4558,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/LRU/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E7%BC%93%E5%AD%98/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E5%93%88%E5%B8%8C%E8%A1%A8/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E9%93%BE%E8%A1%A8/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/gdbserver/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -4587,76 +4580,6 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/native/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/context/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/goroutine/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/fbank/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/mfcc/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/asr/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/fft/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/pytorch/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/distribute/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/barrier/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/DDP/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -4691,6 +4614,55 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/fbank/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/mfcc/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/asr/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/fft/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/context/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/goroutine/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/sizeof/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/%E5%85%B1%E4%BA%AB%E5%BA%93/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -4699,6 +4671,34 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/protoc/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/LRU/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E7%BC%93%E5%AD%98/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E5%93%88%E5%B8%8C%E8%A1%A8/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E9%93%BE%E8%A1%A8/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -4761,41 +4761,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/shared-ptr/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/unique-ptr/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/template/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/stl/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/rotate/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/case/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -4818,6 +4783,41 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/chan/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/stl/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/rotate/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/shared-ptr/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/unique-ptr/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/template/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -4887,13 +4887,6 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/DPO/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://murphypei.github.io/tags/%E5%B9%BB%E8%A7%89/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -4916,6 +4909,13 @@
   
   <url>
     <loc>https://murphypei.github.io/tags/%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/DPO/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -4978,49 +4978,21 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/KV-Cache/</loc>
+    <loc>https://murphypei.github.io/tags/agent/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/Attention/</loc>
+    <loc>https://murphypei.github.io/tags/rag/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/retrieval/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/index/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E6%A3%80%E7%B4%A2%E4%BC%98%E5%8C%96/</loc>
-    <lastmod>2026-01-30</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://murphypei.github.io/tags/%E8%B4%A8%E9%87%8F%E8%AF%84%E4%BC%B0/</loc>
+    <loc>https://murphypei.github.io/tags/mcp/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -5055,6 +5027,20 @@
   </url>
   
   <url>
+    <loc>https://murphypei.github.io/tags/retrieval/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/index/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://murphypei.github.io/tags/%E5%88%86%E5%9D%97/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -5069,21 +5055,35 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/agent/</loc>
+    <loc>https://murphypei.github.io/tags/KV-Cache/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/rag/</loc>
+    <loc>https://murphypei.github.io/tags/Attention/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/tags/mcp/</loc>
+    <loc>https://murphypei.github.io/tags/%E6%8E%A8%E7%90%86%E4%BC%98%E5%8C%96/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E6%A3%80%E7%B4%A2%E4%BC%98%E5%8C%96/</loc>
+    <lastmod>2026-01-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://murphypei.github.io/tags/%E8%B4%A8%E9%87%8F%E8%AF%84%E4%BC%B0/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -5211,14 +5211,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/categories/Python/</loc>
+    <loc>https://murphypei.github.io/categories/ComputerNetwork/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/categories/ComputerNetwork/</loc>
+    <loc>https://murphypei.github.io/categories/Python/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -5253,14 +5253,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/categories/Docker/</loc>
+    <loc>https://murphypei.github.io/categories/DeepLearning/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/categories/DeepLearning/</loc>
+    <loc>https://murphypei.github.io/categories/Docker/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -5330,14 +5330,14 @@
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/categories/RAG/</loc>
+    <loc>https://murphypei.github.io/categories/Agent/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://murphypei.github.io/categories/Agent/</loc>
+    <loc>https://murphypei.github.io/categories/RAG/</loc>
     <lastmod>2026-01-30</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
