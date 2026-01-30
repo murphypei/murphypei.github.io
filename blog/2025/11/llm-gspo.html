@@ -1,0 +1,2229 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="GSPO（Group Sequence Policy Optimization，群组序列策略优化）是对 GRPO 的重要改进。通过将优化粒度从 token 级 提升到 序列级，GSPO 从根本上解决了 GRPO 在处理长文本、MoE 模型时的训练不稳定问题，同时保持了轻量化的优势（无需 Critic 模型）。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LLM 训练：GSPO 算法详解与 GRPO 对比">
+<meta property="og:url" content="https://murphypei.github.io/blog/2025/11/llm-gspo.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="GSPO（Group Sequence Policy Optimization，群组序列策略优化）是对 GRPO 的重要改进。通过将优化粒度从 token 级 提升到 序列级，GSPO 从根本上解决了 GRPO 在处理长文本、MoE 模型时的训练不稳定问题，同时保持了轻量化的优势（无需 Critic 模型）。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-11-18T08:20:00.000Z">
+<meta property="article:modified_time" content="2026-01-13T06:51:17.655Z">
+<meta property="article:author" content="AngryBirds">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="强化学习">
+<meta property="article:tag" content="GRPO">
+<meta property="article:tag" content="GSPO">
+<meta property="article:tag" content="序列级优化">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2025/11/llm-gspo">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>LLM 训练：GSPO 算法详解与 GRPO 对比 | 拾荒志</title>
+  <meta name="generator" content="Hexo 5.4.2">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于
+    </a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2025/11/llm-gspo.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">LLM 训练：GSPO 算法详解与 GRPO 对比
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2025-11-18 16:20:00" itemprop="dateCreated datePublished" datetime="2025-11-18T16:20:00+08:00">2025-11-18</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2026-01-13 14:51:17" itemprop="dateModified" datetime="2026-01-13T14:51:17+08:00">2026-01-13</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/LLM/" itemprop="url" rel="index"><span itemprop="name">LLM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>9.8k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>16 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>GSPO（Group Sequence Policy Optimization，群组序列策略优化）是对 GRPO 的重要改进。通过将优化粒度从 <strong>token 级</strong> 提升到 <strong>序列级</strong>，GSPO 从根本上解决了 GRPO 在处理长文本、MoE 模型时的训练不稳定问题，同时保持了轻量化的优势（无需 Critic 模型）。</p>
+<span id="more"></span>
+<p>在 <a href="https://murphypei.github.io/blog/2025/07/llm-grpo.html">GRPO 博文</a>中，我们详细介绍了 GRPO 的 token 级优化方法。本文深入探讨 GSPO 的算法原理，以及与 GRPO 的核心区别。</p>
+<p><strong>GSPO 的核心创新</strong>：</p>
+<ol>
+<li><strong>序列级重要性采样</strong>：不计算每个 token 的重要性比率，而是计算整个序列的重要性比率</li>
+<li><strong>几何平均归一化</strong>：通过开方操作消除序列长度对概率乘积的影响</li>
+<li><strong>好坏序列对比学习</strong>：直接通过好序列和坏序列的对比来计算优势</li>
+<li><strong>更稳定的训练</strong>：避免 token 级别方差大的问题</li>
+</ol>
+<h2 id="GRPO-vs-GSPO：概念回顾"><a href="#GRPO-vs-GSPO：概念回顾" class="headerlink" title="GRPO vs GSPO：概念回顾"></a>GRPO vs GSPO：概念回顾</h2><h3 id="GRPO-的-Token-级优化"><a href="#GRPO-的-Token-级优化" class="headerlink" title="GRPO 的 Token 级优化"></a>GRPO 的 Token 级优化</h3><p>GRPO（Group Relative Policy Optimization）采用 <strong>token 级别</strong> 的优化策略：</p>
+<p><strong>核心特点</strong>：</p>
+<ol>
+<li><strong>Token 级重要性采样</strong>：对每个 token 计算 $r<em>t^{\text{(i)}} = \frac{\pi</em>\theta(a<em>t^{(i)}|s_t^{(i)})}{\pi</em>{\text{ref}}(a_t^{(i)}|s_t^{(i)})}$</li>
+<li><strong>奖励分解分配</strong>：将序列奖励 $r_{\text{RM}}$ 分配到每个 token（通常采用折扣分配）</li>
+<li><strong>Token 级优势</strong>：每个 token 有独立的优势值 $\hat{A}_t^{(i)}$</li>
+<li><strong>Token 级裁剪</strong>：对每个 token 的重要性比率进行 PPO 风格裁剪</li>
+<li><strong>损失聚合</strong>：先对单序列内的 token 平均，再对 batch 平均</li>
+</ol>
+<p><strong>优点</strong>：</p>
+<ul>
+<li>贴合模型逐 token 生成的过程</li>
+<li>提供精细的梯度信号</li>
+<li>理论基础清晰（PPO 风格）</li>
+</ul>
+<p><strong>缺点</strong>：</p>
+<ul>
+<li>Token 级方差大，特别是在长序列中</li>
+<li>奖励分摊到单个 token 可能出现矛盾</li>
+<li>MoE 模型中某些专家可能退化（处理少数低质量 token）</li>
+</ul>
+<h3 id="GSPO-的序列级优化"><a href="#GSPO-的序列级优化" class="headerlink" title="GSPO 的序列级优化"></a>GSPO 的序列级优化</h3><p>GSPO（Group Sequence Policy Optimization）采用 <strong>序列级别</strong> 的优化策略：</p>
+<p><strong>核心特点</strong>：</p>
+<ol>
+<li><strong>序列级重要性采样</strong>：计算整个序列的重要性比率 $s(y) = \left(\frac{\pi<em>\theta(y|x)}{\pi</em>{\text{ref}}(y|x)}\right)^{1/L}$</li>
+<li><strong>不分摊奖励</strong>：直接使用完整序列的整体奖励</li>
+<li><strong>几何平均归一化</strong>：用 $1/L$ 次方消除序列长度差异</li>
+<li><strong>好坏序列对比</strong>：通过比较好序列和坏序列的平均重要性比率计算优势</li>
+<li><strong>损失聚合</strong>：直接对序列计算损失，然后平均</li>
+</ol>
+<p><strong>优点</strong>：</p>
+<ul>
+<li>优化目标与人类评价逻辑一致（关注整体质量）</li>
+<li>序列级方差小，训练更稳定</li>
+<li>支持长文本和 MoE 模型更好</li>
+<li>避免分摊奖励的矛盾</li>
+</ul>
+<p><strong>缺点</strong>：</p>
+<ul>
+<li>失去 token 级的精细控制</li>
+<li>无法区分序列内各 token 的贡献</li>
+<li>不同长度序列的比较可能仍存在偏差</li>
+</ul>
+<hr>
+<h2 id="GSPO-的算法原理"><a href="#GSPO-的算法原理" class="headerlink" title="GSPO 的算法原理"></a>GSPO 的算法原理</h2><h3 id="1-序列级重要性采样比率"><a href="#1-序列级重要性采样比率" class="headerlink" title="1. 序列级重要性采样比率"></a>1. 序列级重要性采样比率</h3><p>GSPO 的核心创新是 <strong>序列级重要性采样比率</strong>，这解决了序列长度不同导致概率乘积差异大的问题。</p>
+<h4 id="序列概率计算"><a href="#序列概率计算" class="headerlink" title="序列概率计算"></a>序列概率计算</h4><p>对于长度为 $L$ 的序列 $y = (y_1, y_2, \ldots, y_L)$，整个序列的生成概率是所有 token 条件概率的乘积：</p>
+<script type="math/tex; mode=display">\pi_\theta(y|x) = \prod_{t=1}^{L} \pi_\theta(y_t | x, y_1:t-1)</script><p>类似地，参考模型的序列概率为：</p>
+<script type="math/tex; mode=display">\pi_{\text{ref}}(y|x) = \prod_{t=1}^{L} \pi_{\text{ref}}(y_t | x, y_1:t-1)</script><h4 id="几何平均归一化"><a href="#几何平均归一化" class="headerlink" title="几何平均归一化"></a>几何平均归一化</h4><p>简单的概率比 $\frac{\pi<em>\theta(y|x)}{\pi</em>{\text{ref}}(y|x)}$ 存在一个问题：<strong>长序列的概率乘积会更小，导致长序列的重要性比率被低估</strong>。</p>
+<p>例如：</p>
+<ul>
+<li>短序列（长度 3）：$0.5 \times 0.5 \times 0.5 = 0.125$</li>
+<li>长序列（长度 10）：$0.5^{10} \approx 0.001$</li>
+</ul>
+<p>即使两个序列的 token 概率分布相同，长序列的重要性比率也会被人为降低。</p>
+<p><strong>GSPO 的解决方案</strong>：使用 <strong>几何平均</strong>（geometric mean），即开 $L$ 次方：</p>
+<script type="math/tex; mode=display">s(y) = \left(\frac{\pi_\theta(y|x)}{\pi_{\text{ref}}(y|x)}\right)^{1/L}</script><p><strong>直观理解</strong>：</p>
+<ul>
+<li>这相当于计算 “平均每个 token 的概率增长倍数”</li>
+<li>长序列和短序列可以公平比较</li>
+<li>与序列长度无关</li>
+</ul>
+<p><strong>数值例子</strong>：</p>
+<p>假设一个长度为 $L$ 的序列中，每个 token 的概率都从 0.3 增加到 0.4：</p>
+<script type="math/tex; mode=display">\frac{\pi_\theta(y|x)}{\pi_{\text{ref}}(y|x)} = \left(\frac{0.4}{0.3}\right)^L = (1.333)^L</script><p>不同长度下的比率：</p>
+<ul>
+<li>$L=3$：$(1.333)^3 \approx 2.37 \rightarrow$ 开 3 次方 $= 1.333$</li>
+<li>$L=10$：$(1.333)^{10} \approx 33.9 \rightarrow$ 开 10 次方 $= 1.333$</li>
+</ul>
+<p><strong>经过几何平均，得到相同的 $s(y) = 1.333$</strong>，公平地反映了两个序列的改进程度。</p>
+<h4 id="对数概率视角"><a href="#对数概率视角" class="headerlink" title="对数概率视角"></a>对数概率视角</h4><p>为了数值稳定性，实践中通常用对数形式：</p>
+<script type="math/tex; mode=display">\log s(y) = \frac{1}{L} \sum_{t=1}^{L} \left(\log \pi_\theta(y_t|x, y_{1:t-1}) - \log \pi_{\text{ref}}(y_t|x, y_{1:t-1})\right)</script><p>或者：</p>
+<script type="math/tex; mode=display">\log s(y) = \frac{1}{L} \left(\log \pi_\theta(y|x) - \log \pi_{\text{ref}}(y|x)\right)</script><p>这样避免了浮点数下溢。</p>
+<h3 id="2-组内优势计算"><a href="#2-组内优势计算" class="headerlink" title="2. 组内优势计算"></a>2. 组内优势计算</h3><p>与 GRPO 不同，GSPO 不计算单个序列的绝对优势，而是计算 <strong>组内相对优势</strong>——即好序列相对于坏序列的优势。</p>
+<h4 id="序列分组"><a href="#序列分组" class="headerlink" title="序列分组"></a>序列分组</h4><p>对于一个 batch 中的 $B$ 个 prompt，每个 prompt 采样 $G$ 个序列，得到 $B \times G$ 个序列。</p>
+<p>对于每个 prompt，按奖励将 $G$ 个序列分成两组：</p>
+<ul>
+<li><strong>好序列组</strong> $G_{\text{good}}$：奖励高于组内平均的序列</li>
+<li><strong>坏序列组</strong> $G_{\text{bad}}$：奖励低于组内平均的序列</li>
+</ul>
+<p><strong>分组标准</strong>：</p>
+<script type="math/tex; mode=display">\bar{r} = \frac{1}{G} \sum_{i=1}^{G} r_i</script><ul>
+<li>若 $r_i &gt; \bar{r}$：序列 $i$ 属于好序列组</li>
+<li>若 $r_i &lt; \bar{r}$：序列 $i$ 属于坏序列组</li>
+</ul>
+<h4 id="组内平均重要性比率"><a href="#组内平均重要性比率" class="headerlink" title="组内平均重要性比率"></a>组内平均重要性比率</h4><p>计算两组的平均重要性比率：</p>
+<script type="math/tex; mode=display">\bar{s}_{\text{good}} = \frac{1}{|G_{\text{good}}|} \sum_{y \in G_{\text{good}}} s(y)</script><script type="math/tex; mode=display">\bar{s}_{\text{bad}} = \frac{1}{|G_{\text{bad}}|} \sum_{y \in G_{\text{bad}}} s(y)</script><h4 id="序列级优势"><a href="#序列级优势" class="headerlink" title="序列级优势"></a>序列级优势</h4><p>序列级优势定义为两组平均重要性比率的差：</p>
+<script type="math/tex; mode=display">A = \bar{s}_{\text{good}} - \bar{s}_{\text{bad}}</script><p><strong>含义</strong>：</p>
+<ul>
+<li>若 $A &gt; 0$：新策略目前更倾向生成好序列（方向正确）</li>
+<li>若 $A &lt; 0$：新策略目前更倾向生成坏序列（需要调整）</li>
+</ul>
+<p><strong>注意</strong>：这里的优势是 <strong>全局的</strong>，所有好序列和坏序列之间的平均比较。</p>
+<h3 id="3-损失函数"><a href="#3-损失函数" class="headerlink" title="3. 损失函数"></a>3. 损失函数</h3><p>GSPO 的损失函数包含两部分：策略损失和 KL 约束。</p>
+<h4 id="策略损失"><a href="#策略损失" class="headerlink" title="策略损失"></a>策略损失</h4><script type="math/tex; mode=display">L_{\text{Policy}} = -\left(\bar{s}_{\text{good}} - \bar{s}_{\text{bad}}\right) \cdot \min(A, A_{\text{clip}})</script><p>或使用 PPO 风格的裁剪：</p>
+<script type="math/tex; mode=display">L_{\text{Policy}}^{\text{CLIP}} = -\min\left(\bar{s}_{\text{good}} - \bar{s}_{\text{bad}}, \text{clip}(\bar{s}_{\text{good}} - \bar{s}_{\text{bad}}, 1-\epsilon, 1+\epsilon)\right) \cdot A</script><p>其中 $\epsilon = 0.2$ 是裁剪范围。</p>
+<p><strong>目标</strong>：</p>
+<ul>
+<li>提高好序列的整体生成概率（$\bar{s}_{\text{good}}$ 增大）</li>
+<li>降低坏序列的整体生成概率（$\bar{s}_{\text{bad}}$ 减小）</li>
+<li>限制更新幅度（通过裁剪）</li>
+</ul>
+<h4 id="KL-约束"><a href="#KL-约束" class="headerlink" title="KL 约束"></a>KL 约束</h4><script type="math/tex; mode=display">L_{\text{KL}} = \frac{1}{B \times G} \sum_{y} D_{\text{KL}}(\pi_\theta(\cdot|x) \| \pi_{\text{ref}}(\cdot|x))</script><p>这里对整个序列计算 KL 散度，防止策略偏离参考模型太远。</p>
+<h4 id="总损失"><a href="#总损失" class="headerlink" title="总损失"></a>总损失</h4><script type="math/tex; mode=display">L_{\text{total}} = L_{\text{Policy}} + \beta \cdot L_{\text{KL}}</script><p>其中 $\beta$ 是 KL 权重（通常 0.01-0.1）。</p>
+<hr>
+<h2 id="GSPO-vs-GRPO-的详细对比"><a href="#GSPO-vs-GRPO-的详细对比" class="headerlink" title="GSPO vs GRPO 的详细对比"></a>GSPO vs GRPO 的详细对比</h2><h3 id="重要性采样粒度对比"><a href="#重要性采样粒度对比" class="headerlink" title="重要性采样粒度对比"></a>重要性采样粒度对比</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>GRPO</th>
+<th>GSPO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>采样粒度</strong></td>
+<td>Token 级别</td>
+<td><strong>序列级别</strong></td>
+</tr>
+<tr>
+<td><strong>重要性比率定义</strong></td>
+<td>$r<em>t = \frac{\pi</em>\theta(a_t\</td>
+<td>s<em>t)}{\pi</em>{\text{ref}}(a_t\</td>
+<td>s_t)}$</td>
+<td>$s(y) = \left(\frac{\pi_\theta(y\</td>
+<td>x)}{\pi_{\text{ref}}(y\</td>
+<td>x)}\right)^{1/L}$</td>
+</tr>
+<tr>
+<td><strong>计算复杂度</strong></td>
+<td>低（每个 token）</td>
+<td>中（每个序列）</td>
+</tr>
+<tr>
+<td><strong>长序列影响</strong></td>
+<td>方差大</td>
+<td><strong>方差小</strong>（几何平均）</td>
+</tr>
+<tr>
+<td><strong>归一化</strong></td>
+<td>无需（token 独立）</td>
+<td><strong>有（几何平均）</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="优势计算对比"><a href="#优势计算对比" class="headerlink" title="优势计算对比"></a>优势计算对比</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>GRPO</th>
+<th>GSPO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>优势定义</strong></td>
+<td>组内平均 - 单序列奖励</td>
+<td><strong>好序列均值 - 坏序列均值</strong></td>
+</tr>
+<tr>
+<td><strong>粒度</strong></td>
+<td>Token 级别</td>
+<td><strong>序列级别</strong></td>
+</tr>
+<tr>
+<td><strong>奖励处理</strong></td>
+<td>分摊到 token</td>
+<td><strong>直接使用序列奖励</strong></td>
+</tr>
+<tr>
+<td><strong>聚合方式</strong></td>
+<td>按位置折扣</td>
+<td><strong>组内平均</strong></td>
+</tr>
+<tr>
+<td><strong>长度依赖性</strong></td>
+<td>高（分摊依赖长度）</td>
+<td><strong>低（几何平均消除）</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="梯度更新对比"><a href="#梯度更新对比" class="headerlink" title="梯度更新对比"></a>梯度更新对比</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>GRPO</th>
+<th>GSPO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>损失计算</strong></td>
+<td>$\sum_t \min(r_t A_t, \text{clip}(r_t) A_t)$</td>
+<td><strong>好序列梯度 - 坏序列梯度</strong></td>
+</tr>
+<tr>
+<td><strong>裁剪方式</strong></td>
+<td>Token 级 PPO 裁剪</td>
+<td><strong>序列级裁剪</strong></td>
+</tr>
+<tr>
+<td><strong>梯度信号</strong></td>
+<td>每个 token 独立</td>
+<td><strong>序列作为整体</strong></td>
+</tr>
+<tr>
+<td><strong>方差来源</strong></td>
+<td>Token 级波动</td>
+<td><strong>序列级波动</strong>（更小）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="性能对比"><a href="#性能对比" class="headerlink" title="性能对比"></a>性能对比</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>GRPO</th>
+<th>GSPO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>训练稳定性</strong></td>
+<td>中（长序列波动大）</td>
+<td><strong>高</strong>（序列级平均）</td>
+</tr>
+<tr>
+<td><strong>收敛速度</strong></td>
+<td>中等</td>
+<td><strong>更快</strong>（更稳定的梯度）</td>
+</tr>
+<tr>
+<td><strong>长文本支持</strong></td>
+<td>较差</td>
+<td><strong>很好</strong></td>
+</tr>
+<tr>
+<td><strong>MoE 模型</strong></td>
+<td>不稳定（专家利用率差异大）</td>
+<td><strong>稳定</strong></td>
+</tr>
+<tr>
+<td><strong>内存占用</strong></td>
+<td>低</td>
+<td><strong>低</strong>（相同）</td>
+</tr>
+<tr>
+<td><strong>计算复杂度</strong></td>
+<td>低</td>
+<td><strong>中</strong>（但更稳定）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="GSPO-的实现细节"><a href="#GSPO-的实现细节" class="headerlink" title="GSPO 的实现细节"></a>GSPO 的实现细节</h2><h3 id="1-序列级重要性比率计算"><a href="#1-序列级重要性比率计算" class="headerlink" title="1. 序列级重要性比率计算"></a>1. 序列级重要性比率计算</h3><h4 id="伪代码"><a href="#伪代码" class="headerlink" title="伪代码"></a>伪代码</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">compute_sequence_importance_ratio</span>(<span class="params">actor_logits, ref_logits, </span></span><br><span class="line"><span class="params">                                     token_ids, sequence_lengths</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    计算序列级重要性比率</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        actor_logits: shape (B, G, T, V) - Actor 模型 logits</span></span><br><span class="line"><span class="string">        ref_logits: shape (B, G, T, V) - Reference 模型 logits</span></span><br><span class="line"><span class="string">        token_ids: shape (B, G, T) - 生成的 token IDs</span></span><br><span class="line"><span class="string">        sequence_lengths: shape (B, G) - 每个序列的实际长度</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        seq_ratios: shape (B, G) - 序列级重要性比率</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    B, G, T, V = actor_logits.shape</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算 log 概率</span></span><br><span class="line">    actor_log_probs = log_softmax(actor_logits, dim=-<span class="number">1</span>)  <span class="comment"># shape (B, G, T, V)</span></span><br><span class="line">    ref_log_probs = log_softmax(ref_logits, dim=-<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 提取生成 token 的 log 概率</span></span><br><span class="line">    actor_seq_log_prob = torch.zeros(B, G)</span><br><span class="line">    ref_seq_log_prob = torch.zeros(B, G)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> b <span class="keyword">in</span> <span class="built_in">range</span>(B):</span><br><span class="line">        <span class="keyword">for</span> g <span class="keyword">in</span> <span class="built_in">range</span>(G):</span><br><span class="line">            L = sequence_lengths[b, g]</span><br><span class="line">            <span class="comment"># 求和所有 token 的 log 概率</span></span><br><span class="line">            <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(L):</span><br><span class="line">                token_id = token_ids[b, g, t]</span><br><span class="line">                actor_seq_log_prob[b, g] += actor_log_probs[b, g, t, token_id]</span><br><span class="line">                ref_seq_log_prob[b, g] += ref_log_probs[b, g, t, token_id]</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算序列级重要性比率（取幂化为线性）</span></span><br><span class="line">    log_ratio = actor_seq_log_prob - ref_seq_log_prob</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 几何平均：除以序列长度</span></span><br><span class="line">    seq_ratios = torch.exp(log_ratio / sequence_lengths)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> seq_ratios</span><br></pre></td></tr></table></figure>
+<h3 id="2-好坏序列分组与优势计算"><a href="#2-好坏序列分组与优势计算" class="headerlink" title="2. 好坏序列分组与优势计算"></a>2. 好坏序列分组与优势计算</h3><h4 id="伪代码-1"><a href="#伪代码-1" class="headerlink" title="伪代码"></a>伪代码</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">compute_sequence_advantage</span>(<span class="params">seq_ratios, rewards, sequence_lengths</span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    计算序列级优势</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        seq_ratios: shape (B, G) - 序列级重要性比率</span></span><br><span class="line"><span class="string">        rewards: shape (B, G) - 每个序列的奖励</span></span><br><span class="line"><span class="string">        sequence_lengths: shape (B, G) - 序列长度</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        advantages: shape (B, G) - 序列级优势</span></span><br><span class="line"><span class="string">        group_advantages: shape (B,) - 每个 prompt 的组优势</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    B, G = seq_ratios.shape</span><br><span class="line">    </span><br><span class="line">    advantages = torch.zeros(B, G)</span><br><span class="line">    group_advantages = torch.zeros(B)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> b <span class="keyword">in</span> <span class="built_in">range</span>(B):</span><br><span class="line">        <span class="comment"># 计算该 prompt 的平均奖励</span></span><br><span class="line">        mean_reward = rewards[b].mean()</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 分组</span></span><br><span class="line">        good_mask = rewards[b] &gt;= mean_reward</span><br><span class="line">        bad_mask = ~good_mask</span><br><span class="line">        </span><br><span class="line">        good_ratios = seq_ratios[b, good_mask]</span><br><span class="line">        bad_ratios = seq_ratios[b, bad_mask]</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 计算好坏序列的平均重要性比率</span></span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(good_ratios) &gt; <span class="number">0</span>:</span><br><span class="line">            mean_good_ratio = good_ratios.mean()</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            mean_good_ratio = <span class="number">0.0</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span> <span class="built_in">len</span>(bad_ratios) &gt; <span class="number">0</span>:</span><br><span class="line">            mean_bad_ratio = bad_ratios.mean()</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            mean_bad_ratio = <span class="number">0.0</span></span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 组优势</span></span><br><span class="line">        group_adv = mean_good_ratio - mean_bad_ratio</span><br><span class="line">        group_advantages[b] = group_adv</span><br><span class="line">        </span><br><span class="line">        <span class="comment"># 每个序列的优势（同组内所有序列相同）</span></span><br><span class="line">        <span class="keyword">for</span> g <span class="keyword">in</span> <span class="built_in">range</span>(G):</span><br><span class="line">            <span class="keyword">if</span> good_mask[g]:</span><br><span class="line">                advantages[b, g] = group_adv</span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                advantages[b, g] = -group_adv  <span class="comment"># 坏序列的优势为负</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> advantages, group_advantages</span><br></pre></td></tr></table></figure>
+<h3 id="3-损失计算"><a href="#3-损失计算" class="headerlink" title="3. 损失计算"></a>3. 损失计算</h3><h4 id="伪代码-2"><a href="#伪代码-2" class="headerlink" title="伪代码"></a>伪代码</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">compute_loss</span>(<span class="params">actor_logits, ref_logits, token_ids, </span></span><br><span class="line"><span class="params">                seq_ratios, advantages, sequence_lengths,</span></span><br><span class="line"><span class="params">                beta=<span class="number">0.05</span>, epsilon=<span class="number">0.2</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    计算 GSPO 损失</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        actor_logits: shape (B, G, T, V)</span></span><br><span class="line"><span class="string">        ref_logits: shape (B, G, T, V)</span></span><br><span class="line"><span class="string">        token_ids: shape (B, G, T)</span></span><br><span class="line"><span class="string">        seq_ratios: shape (B, G) - 序列级重要性比率</span></span><br><span class="line"><span class="string">        advantages: shape (B, G) - 序列级优势</span></span><br><span class="line"><span class="string">        sequence_lengths: shape (B, G)</span></span><br><span class="line"><span class="string">        beta: KL 权重</span></span><br><span class="line"><span class="string">        epsilon: 裁剪范围</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        total_loss: 标量损失</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    B, G, T, V = actor_logits.shape</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算 log 概率</span></span><br><span class="line">    actor_log_probs = log_softmax(actor_logits, dim=-<span class="number">1</span>)</span><br><span class="line">    ref_log_probs = log_softmax(ref_logits, dim=-<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    policy_loss = <span class="number">0.0</span></span><br><span class="line">    kl_loss = <span class="number">0.0</span></span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> b <span class="keyword">in</span> <span class="built_in">range</span>(B):</span><br><span class="line">        <span class="keyword">for</span> g <span class="keyword">in</span> <span class="built_in">range</span>(G):</span><br><span class="line">            L = sequence_lengths[b, g]</span><br><span class="line">            adv = advantages[b, g]</span><br><span class="line">            ratio = seq_ratios[b, g]</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># PPO 风格的裁剪</span></span><br><span class="line">            clipped_ratio = clamp(ratio, <span class="number">1</span> - epsilon, <span class="number">1</span> + epsilon)</span><br><span class="line">            policy_term = <span class="built_in">min</span>(ratio * adv, clipped_ratio * adv)</span><br><span class="line">            policy_loss += -policy_term  <span class="comment"># 最大化优势，所以取负</span></span><br><span class="line">            </span><br><span class="line">            <span class="comment"># KL 散度（序列级）</span></span><br><span class="line">            kl_sum = <span class="number">0.0</span></span><br><span class="line">            <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(L):</span><br><span class="line">                token_id = token_ids[b, g, t]</span><br><span class="line">                log_ratio_t = (actor_log_probs[b, g, t, token_id] - </span><br><span class="line">                              ref_log_probs[b, g, t, token_id])</span><br><span class="line">                kl_sum += log_ratio_t</span><br><span class="line">            </span><br><span class="line">            kl_loss += kl_sum / L  <span class="comment"># 每个 token 的平均 KL</span></span><br><span class="line">    </span><br><span class="line">    total_loss = (policy_loss + beta * kl_loss) / (B * G)</span><br><span class="line">    <span class="keyword">return</span> total_loss</span><br></pre></td></tr></table></figure>
+<h3 id="4-超参数设置"><a href="#4-超参数设置" class="headerlink" title="4. 超参数设置"></a>4. 超参数设置</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>超参数</th>
+<th>典型值</th>
+<th>范围</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>$G$ (组大小)</strong></td>
+<td>8-16</td>
+<td>4-32</td>
+<td>更大的组更稳定</td>
+</tr>
+<tr>
+<td><strong>$\epsilon$ (裁剪范围)</strong></td>
+<td>0.2</td>
+<td>0.1-0.3</td>
+<td>限制重要性比率范围</td>
+</tr>
+<tr>
+<td><strong>$\beta$ (KL 权重)</strong></td>
+<td>0.05</td>
+<td>0.01-0.1</td>
+<td>平衡奖励和 KL 约束</td>
+</tr>
+<tr>
+<td><strong>学习率</strong></td>
+<td>5e-7</td>
+<td>1e-7-1e-6</td>
+<td>通常比 SFT 小 100-1000 倍</td>
+</tr>
+<tr>
+<td><strong>批大小</strong></td>
+<td>$B=8, G=16$</td>
+<td>-</td>
+<td>总共 128 个序列</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="调优建议"><a href="#调优建议" class="headerlink" title="调优建议"></a>调优建议</h4><ol>
+<li><p><strong>组大小 $G$</strong>：</p>
+<ul>
+<li>GSPO 对 $G$ 的敏感度低于 GRPO（因为序列级优势更稳定）</li>
+<li>推荐从 $G=8$ 开始</li>
+<li>如果仍有波动，增加到 $G=16$ 或 $G=32$</li>
+</ul>
+</li>
+<li><p><strong>KL 权重 $\beta$</strong>：</p>
+<ul>
+<li>观察 KL 散度大小：<ul>
+<li>KL &gt; 0.1：增大 $\beta$</li>
+<li>KL &lt; 0.01：减小 $\beta$</li>
+<li>目标：0.01-0.05</li>
+</ul>
+</li>
+<li>GSPO 通常需要更小的 $\beta$（因为更稳定）</li>
+</ul>
+</li>
+<li><p><strong>学习率</strong>：</p>
+<ul>
+<li>GSPO 对学习率不如 GRPO 敏感</li>
+<li>可以用略大的学习率（5e-7）</li>
+<li>监测梯度范数，避免梯度爆炸</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="GSPO-完整数值示例"><a href="#GSPO-完整数值示例" class="headerlink" title="GSPO 完整数值示例"></a>GSPO 完整数值示例</h2><h3 id="假设条件"><a href="#假设条件" class="headerlink" title="假设条件"></a>假设条件</h3><ul>
+<li><strong>批大小</strong>：$B = 1$（1 个 prompt）</li>
+<li><strong>组大小</strong>：$G = 3$（3 个序列）</li>
+<li><strong>序列长度</strong>：$L_1 = 5, L_2 = 7, L_3 = 6$（长度不同）</li>
+<li><strong>奖励</strong>：$r_1 = 8, r_2 = 6, r_3 = 4$</li>
+<li><strong>平均奖励</strong>：$\bar{r} = 6$</li>
+</ul>
+<h3 id="计算过程"><a href="#计算过程" class="headerlink" title="计算过程"></a>计算过程</h3><h4 id="步骤-1-分组"><a href="#步骤-1-分组" class="headerlink" title="步骤 1: 分组"></a>步骤 1: 分组</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">平均奖励: r_bar = (8 + 6 + 4) / 3 = 6</span><br><span class="line"></span><br><span class="line">好序列组（r_i &gt;= 6）：</span><br><span class="line">  - 序列 1: r_1 = 8 ✓</span><br><span class="line">  - 序列 2: r_2 = 6 ✓</span><br><span class="line">  </span><br><span class="line">坏序列组（r_i &lt; 6）：</span><br><span class="line">  - 序列 3: r_3 = 4 ✓</span><br><span class="line"></span><br><span class="line">分组结果：G_good = &#123;seq1, seq2&#125;, G_bad = &#123;seq3&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="步骤-2-计算序列级重要性比率"><a href="#步骤-2-计算序列级重要性比率" class="headerlink" title="步骤 2: 计算序列级重要性比率"></a>步骤 2: 计算序列级重要性比率</h4><p>假设：</p>
+<ul>
+<li><p>序列 1（长度 5）：每个 token 概率比平均 1.1 倍</p>
+<ul>
+<li>$\log \pi<em>\theta = -0.5$，$\log \pi</em>{\text{ref}} = -0.55$</li>
+<li>序列 log 比：$5 \times 0.05 = 0.25$</li>
+<li>几何平均：$\log s(y_1) = 0.25 / 5 = 0.05 \Rightarrow s(y_1) \approx 1.051$</li>
+</ul>
+</li>
+<li><p>序列 2（长度 7）：每个 token 概率比平均 1.05 倍</p>
+<ul>
+<li>序列 log 比：$7 \times 0.0488 = 0.342$</li>
+<li>几何平均：$\log s(y_2) = 0.342 / 7 = 0.049 \Rightarrow s(y_2) \approx 1.050$</li>
+</ul>
+</li>
+<li><p>序列 3（长度 6）：每个 token 概率比平均 0.95 倍</p>
+<ul>
+<li>序列 log 比：$6 \times (-0.0513) = -0.308$</li>
+<li>几何平均：$\log s(y_3) = -0.308 / 6 = -0.0513 \Rightarrow s(y_3) \approx 0.950$</li>
+</ul>
+</li>
+</ul>
+<p><strong>关键观察</strong>：尽管序列长度不同（5, 7, 6），经过几何平均后，序列 1 和 2 的 $s$ 值相近（都约 1.05），反映了相同的改进程度。</p>
+<h4 id="步骤-3-计算组平均重要性比率"><a href="#步骤-3-计算组平均重要性比率" class="headerlink" title="步骤 3: 计算组平均重要性比率"></a>步骤 3: 计算组平均重要性比率</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">好序列组平均：</span><br><span class="line">  s_good = (s(y_1) + s(y_2)) / 2 = (1.051 + 1.050) / 2 ≈ 1.0505</span><br><span class="line"></span><br><span class="line">坏序列组平均：</span><br><span class="line">  s_bad = s(y_3) = 0.950</span><br><span class="line"></span><br><span class="line">组优势：</span><br><span class="line">  A = s_good - s_bad = 1.0505 - 0.950 = 0.1005</span><br></pre></td></tr></table></figure>
+<p><strong>解释</strong>：好序列组的重要性比率高于坏序列组，说明新策略目前倾向于生成好序列，优化方向正确。</p>
+<h4 id="步骤-4-计算损失"><a href="#步骤-4-计算损失" class="headerlink" title="步骤 4: 计算损失"></a>步骤 4: 计算损失</h4><p>假设 $\epsilon = 0.2$，$\beta = 0.05$：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">裁剪重要性比率（假设所有 s 值都在 0.8-1.2 范围内）：</span><br><span class="line">  clipped_good ≈ 1.0505（无需裁剪）</span><br><span class="line">  clipped_bad ≈ 0.950（无需裁剪）</span><br><span class="line"></span><br><span class="line">策略损失（对好坏序列分别计算）：</span><br><span class="line">  - 好序列 1: loss_1 = -min(s(y_1) * A, clip(s) * A)</span><br><span class="line">                       = -min(1.051 * 0.1005, 1.051 * 0.1005)</span><br><span class="line">                       = -0.1057</span><br><span class="line">  </span><br><span class="line">  - 好序列 2: loss_2 = -min(1.050 * 0.1005, 1.050 * 0.1005)</span><br><span class="line">                       = -0.1055</span><br><span class="line">  </span><br><span class="line">  - 坏序列 3: loss_3 = -min(0.950 * (-0.1005), 0.950 * (-0.1005))</span><br><span class="line">                       = 0.0955</span><br><span class="line"></span><br><span class="line">平均策略损失：</span><br><span class="line">  L_policy = (0.1057 + 0.1055 + 0.0955) / 3 ≈ 0.1022</span><br><span class="line"></span><br><span class="line">KL 散度（简化，假设每个 token 的 log ratio 平均 0.05）：</span><br><span class="line">  L_KL ≈ 0.05</span><br><span class="line"></span><br><span class="line">总损失：</span><br><span class="line">  L_total = L_policy + β * L_KL = 0.1022 + 0.05 * 0.05 = 0.1047</span><br></pre></td></tr></table></figure>
+<p><strong>关键观察</strong>：</p>
+<ul>
+<li>好序列的损失为正（鼓励），坏序列的损失为负（惩罚）</li>
+<li>通过最小化总损失，模型会学习生成更多好序列</li>
+<li>KL 项保证了模型不会偏离参考模型太远</li>
+</ul>
+<hr>
+<h2 id="GRPO-vs-GSPO-的选择"><a href="#GRPO-vs-GSPO-的选择" class="headerlink" title="GRPO vs GSPO 的选择"></a>GRPO vs GSPO 的选择</h2><h3 id="什么情况下使用-GRPO"><a href="#什么情况下使用-GRPO" class="headerlink" title="什么情况下使用 GRPO"></a>什么情况下使用 GRPO</h3><ol>
+<li><strong>短文本任务</strong>：生成文本长度一致，token 级方差不大</li>
+<li><strong>需要精细控制</strong>：想要针对不同位置的 token 进行不同的优化</li>
+<li><strong>实验早期</strong>：GRPO 理论更清晰，调试更容易</li>
+</ol>
+<h3 id="什么情况下使用-GSPO"><a href="#什么情况下使用-GSPO" class="headerlink" title="什么情况下使用 GSPO"></a>什么情况下使用 GSPO</h3><ol>
+<li><strong>长文本任务</strong>：生成长序列或文本长度差异大</li>
+<li><strong>模型规模大</strong>：大模型中 token 级波动更明显</li>
+<li><strong>MoE 架构</strong>：避免专家利用率不均衡</li>
+<li><strong>追求稳定性</strong>：GSPO 训练更稳定，收敛更快</li>
+<li><strong>生产环境</strong>：GSPO 的鲁棒性更好</li>
+</ol>
+<h3 id="实践建议"><a href="#实践建议" class="headerlink" title="实践建议"></a>实践建议</h3><p><strong>从 GRPO 迁移到 GSPO 的步骤</strong>：</p>
+<ol>
+<li><strong>验证 GRPO 的基线</strong>：确保 GRPO 训练稳定</li>
+<li><strong>调整参数</strong>：<ul>
+<li>保持 $\beta$ 不变（或略减小）</li>
+<li>可能需要增加 $G$（因为序列级优势更稳定）</li>
+</ul>
+</li>
+<li><strong>逐步替换</strong>：先在部分数据上尝试 GSPO</li>
+<li><strong>监控关键指标</strong>：<ul>
+<li>KL 散度（应保持在 0.01-0.1）</li>
+<li>奖励均值和方差</li>
+<li>序列长度分布</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>GSPO 相比 GRPO 的核心改进：</p>
+<ol>
+<li><strong>序列级优化</strong>：从 token 级提升到序列级，减少方差</li>
+<li><strong>几何平均归一化</strong>：公平处理不同长度的序列</li>
+<li><strong>好坏对比学习</strong>：优化目标更直观、更稳定</li>
+<li><strong>更强的鲁棒性</strong>：特别是在长文本和 MoE 模型上</li>
+</ol>
+<p><strong>关键理解</strong>：</p>
+<ul>
+<li>GRPO 和 GSPO 都不需要 Critic 模型</li>
+<li>两者都使用组内比较来计算优势</li>
+<li>GSPO 的创新在于 <strong>将粒度从 token 级提升到序列级</strong></li>
+</ul>
+<p><strong>性能对比</strong>：</p>
+<ul>
+<li><strong>训练稳定性</strong>：GSPO &gt; GRPO（特别是长文本）</li>
+<li><strong>收敛速度</strong>：GSPO ≥ GRPO</li>
+<li><strong>计算复杂度</strong>：两者相近（GSPO 略高）</li>
+<li><strong>理论完备性</strong>：GRPO（基于 PPO）vs GSPO（创新设计）</li>
+</ul>
+<p><strong>推荐阅读</strong>：</p>
+<ul>
+<li><a href="https://murphypei.github.io/blog/2025/07/llm-grpo.html">GRPO 博文</a>，理解基础概念</li>
+<li><a href="https://murphypei.github.io/blog/2025/05/llm-ppo.html">PPO 博文</a>，理解策略梯度方法</li>
+<li>对比两种算法的优缺点，根据实际场景选择</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2025/11/llm-gspo.html" title="LLM 训练：GSPO 算法详解与 GRPO 对比">https:&#x2F;&#x2F;murphypei.github.io&#x2F;blog&#x2F;2025&#x2F;11&#x2F;llm-gspo.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-creative-commons&quot;&gt;&lt;&#x2F;i&gt;BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+            
+              <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" rel="tag"># 强化学习</a>
+            
+              <a href="/tags/GRPO/" rel="tag"># GRPO</a>
+            
+              <a href="/tags/GSPO/" rel="tag"># GSPO</a>
+            
+              <a href="/tags/%E5%BA%8F%E5%88%97%E7%BA%A7%E4%BC%98%E5%8C%96/" rel="tag"># 序列级优化</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2025/09/llm-output-json.html" rel="next" title="让 LLM 输出规范 JSON 的方法">
+                  <i class="fa fa-chevron-left"></i> 让 LLM 输出规范 JSON 的方法
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2025/12/llm-dapo.html" rel="prev" title="大模型训练方法：DAPO">
+                  大模型训练方法：DAPO <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#GRPO-vs-GSPO%EF%BC%9A%E6%A6%82%E5%BF%B5%E5%9B%9E%E9%A1%BE"><span class="nav-number">1.</span> <span class="nav-text">GRPO vs GSPO：概念回顾</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GRPO-%E7%9A%84-Token-%E7%BA%A7%E4%BC%98%E5%8C%96"><span class="nav-number">1.1.</span> <span class="nav-text">GRPO 的 Token 级优化</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GSPO-%E7%9A%84%E5%BA%8F%E5%88%97%E7%BA%A7%E4%BC%98%E5%8C%96"><span class="nav-number">1.2.</span> <span class="nav-text">GSPO 的序列级优化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GSPO-%E7%9A%84%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">GSPO 的算法原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%BA%8F%E5%88%97%E7%BA%A7%E9%87%8D%E8%A6%81%E6%80%A7%E9%87%87%E6%A0%B7%E6%AF%94%E7%8E%87"><span class="nav-number">2.1.</span> <span class="nav-text">1. 序列级重要性采样比率</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E6%A6%82%E7%8E%87%E8%AE%A1%E7%AE%97"><span class="nav-number">2.1.1.</span> <span class="nav-text">序列概率计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%87%A0%E4%BD%95%E5%B9%B3%E5%9D%87%E5%BD%92%E4%B8%80%E5%8C%96"><span class="nav-number">2.1.2.</span> <span class="nav-text">几何平均归一化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AF%B9%E6%95%B0%E6%A6%82%E7%8E%87%E8%A7%86%E8%A7%92"><span class="nav-number">2.1.3.</span> <span class="nav-text">对数概率视角</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E7%BB%84%E5%86%85%E4%BC%98%E5%8A%BF%E8%AE%A1%E7%AE%97"><span class="nav-number">2.2.</span> <span class="nav-text">2. 组内优势计算</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E5%88%86%E7%BB%84"><span class="nav-number">2.2.1.</span> <span class="nav-text">序列分组</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%84%E5%86%85%E5%B9%B3%E5%9D%87%E9%87%8D%E8%A6%81%E6%80%A7%E6%AF%94%E7%8E%87"><span class="nav-number">2.2.2.</span> <span class="nav-text">组内平均重要性比率</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E7%BA%A7%E4%BC%98%E5%8A%BF"><span class="nav-number">2.2.3.</span> <span class="nav-text">序列级优势</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="nav-number">2.3.</span> <span class="nav-text">3. 损失函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AD%96%E7%95%A5%E6%8D%9F%E5%A4%B1"><span class="nav-number">2.3.1.</span> <span class="nav-text">策略损失</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#KL-%E7%BA%A6%E6%9D%9F"><span class="nav-number">2.3.2.</span> <span class="nav-text">KL 约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%BB%E6%8D%9F%E5%A4%B1"><span class="nav-number">2.3.3.</span> <span class="nav-text">总损失</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GSPO-vs-GRPO-%E7%9A%84%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94"><span class="nav-number">3.</span> <span class="nav-text">GSPO vs GRPO 的详细对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E8%A6%81%E6%80%A7%E9%87%87%E6%A0%B7%E7%B2%92%E5%BA%A6%E5%AF%B9%E6%AF%94"><span class="nav-number">3.1.</span> <span class="nav-text">重要性采样粒度对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E5%8A%BF%E8%AE%A1%E7%AE%97%E5%AF%B9%E6%AF%94"><span class="nav-number">3.2.</span> <span class="nav-text">优势计算对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A2%AF%E5%BA%A6%E6%9B%B4%E6%96%B0%E5%AF%B9%E6%AF%94"><span class="nav-number">3.3.</span> <span class="nav-text">梯度更新对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%A7%E8%83%BD%E5%AF%B9%E6%AF%94"><span class="nav-number">3.4.</span> <span class="nav-text">性能对比</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GSPO-%E7%9A%84%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">4.</span> <span class="nav-text">GSPO 的实现细节</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%BA%8F%E5%88%97%E7%BA%A7%E9%87%8D%E8%A6%81%E6%80%A7%E6%AF%94%E7%8E%87%E8%AE%A1%E7%AE%97"><span class="nav-number">4.1.</span> <span class="nav-text">1. 序列级重要性比率计算</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="nav-number">4.1.1.</span> <span class="nav-text">伪代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%A5%BD%E5%9D%8F%E5%BA%8F%E5%88%97%E5%88%86%E7%BB%84%E4%B8%8E%E4%BC%98%E5%8A%BF%E8%AE%A1%E7%AE%97"><span class="nav-number">4.2.</span> <span class="nav-text">2. 好坏序列分组与优势计算</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%AA%E4%BB%A3%E7%A0%81-1"><span class="nav-number">4.2.1.</span> <span class="nav-text">伪代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E6%8D%9F%E5%A4%B1%E8%AE%A1%E7%AE%97"><span class="nav-number">4.3.</span> <span class="nav-text">3. 损失计算</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%AA%E4%BB%A3%E7%A0%81-2"><span class="nav-number">4.3.1.</span> <span class="nav-text">伪代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E8%B6%85%E5%8F%82%E6%95%B0%E8%AE%BE%E7%BD%AE"><span class="nav-number">4.4.</span> <span class="nav-text">4. 超参数设置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B0%83%E4%BC%98%E5%BB%BA%E8%AE%AE"><span class="nav-number">4.4.1.</span> <span class="nav-text">调优建议</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GSPO-%E5%AE%8C%E6%95%B4%E6%95%B0%E5%80%BC%E7%A4%BA%E4%BE%8B"><span class="nav-number">5.</span> <span class="nav-text">GSPO 完整数值示例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%81%87%E8%AE%BE%E6%9D%A1%E4%BB%B6"><span class="nav-number">5.1.</span> <span class="nav-text">假设条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97%E8%BF%87%E7%A8%8B"><span class="nav-number">5.2.</span> <span class="nav-text">计算过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-1-%E5%88%86%E7%BB%84"><span class="nav-number">5.2.1.</span> <span class="nav-text">步骤 1: 分组</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-2-%E8%AE%A1%E7%AE%97%E5%BA%8F%E5%88%97%E7%BA%A7%E9%87%8D%E8%A6%81%E6%80%A7%E6%AF%94%E7%8E%87"><span class="nav-number">5.2.2.</span> <span class="nav-text">步骤 2: 计算序列级重要性比率</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-3-%E8%AE%A1%E7%AE%97%E7%BB%84%E5%B9%B3%E5%9D%87%E9%87%8D%E8%A6%81%E6%80%A7%E6%AF%94%E7%8E%87"><span class="nav-number">5.2.3.</span> <span class="nav-text">步骤 3: 计算组平均重要性比率</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-4-%E8%AE%A1%E7%AE%97%E6%8D%9F%E5%A4%B1"><span class="nav-number">5.2.4.</span> <span class="nav-text">步骤 4: 计算损失</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRPO-vs-GSPO-%E7%9A%84%E9%80%89%E6%8B%A9"><span class="nav-number">6.</span> <span class="nav-text">GRPO vs GSPO 的选择</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B%E4%BD%BF%E7%94%A8-GRPO"><span class="nav-number">6.1.</span> <span class="nav-text">什么情况下使用 GRPO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B%E4%BD%BF%E7%94%A8-GSPO"><span class="nav-number">6.2.</span> <span class="nav-text">什么情况下使用 GSPO</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E8%B7%B5%E5%BB%BA%E8%AE%AE"><span class="nav-number">6.3.</span> <span class="nav-text">实践建议</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">7.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/%20%7C%7C%20archive">
+        
+          <span class="site-state-item-count">188</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/%20%7C%7C%20th">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/%20%7C%7C%20tags">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">494</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &amp;rarr; https:&#x2F;&#x2F;github.com&#x2F;murphypei" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-github&quot;&gt;&lt;&#x2F;i&gt;GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &amp;rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-envelope&quot;&gt;&lt;&#x2F;i&gt;E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;guo-jia-66-80&#x2F;activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2026</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">697k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">19:22</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js?v=7.3.0.js"></script>
+
+<script src="/js/motion.js?v=7.3.0.js"></script>
+
+
+<script src="/js/schemes/muse.js?v=7.3.0.js"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '4d147416d70d71d7ad9c8fb616a1b770',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

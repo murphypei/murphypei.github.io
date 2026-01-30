@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="Boosting 属于集成学习的一种方法，算是传统机器学习的大杀器之一了。本文介绍 GBDT 的相关知识。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="梯度提升决策树(GBDT)">
+<meta property="og:url" content="https://murphypei.github.io/blog/2019/04/gbdt.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="Boosting 属于集成学习的一种方法，算是传统机器学习的大杀器之一了。本文介绍 GBDT 的相关知识。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-04-26T07:59:23.000Z">
+<meta property="article:modified_time" content="2026-01-07T08:41:01.076Z">
+<meta property="article:author" content="AngryBirds">
+<meta property="article:tag" content="机器学习">
+<meta property="article:tag" content="Boosting">
+<meta property="article:tag" content="决策树">
+<meta property="article:tag" content="GBDT">
+<meta property="article:tag" content="XGBoost">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2019/04/gbdt">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>梯度提升决策树(GBDT) | 拾荒志</title>
+  <meta name="generator" content="Hexo 5.4.2">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于
+    </a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2019/04/gbdt.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">梯度提升决策树(GBDT)
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-04-26 15:59:23" itemprop="dateCreated datePublished" datetime="2019-04-26T15:59:23+08:00">2019-04-26</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2026-01-07 16:41:01" itemprop="dateModified" datetime="2026-01-07T16:41:01+08:00">2026-01-07</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/MachineLearning/" itemprop="url" rel="index"><span itemprop="name">MachineLearning</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>6.3k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>10 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>Boosting 属于集成学习的一种方法，算是传统机器学习的大杀器之一了。本文介绍 GBDT 的相关知识。</p>
+<span id="more"></span>
+<p>关于 Boosting 的知识，我在之前的一篇文章<a href="https://murphypei.github.io/blog/2019/03/bootstrap-bagging-boost.html">机器学习之 Bootstrap、Bagging、Boosting 介绍</a>中介绍了很多了。本文开门见山，直接介绍 GBDT 了，<strong>本文的很多内容都是 GBDT 和 XGBoost 融合，因为二者本来就很像</strong>。</p>
+<h2 id="GBDT-介绍"><a href="#GBDT-介绍" class="headerlink" title="GBDT 介绍"></a>GBDT 介绍</h2><p>GBDT 全称为 Gradient Boosting Decision Tree，是一种用于回归、分类和排序任务的机器学习技术，属于 Boosting 方法族的一部分。Boosting 方法通过分步迭代（stage-wise）的方式来构建模型，在迭代的每一步构建的弱学习器都是为了弥补已有模型的不足。</p>
+<h3 id="GBDT-和-AdaBoost"><a href="#GBDT-和-AdaBoost" class="headerlink" title="GBDT 和 AdaBoost"></a>GBDT 和 AdaBoost</h3><p>Boosting 族算法的著名代表是 AdaBoost，AdaBoost 算法通过给已有模型预测错误的样本更高的权重，使得先前的学习器做错的训练样本在后续受到更多的关注的方式来弥补已有模型的不足。与 AdaBoost 算法不同，<strong>梯度提升方法在迭代的每一步构建一个能够沿着梯度最陡的方向降低损失（steepest-descent）的学习器来弥补已有模型的不足</strong>。经典的 AdaBoost 算法只能处理采用指数损失函数的二分类学习任务，而梯度提升方法通过设置不同的可微损失函数可以处理各类学习任务（多分类、回归、Ranking 等），应用范围大大扩展。</p>
+<p>另一方面，AdaBoost 算法对异常点（outlier）比较敏感，而梯度提升算法通过引入 Bagging 思想、加入正则项等方法能够有效地抵御训练数据中的噪音，具有更好的健壮性。这也是为什么梯度提升算法（尤其是采用决策树作为弱学习器的 GBDT 算法）如此流行的原因，甚至有种观点认为 GBDT 是性能最好的机器学习算法，这当然有点过于激进又固步自封的味道，但通常各类机器学习算法比赛的赢家们都非常青睐 GBDT 算法，由此可见该算法的实力不可小觑。</p>
+<h3 id="GBDT-的优劣点"><a href="#GBDT-的优劣点" class="headerlink" title="GBDT 的优劣点"></a>GBDT 的优劣点</h3><p>基于梯度提升算法的学习器叫做 GBM(Gradient Boosting Machine)。理论上，GBM 可以选择各种不同的学习算法作为基学习器。现实中，用得最多的基学习器是决策树。为什么梯度提升方法倾向于选择决策树（通常是 CART 树）作为基学习器呢？这与决策树算法自身的优点有很大的关系。</p>
+<ul>
+<li>决策树可以认为是 if-then 规则的集合，易于理解，可解释性强，预测速度快。</li>
+<li>决策树算法相比于其他的算法需要更少的特征工程，比如可以不用做特征标准化，可以很好的处理字段缺失的数据，也可以不用关心特征间是否相互依赖等。</li>
+<li>决策树能够自动组合多个特征，它可以毫无压力地处理特征间的交互关系并且是非参数化的，因此你不必担心异常值或者数据是否线性可分（举个例子，决策树能轻松处理好类别 $A$ 在某个特征维度 $x$ 的末端，类别 $B$ 在中间，然后类别 $A$ 又出现在特征维度 $x$ 前端的情况）。</li>
+</ul>
+<p>不过，单独使用决策树算法时，有容易过拟合缺点。所幸的是，通过各种方法，抑制决策树的复杂性，降低单颗决策树的拟合能力，再通过梯度提升的方法集成多个决策树，最终能够很好的解决过拟合的问题。由此可见，梯度提升方法和决策树学习算法可以互相取长补短，是一对完美的搭档。至于抑制单颗决策树的复杂度的方法有很多，比如限制树的最大深度、限制叶子节点的最少样本数量、限制节点分裂时的最少样本数量、吸收 bagging 的思想对训练样本采样（subsample），在学习单颗决策树时只使用一部分训练样本、借鉴随机森林的思路在学习单颗决策树时只采样一部分特征、在目标函数中添加正则项惩罚复杂的树结构等。现在主流的 GBDT 算法实现中这些方法基本上都有实现，因此 GBDT 算法的超参数还是比较多的，应用过程中需要精心调参，并用交叉验证的方法选择最佳参数。</p>
+<h2 id="加法模型"><a href="#加法模型" class="headerlink" title="加法模型"></a>加法模型</h2><p>GBDT 听起来很厉害，看上去很复杂，实际算法模型却很简单，可以简单的认为是由 $K$ 棵树组成的加法模型：</p>
+<script type="math/tex; mode=display">
+\hat{y}_i=\sum_{k=1}^K f_k(x_i), f_k \in F</script><p>从上面公式可以看出，GBDT 预测的结果就是多个串联的树的预测结果的和。那么这些树是如何训练学习的呢？</p>
+<p>首先定义目标函数为： $Obj=\sum<em>{i=1}^n l(y_i, \hat{y}_i) + \sum</em>{k=1}^K \Omega(f_k)$，其中 $\Omega$ 表示决策树的复杂度（树的复杂度可以考虑树的节点数量、树的深度或者叶子节点所对应的分数的L2范数等等），作为参数正则化项，前一部分就是我们熟悉的损失函数。和大多数机器学习的任务一样，我们训练的目标就是使得目标函数最小化。</p>
+<p>解这一优化问题，可以用前向分布算法（forward stagewise algorithm）。因为学习的是加法模型，如果能够从前往后，每一步只学习一个基函数及其系数（结构），逐步逼近优化目标函数，那么就可以简化复杂度。这一学习过程称之为 Boosting。具体地，我们从一个常量预测开始，每次学习一个新的函数，过程如下： </p>
+<script type="math/tex; mode=display">
+\begin{split}
+\hat{y}_i^0 &= 0 \\
+\hat{y}_i^1 &= f_1(x_i) = \hat{y}_i^0 + f_1(x_i) \\
+\hat{y}_i^2 &= f_1(x_i) + f_2(x_i) = \hat{y}_i^1 + f_2(x_i) \\
+& \cdots \\
+\hat{y}_i^t &= \sum_{k=1}^t f_k(x_i) = \hat{y}_i^{t-1} + f_t(x_i) \\
+\end{split}</script><p>那么，在每一步如何决定哪一个函数 $f$ 被加入呢？指导原则还是最小化目标函数。</p>
+<p>在第 $t$ 步，模型对于 $x_i$ 的预测为：$\hat{y}_i^t= \hat{y}_i^{t-1} + f_t(x_i)$，其中 $f_t(x_i)$ 为这一轮中我们要学习的函数（一颗决策树）。这个时候，<strong>目标函数</strong>可以表示为：</p>
+<script type="math/tex; mode=display">
+\begin{split}
+Obj^{(t)} &= \sum_{i=1}^nl(y_i, \hat{y}_i^t) + \sum_{i=i}^t \Omega(f_i) \\
+&=  \sum_{i=1}^n l\left(y_i, \hat{y}_i^{t-1} + f_t(x_i) \right) + \Omega(f_t) + constant
+\end{split}\tag{1}</script><p>举例说明，<strong>假设损失函数为平方损失（square loss），则目标函数为</strong>： </p>
+<script type="math/tex; mode=display">
+\begin{split}
+Obj^{(t)} &= \sum_{i=1}^n \left(y_i - (\hat{y}_i^{t-1} + f_t(x_i)) \right)^2 + \Omega(f_t) + constant \\
+&= \sum_{i=1}^n \left[2(\hat{y}_i^{t-1} - y_i)f_t(x_i) + f_t(x_i)^2 \right] + \Omega(f_t) + constant
+\end{split}\tag{2}</script><p>其中，$(\hat{y}_i^{t-1} - y_i)$ 称之为残差（residual）。因此，使用平方损失函数时，GBDT算法的每一步在生成决策树时只需要拟合前面的模型的残差。</p>
+<p>等式 (1) 为什么能够写成等式 (2) 呢？下面我们用泰勒展开来解释这个损失函数。</p>
+<blockquote>
+<p>泰勒公式：设 $n$ 是一个正整数，如果定义在一个包含 $a$ 的区间上的函数 $f$ 在点 $a$ 处 $n+1$ 次可导，那么对于这个区间上的任意 $x$ 都有：$\displaystyle f(x)=\sum<em>{n=0}^{N}\frac{f^{(n)}(a)}{n!}(x-a)^n+R</em> n(x)$，其中的多项式称为函数在 $a$ 处的泰勒展开式，$R_n(x)$ 是泰勒公式的余项且是 $(x-a)^n$ 的高阶无穷小。</p>
+</blockquote>
+<p>根据泰勒公式把函数在 $f(x+\Delta x)$ 点 $x$ 处二阶展开，可得到如下等式：</p>
+<script type="math/tex; mode=display">
+f(x+\Delta x) \approx f(x) + f'(x)\Delta x + \frac12 f''(x)\Delta x^2 \tag 3</script><p>所以由等式 (1) 可知，目标函数是关于变量 $\hat{y}_i^{t-1} + f_t(x_i)$ 的函数（$y_i$ 表示 label，是已知量）。我们可以把变量 $\hat{y}_i^{t-1}$ 看成是等式 (3) 中的 $x$，把变量 $f_t(x_i)$ 看成是其中的 $\Delta x$，则等式 (1) 可转化为： </p>
+<script type="math/tex; mode=display">
+Obj^{(t)} = \sum_{i=1}^n \left[ l(y_i, \hat{y}_i^{t-1}) + g_if_t(x_i) + \frac12h_if_t^2(x_i) \right]  + \Omega(f_t) + constant \tag 4</script><p>其中，$g<em>i$ 定义为 损失函数 $l(x)$ 的一阶导数：$g_i=\partial</em>{\hat{y}^{t-1}}l(y<em>i,\hat{y}^{t-1})$。$h_i$ 定义为损失函数的二阶导数：$h_i=\partial</em>{\hat{y}^{t-1}}^2l(y<em>i,\hat{y}^{t-1})$。举个例子，假设损失函数为平方损失函数，则 $g_i=\partial</em>{\hat{y}^{t-1}}(\hat{y}^{t-1} - y<em>i)^2 = 2(\hat{y}^{t-1} - y_i)$，$h_i=\partial</em>{\hat{y}^{t-1}}^2(\hat{y}^{t-1} - y_i)^2 = 2$。我们将 $g_i$ 和 $h_i$ 带入等式 (4) 就可以得到了基于平方损失函数的目标函数，也就是等式 (2)。</p>
+<p>由于函数中的常量在函数最小化的过程中不起作用，因此我们可以从等式 (4) 中移除掉常量项，得： </p>
+<script type="math/tex; mode=display">
+Obj^{(t)} \approx \sum_{i=1}^n \left[ g_if_t(x_i) + \frac12h_if_t^2(x_i) \right]  + \Omega(f_t) \tag 5</script><p>由于要学习的函数仅仅依赖于目标函数，从等式 (5) 可以看出只需为学习任务定义好损失函数，并为每个训练样本计算出损失函数的一阶导数和二阶导数，<strong>通过在训练样本集上最小化等式 (5) 即可求得每步要学习的函数 $f(x)，从而根据加法模型等式 (0) 可得最终要学习的模型</strong>。</p>
+<h2 id="GBDT-算法模型"><a href="#GBDT-算法模型" class="headerlink" title="GBDT 算法模型"></a>GBDT 算法模型</h2><p>了解了加法模型，我们再来看 GBDT 中怎么运用加法模型。对于一颗生成好的决策树，假设其叶子节点个数为 $T$，该决策树是由所有叶子节点对应的值组成的向量 $w \in R^T$，以及一个把特征向量映射到叶子节点索引（Index）的函数 $q:R^d \to {1,2,\cdots,T}$ 组成的。因此，策树可以定义为：$f<em>t(x)=w</em>{q(x)}$。</p>
+<p>决策树的复杂度可以由正则项 $\Omega(f<em>t)=\gamma T + \frac12 \lambda \sum</em>{j=1}^T w_j^2$ 来定义，即决策树模型的复杂度由生成的树的叶子节点数量和叶子节点对应的值向量的L2范数决定。</p>
+<p>定义集合 $I_j={ i \vert q(x_i)=j }$ 为所有被划分到叶子节点 $j$ 的训练样本的集合。上面的等式 (5) 可以根据树的叶子节点重新组织为 $T$ 个独立的二次函数的和： </p>
+<script type="math/tex; mode=display">
+\begin{split}
+Obj^{(t)} &\approx \sum_{i=1}^n \left[ g_if_t(x_i) + \frac12h_if_t^2(x_i) \right]  + \Omega(f_t) \\
+&= \sum_{i=1}^n \left[ g_iw_{q(x_i)} + \frac12h_iw_{q(x_i)}^2 \right] + \gamma T + \frac12 \lambda \sum_{j=1}^T w_j^2 \\
+&= \sum_{j=1}^T \left[(\sum_{i \in I_j}g_i)w_j + \frac12(\sum_{i \in I_j}h_i + \lambda)w_j^2 \right] + \gamma T
+\end{split}\tag 6</script><p>定义 $G<em>j=\sum</em>{i \in I<em>j}g_i$，$H_j=\sum</em>{i \in I_j}h_i$，则等式 (6) 可写为：</p>
+<script type="math/tex; mode=display">
+Obj^{(t)} = \sum_{j=1}^T \left[G_iw_j + \frac12(H_i + \lambda)w_j^2 \right] + \gamma T</script><p>假设树的结构是固定的，即函数 $q(x)$ 确定，令函数的 $Obj^{(t)}$ 一阶导数等于0，即可求得叶子节点 $j$ 对应的值为：</p>
+<script type="math/tex; mode=display">
+w_j^*=-\frac{G_j}{H_j+\lambda} \tag 7</script><p>此时，目标函数的值为</p>
+<script type="math/tex; mode=display">
+Obj = -\frac12 \sum_{j=1}^T \frac{G_j^2}{H_j+\lambda} + \gamma T \tag 8</script><p>综上，为了便于理解，单颗决策树的学习过程可以大致描述为： </p>
+<ol>
+<li>枚举所有可能的树结构 $q$</li>
+<li>用等式 (8) 为每个 $q$ 计算其对应的分数 $Obj$，分数越小说明对应的树结构越好 </li>
+<li>根据上一步的结果，找到最佳的树结构，用等式 (7) 为树的每个叶子节点计算预测值</li>
+</ol>
+<p>然而，可能的树结构数量是无穷的，所以实际上我们不可能枚举所有可能的树结构。通常情况下，我们采用贪心策略来生成决策树的每个节点。</p>
+<ol>
+<li>从深度为 0 的树开始，对每个叶节点枚举所有的可用特征 </li>
+<li>针对每个特征，把属于该节点的训练样本根据该特征值升序排列，通过线性扫描的方式来决定该特征的最佳分裂点，并记录该特征的最大收益（采用最佳分裂点时的收益） </li>
+<li>选择收益最大的特征作为分裂特征，用该特征的最佳分裂点作为分裂位置，把该节点生长出左右两个新的叶节点，并为每个新节点关联对应的样本集 </li>
+<li>回到第 1 步，递归执行到满足特定条件为止</li>
+</ol>
+<p>在上述算法的第二步，样本排序的时间复杂度为 $O(n \log n)$，假设公用 $K$ 个特征，那么生成一颗深度为 $K$ 的树的时间复杂度为 $O(dKn\log n)$。具体实现可以进一步优化计算复杂度，比如可以缓存每个特征的排序结果等。</p>
+<p>如何计算每次分裂的收益呢？假设当前节点记为 $C$，分裂之后左孩子节点记为 $L$，右孩子节点记为 $R$，则该分裂获得的收益定义为当前节点的目标函数值减去左右两个孩子节点的目标函数值之和：$Gain=Obj_C-Obj_L-Obj_R$，具体地，根据等式 (8) 可得：</p>
+<script type="math/tex; mode=display">
+Gain=\frac12 \left[ \frac{G_L^2}{H_L+\lambda} + \frac{G_R^2}{H_R+\lambda} - \frac{(G_L+G_R)^2}{H_L+H_R+\lambda}\right] - \gamma \tag 9</script><p>其中，$-\gamma$ 项表示因为增加了树的复杂性（该分裂增加了一个叶子节点）带来的惩罚。</p>
+<p>最后，总结一下 GBDT 的学习算法： </p>
+<ol>
+<li>算法每次迭代生成一颗新的决策树 </li>
+<li>在每次迭代开始之前，计算损失函数在每个训练样本点的一阶导数 $g_i$ 和二阶导数 $h_i$ </li>
+<li>通过贪心策略生成新的决策树，通过等式 (7) 计算每个叶节点对应的预测值 </li>
+<li>把新生成的决策树 $f_t(x)$ 添加到模型中：$\hat{y}_i^t = \hat{y}_i^{t-1} + f_t(x_i)$</li>
+</ol>
+<p>通常在第四步，我们把模型更新公式替换为：$\hat{y}_i^t = \hat{y}_i^{t-1} + \epsilon f_t(x_i)$，其中 $\epsilon$ 称之为步长或者学习率。增加 $\epsilon$ 因子的目的是为了避免模型过拟合。</p>
+<p>关于 GBDT 的实际计算简单实例，可以参考我的另一篇文章：<a href="https://murphypei.github.io/blog/2019/04/cart-tree.html">机器学习之分类与回归树(CART)</a></p>
+<h4 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h4><ul>
+<li><a target="_blank" rel="noopener" href="https://www.zybuluo.com/yxd/note/611571">https://www.zybuluo.com/yxd/note/611571</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2019/04/gbdt.html" title="梯度提升决策树(GBDT)">https:&#x2F;&#x2F;murphypei.github.io&#x2F;blog&#x2F;2019&#x2F;04&#x2F;gbdt.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-creative-commons&quot;&gt;&lt;&#x2F;i&gt;BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0/" rel="tag"># 机器学习</a>
+            
+              <a href="/tags/Boosting/" rel="tag"># Boosting</a>
+            
+              <a href="/tags/%E5%86%B3%E7%AD%96%E6%A0%91/" rel="tag"># 决策树</a>
+            
+              <a href="/tags/GBDT/" rel="tag"># GBDT</a>
+            
+              <a href="/tags/XGBoost/" rel="tag"># XGBoost</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2019/04/cart-tree.html" rel="next" title="分类与回归树(CART)">
+                  <i class="fa fa-chevron-left"></i> 分类与回归树(CART)
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2019/05/epoll.html" rel="prev" title="IO 多路复用之 epoll 总结">
+                  IO 多路复用之 epoll 总结 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#GBDT-%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">GBDT 介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GBDT-%E5%92%8C-AdaBoost"><span class="nav-number">1.1.</span> <span class="nav-text">GBDT 和 AdaBoost</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GBDT-%E7%9A%84%E4%BC%98%E5%8A%A3%E7%82%B9"><span class="nav-number">1.2.</span> <span class="nav-text">GBDT 的优劣点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%A0%E6%B3%95%E6%A8%A1%E5%9E%8B"><span class="nav-number">2.</span> <span class="nav-text">加法模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GBDT-%E7%AE%97%E6%B3%95%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.</span> <span class="nav-text">GBDT 算法模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">3.0.1.</span> <span class="nav-text">参考资料</span></a></li></ol></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/%20%7C%7C%20archive">
+        
+          <span class="site-state-item-count">188</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/%20%7C%7C%20th">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/%20%7C%7C%20tags">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">494</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &amp;rarr; https:&#x2F;&#x2F;github.com&#x2F;murphypei" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-github&quot;&gt;&lt;&#x2F;i&gt;GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &amp;rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-envelope&quot;&gt;&lt;&#x2F;i&gt;E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;guo-jia-66-80&#x2F;activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2026</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">697k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">19:22</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js?v=7.3.0.js"></script>
+
+<script src="/js/motion.js?v=7.3.0.js"></script>
+
+
+<script src="/js/schemes/muse.js?v=7.3.0.js"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: 'f29a04812f91b25528a8682446441d38',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

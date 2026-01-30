@@ -1,0 +1,2497 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="本文详细讲解大模型 RLHF 阶段使用的 PPO（Proximal Policy Optimization）训练原理和实现细节。我们将从强化学习基础概念开始，逐步深入到 PPO 在 LLM 中的具体应用，最后分析 PPO 的损失函数和优势估计计算。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LLM 训练：PPO 原理和实现细节">
+<meta property="og:url" content="https://murphypei.github.io/blog/2025/05/llm-ppo.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="本文详细讲解大模型 RLHF 阶段使用的 PPO（Proximal Policy Optimization）训练原理和实现细节。我们将从强化学习基础概念开始，逐步深入到 PPO 在 LLM 中的具体应用，最后分析 PPO 的损失函数和优势估计计算。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/llm/ppo/rl.webp">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/llm/ppo/nlp-rl.webp">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/llm/ppo/rlhf.webp">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/llm/ppo/actor.webp">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/llm/ppo/ref.webp">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/llm/ppo/critic.webp">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/llm/ppo/reward.webp">
+<meta property="article:published_time" content="2025-05-25T09:15:51.000Z">
+<meta property="article:modified_time" content="2026-01-13T03:50:08.595Z">
+<meta property="article:author" content="AngryBirds">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="RLHF">
+<meta property="article:tag" content="PPO">
+<meta property="article:tag" content="强化学习">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://murphypei.github.io/images/posts/llm/ppo/rl.webp">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2025/05/llm-ppo">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>LLM 训练：PPO 原理和实现细节 | 拾荒志</title>
+  <meta name="generator" content="Hexo 5.4.2">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于
+    </a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2025/05/llm-ppo.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">LLM 训练：PPO 原理和实现细节
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2025-05-25 17:15:51" itemprop="dateCreated datePublished" datetime="2025-05-25T17:15:51+08:00">2025-05-25</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2026-01-13 11:50:08" itemprop="dateModified" datetime="2026-01-13T11:50:08+08:00">2026-01-13</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/LLM/" itemprop="url" rel="index"><span itemprop="name">LLM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>13k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>21 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>本文详细讲解大模型 RLHF 阶段使用的 PPO（Proximal Policy Optimization）训练原理和实现细节。我们将从强化学习基础概念开始，逐步深入到 PPO 在 LLM 中的具体应用，最后分析 PPO 的损失函数和优势估计计算。</p>
+<span id="more"></span>
+<h2 id="1-强化学习基础"><a href="#1-强化学习基础" class="headerlink" title="1. 强化学习基础"></a>1. 强化学习基础</h2><h3 id="1-1-什么是强化学习"><a href="#1-1-什么是强化学习" class="headerlink" title="1.1 什么是强化学习"></a>1.1 什么是强化学习</h3><p>强化学习（Reinforcement Learning, RL）是机器学习的一个分支，区别于监督学习和无监督学习。其核心特点是：</p>
+<ol>
+<li><strong>无标签学习</strong>：没有预定义的正确答案，而是通过试错和奖励来学习</li>
+<li><strong>与环境交互</strong>：智能体通过与环境的交互来获取反馈信号</li>
+<li><strong>延迟反馈</strong>：奖励可能是延迟的，需要考虑长期累积回报而不仅是即时奖励</li>
+<li><strong>自我改进</strong>：根据奖励信号不断优化决策策略</li>
+</ol>
+<h3 id="1-2-强化学习的核心要素"><a href="#1-2-强化学习的核心要素" class="headerlink" title="1.2 强化学习的核心要素"></a>1.2 强化学习的核心要素</h3><p>强化学习框架包含两个主要实体：<strong>智能体（Agent）</strong>和<strong>环境（Environment）</strong>，两者通过以下要素进行交互：</p>
+<p><img src="/images/posts/llm/ppo/rl.webp" alt=""></p>
+<p><strong>核心概念</strong>：</p>
+<ul>
+<li><strong>状态（State）$s_t$</strong>：智能体在时刻 $t$ 观测到的环境状态</li>
+<li><strong>动作（Action）$a_t$</strong>：智能体选择执行的动作，属于动作空间 $\mathcal{A}$</li>
+<li><strong>奖励（Reward）$r_t$</strong>：智能体执行动作后从环境获得的即时反馈</li>
+<li><strong>策略（Policy）$\pi(a|s)$</strong>：智能体的决策函数，定义在给定状态下选择动作的概率</li>
+<li><strong>轨迹（Trajectory）$\tau$</strong>：状态-动作-奖励序列 $(s_0, a_0, r_0, s_1, a_1, r_1, \ldots)$</li>
+</ul>
+<h3 id="1-3-交互过程"><a href="#1-3-交互过程" class="headerlink" title="1.3 交互过程"></a>1.3 交互过程</h3><p>一个完整的强化学习交互循环如下：</p>
+<ol>
+<li>智能体在状态 $s_t$ 下，根据策略 $\pi$ 选择动作 $a_t$</li>
+<li>环境根据动作 $a<em>t$ 转移到新状态 $s</em>{t+1}$，并返回奖励 $r_t$</li>
+<li>智能体根据获得的 $(s<em>t, a_t, r_t, s</em>{t+1})$ 四元组来更新策略</li>
+<li>重复上述过程，不断优化策略</li>
+</ol>
+<p><strong>根本目标</strong>：找到最优策略 $\pi^*$，使得智能体根据环境状态选择的动作能最大化长期累积奖励。</p>
+<p>数学上，累积奖励定义为：</p>
+<script type="math/tex; mode=display">
+G_t = \sum_{k=0}^{\infty} \gamma^k r_{t+k}</script><p>其中 $\gamma \in [0,1]$ 是折扣因子，用于平衡即时奖励和未来奖励的重要性。</p>
+<h3 id="1-4-策略梯度定理"><a href="#1-4-策略梯度定理" class="headerlink" title="1.4 策略梯度定理"></a>1.4 策略梯度定理</h3><p>策略梯度定理是强化学习中的核心理论基础，为 PPO 算法提供了数学基础。</p>
+<h4 id="目标函数"><a href="#目标函数" class="headerlink" title="目标函数"></a>目标函数</h4><p>在强化学习中，我们的目标是最大化期望累积奖励。对于策略 $\pi_\theta$（由参数 $\theta$ 参数化），目标函数定义为：</p>
+<script type="math/tex; mode=display">
+J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} [R(\tau)]</script><p>其中：</p>
+<ul>
+<li>$\tau$ 是轨迹（状态-动作-奖励序列）</li>
+<li>$R(\tau)$ 是轨迹 $\tau$ 的累积奖励</li>
+<li>$\mathbb{E}<em>{\tau \sim \pi</em>\theta}$ 表示在策略 $\pi_\theta$ 下的期望</li>
+</ul>
+<h4 id="策略梯度定理的核心内容"><a href="#策略梯度定理的核心内容" class="headerlink" title="策略梯度定理的核心内容"></a>策略梯度定理的核心内容</h4><p>策略梯度定理告诉我们如何通过梯度上升来优化策略参数 $\theta$，以最大化目标函数 $J(\theta)$。具体地：</p>
+<script type="math/tex; mode=display">
+\nabla_\theta J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta} [\nabla_\theta \log \pi_\theta(\tau) R(\tau)]</script><p><strong>公式含义</strong>：</p>
+<ul>
+<li>左侧：目标函数 $J(\theta)$ 关于参数 $\theta$ 的梯度，指示参数如何变化才能增加期望奖励</li>
+<li>右侧：策略对数概率的梯度与轨迹奖励的乘积的期望</li>
+</ul>
+<p><strong>直观理解</strong>：</p>
+<ul>
+<li>如果轨迹 $\tau$ 的奖励 $R(\tau)$ 较高，我们就增加这个轨迹的概率</li>
+<li>如果轨迹 $\tau$ 的奖励 $R(\tau)$ 较低，我们就减少这个轨迹的概率</li>
+<li>$\nabla<em>\theta \log \pi</em>\theta(\tau)$ 指示在参数空间中应该朝哪个方向移动</li>
+</ul>
+<h4 id="策略梯度方法的局限性"><a href="#策略梯度方法的局限性" class="headerlink" title="策略梯度方法的局限性"></a>策略梯度方法的局限性</h4><p>虽然策略梯度定理提供了优化框架，但直接应用存在几个严重问题：</p>
+<ol>
+<li><strong>高方差</strong>：直接使用轨迹奖励会导致方差很大，训练不稳定</li>
+<li><strong>样本效率低</strong>：需要大量样本才能准确估计期望，导致采样成本高</li>
+<li><strong>学习信号稀疏</strong>：对于长轨迹，只有轨迹末端的奖励，无法有效指导中间步骤的学习</li>
+<li><strong>更新步长难控</strong>：策略更新幅度可能过大，导致学习不稳定甚至发散</li>
+</ol>
+<p>这些问题激发了 PPO 等改进算法的发展。</p>
+<h3 id="1-5-PPO-算法的核心思想"><a href="#1-5-PPO-算法的核心思想" class="headerlink" title="1.5 PPO 算法的核心思想"></a>1.5 PPO 算法的核心思想</h3><p>PPO（Proximal Policy Optimization）通过引入<strong>重要性采样比率（Importance Sampling Ratio）</strong> 来限制策略更新的幅度，在保证训练稳定性的同时提高样本效率。</p>
+<h4 id="重要性采样比率"><a href="#重要性采样比率" class="headerlink" title="重要性采样比率"></a>重要性采样比率</h4><p>PPO 定义的重要性采样比率为：</p>
+<script type="math/tex; mode=display">
+r_t(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{old}}(a_t|s_t)}</script><p><strong>比率含义</strong>：</p>
+<ul>
+<li>$\pi<em>{\theta</em>{old}}(a_t|s_t)$：旧策略（更新前）在状态 $s_t$ 下选择动作 $a_t$ 的概率</li>
+<li>$\pi_\theta(a_t|s_t)$：新策略（更新后）在状态 $s_t$ 下选择动作 $a_t$ 的概率</li>
+<li>$r_t(\theta)$：新策略相对于旧策略的概率变化比例</li>
+</ul>
+<h4 id="为什么需要限制策略更新幅度"><a href="#为什么需要限制策略更新幅度" class="headerlink" title="为什么需要限制策略更新幅度"></a>为什么需要限制策略更新幅度</h4><ol>
+<li><strong>防止策略崩溃</strong>：过大的更新可能导致某些动作概率变为 0，失去探索能力，或导致策略完全改变而偏离原有轨道</li>
+<li><strong>保证训练稳定性</strong>：过大的更新步长会导致目标函数振荡甚至发散</li>
+<li><strong>避免灾难性遗忘</strong>：过度更新会使新策略完全偏离旧策略，丢失之前学到的有用知识</li>
+</ol>
+<h4 id="PPO-的裁剪机制"><a href="#PPO-的裁剪机制" class="headerlink" title="PPO 的裁剪机制"></a>PPO 的裁剪机制</h4><p>PPO 的主要创新是引入了裁剪机制来限制更新幅度：</p>
+<script type="math/tex; mode=display">
+L^{CLIP}(\theta) = \mathbb{E}_t \left[\min(r_t(\theta) A_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) A_t)\right]</script><p><strong>裁剪函数定义</strong>：</p>
+<script type="math/tex; mode=display">
+\text{clip}(x, a, b) = \begin{cases}
+a & \text{if } x < a \\
+x & \text{if } a \leq x \leq b \\
+b & \text{if } x > b
+\end{cases}</script><p><strong>核心机制</strong>：</p>
+<p>当优势函数 $A_t &gt; 0$（表示这是一个好的动作）时：</p>
+<ul>
+<li>如果 $r_t(\theta) &lt; 1$（新策略概率较小），鼓励增加动作概率，但最多只能增加到 $1+\epsilon$ 倍</li>
+<li>如果 $r_t(\theta) &gt; 1+\epsilon$（新策略概率已经足够大），停止鼓励，避免过度优化</li>
+</ul>
+<p>当优势函数 $A_t &lt; 0$（表示这是一个坏的动作）时：</p>
+<ul>
+<li>如果 $r_t(\theta) &gt; 1$（新策略概率较大），鼓励减少动作概率，但最多只能减少到 $1-\epsilon$ 倍</li>
+<li>如果 $r_t(\theta) &lt; 1-\epsilon$（新策略概率已经足够小），停止惩罚，避免过度惩罚</li>
+</ul>
+<p><strong>参数说明</strong>：</p>
+<ul>
+<li>$A_t$：优势函数（衡量动作相对于平均水平的优势）</li>
+<li>$\epsilon$：裁剪范围，通常设置为 0.2，意味着策略更新幅度被限制在 ±20% 以内</li>
+<li>这个设计确保了策略不会偏离过远，同时充分利用有利的轨迹进行学习</li>
+</ul>
+<h3 id="1-6-价值函数"><a href="#1-6-价值函数" class="headerlink" title="1.6 价值函数"></a>1.6 价值函数</h3><h4 id="为什么需要价值函数"><a href="#为什么需要价值函数" class="headerlink" title="为什么需要价值函数"></a>为什么需要价值函数</h4><p>在策略梯度方法中，我们使用轨迹的累积奖励 $R(\tau)$ 来更新策略。但这个方法存在一个问题：<strong>方差很大</strong>。</p>
+<p>对于一条长轨迹，很多步骤都会获得同样的奖励信号（终点的奖励），这会导致许多中间步骤的梯度估计方差很高，学习效率低。</p>
+<p>为了解决这个问题，我们引入<strong>价值函数（Value Function）</strong> 的概念：价值函数预测从某个状态开始能获得的期望累积奖励，可以作为”基线”来减少方差。</p>
+<h4 id="状态价值函数"><a href="#状态价值函数" class="headerlink" title="状态价值函数"></a>状态价值函数</h4><p>状态价值函数 $V(s_t)$ 定义为：从状态 $s_t$ 开始，遵循策略 $\pi$ 能获得的期望累积奖励。</p>
+<script type="math/tex; mode=display">
+V^\pi(s_t) = \mathbb{E}_{\pi} \left[\sum_{k=0}^{\infty} \gamma^k r_{t+k} \mid S_t = s_t\right]</script><p><strong>关键特点</strong>：</p>
+<ul>
+<li>仅依赖于状态，与具体的动作无关</li>
+<li>表示该状态的”好坏程度”（价值）</li>
+<li>在 LLM 中，Critic 模型就是用来估计 $V(s_t)$ 的</li>
+</ul>
+<h4 id="动作价值函数"><a href="#动作价值函数" class="headerlink" title="动作价值函数"></a>动作价值函数</h4><p>动作价值函数 $Q(s_t, a_t)$ 定义为：在状态 $s_t$ 下采取动作 $a_t$，然后遵循策略 $\pi$ 能获得的期望累积奖励。</p>
+<script type="math/tex; mode=display">
+Q^\pi(s_t, a_t) = \mathbb{E}_{\pi} \left[\sum_{k=0}^{\infty} \gamma^k r_{t+k} \mid S_t = s_t, A_t = a_t\right]</script><p><strong>关键特点</strong>：</p>
+<ul>
+<li>依赖于状态和具体的动作</li>
+<li>表示在特定状态下采取特定动作的”好坏程度”</li>
+<li>可以用来评估一个动作相对于其他动作的相对优势</li>
+</ul>
+<h4 id="两种价值函数的关系"><a href="#两种价值函数的关系" class="headerlink" title="两种价值函数的关系"></a>两种价值函数的关系</h4><p>状态价值函数是动作价值函数在所有可能动作上的期望：</p>
+<script type="math/tex; mode=display">
+V^\pi(s_t) = \mathbb{E}_{a \sim \pi(\cdot|s_t)} [Q^\pi(s_t, a)]</script><p>这个关系说明：某个状态的价值等于在该状态下遵循策略选择所有可能动作的期望价值。</p>
+<h3 id="1-7-优势函数"><a href="#1-7-优势函数" class="headerlink" title="1.7 优势函数"></a>1.7 优势函数</h3><h4 id="概念定义"><a href="#概念定义" class="headerlink" title="概念定义"></a>概念定义</h4><p>优势函数（Advantage Function）衡量了在某个状态下采取某个特定动作相对于该状态平均水平的优势程度。它是 PPO 算法中最重要的概念之一。</p>
+<script type="math/tex; mode=display">
+A_t(s_t, a_t) = Q(s_t, a_t) - V(s_t)</script><p><strong>核心含义</strong>：</p>
+<script type="math/tex; mode=display">
+A_t = \text{该动作的价值} - \text{该状态下的平均价值}</script><h4 id="优势函数的直观理解"><a href="#优势函数的直观理解" class="headerlink" title="优势函数的直观理解"></a>优势函数的直观理解</h4><ul>
+<li>如果 $A_t &gt; 0$：表示动作 $a_t$ 比该状态的平均水平更好，应该<strong>增加</strong>这个动作的概率</li>
+<li>如果 $A_t &lt; 0$：表示动作 $a_t$ 比该状态的平均水平更差，应该<strong>减少</strong>这个动作的概率</li>
+<li>如果 $A_t \approx 0$：表示动作 $a_t$ 处于平均水平，既不特别好也不特别差</li>
+</ul>
+<h4 id="优势函数的优势（为什么用它）"><a href="#优势函数的优势（为什么用它）" class="headerlink" title="优势函数的优势（为什么用它）"></a>优势函数的优势（为什么用它）</h4><p>与直接使用奖励相比，优势函数有几个重要优势：</p>
+<ol>
+<li><strong>减少方差</strong>：相比使用原始奖励，优势函数通过相对比较而不是绝对值，大大降低了学习信号的方差，使训练更稳定</li>
+<li><strong>有效的基线</strong>：状态价值函数 $V(s_t)$ 作为基线（baseline），消除了与动作选择无关的状态价值部分，让梯度只关注动作的相对优劣</li>
+<li><strong>更细粒度的反馈</strong>：在同一状态下，优势函数能清晰区分不同动作的相对好坏，提供更精确的学习信号</li>
+<li><strong>加速收敛</strong>：相对比较的学习信号更容易指导策略优化，使训练收敛速度更快</li>
+</ol>
+<h4 id="时序差分估计"><a href="#时序差分估计" class="headerlink" title="时序差分估计"></a>时序差分估计</h4><p>在实践中，我们通常使用<strong>时序差分（Temporal Difference, TD）</strong> 方法来估计优势函数。最简单的 TD(0) 估计为：</p>
+<script type="math/tex; mode=display">
+A_t^{\text{TD}} = r_t + \gamma V(s_{t+1}) - V(s_t)</script><p>这个公式的含义是：</p>
+<ul>
+<li>$r<em>t + \gamma V(s</em>{t+1})$：实际观测到的短期收益加上对未来的价值估计</li>
+<li>$V(s_t)$：模型原本对该状态价值的预期</li>
+<li>它们的差异就是”surprise”，即实际与预期的偏差</li>
+</ul>
+<h2 id="2-LLM-中的强化学习应用"><a href="#2-LLM-中的强化学习应用" class="headerlink" title="2. LLM 中的强化学习应用"></a>2. LLM 中的强化学习应用</h2><p>现在我们已经理解了强化学习和 PPO 的基本原理，接下来看看如何将这些理论应用到 LLM 的训练中。</p>
+<h3 id="2-1-LLM-的生成过程"><a href="#2-1-LLM-的生成过程" class="headerlink" title="2.1 LLM 的生成过程"></a>2.1 LLM 的生成过程</h3><p>LLM 的推理过程遵循自回归范式：给定 prompt，模型逐个生成 token，直到生成完毕。具体过程如下：</p>
+<ol>
+<li><strong>初始化</strong>：输入 prompt，对应 RL 中的初始状态 $s_0$</li>
+<li><strong>迭代生成</strong>：每个时刻 $t$，模型基于当前上下文（状态 $s_t$）产生一个新 token（动作 $a_t$）</li>
+<li><strong>状态转移</strong>：产生的新 token 被添加到上下文中，形成新的上下文作为下一时刻的状态 $s_{t+1}$</li>
+<li><strong>终止</strong>：当生成 EOS（End-of-Sequence）token 或达到最大长度时，生成过程结束</li>
+</ol>
+<h3 id="2-2-LLM-生成过程中的-RL-映射"><a href="#2-2-LLM-生成过程中的-RL-映射" class="headerlink" title="2.2 LLM 生成过程中的 RL 映射"></a>2.2 LLM 生成过程中的 RL 映射</h3><p><img src="/images/posts/llm/ppo/nlp-rl.webp" alt=""></p>
+<p>让我们将 LLM 生成过程映射到强化学习框架中：</p>
+<p><strong>核心映射</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>RL 概念</th>
+<th>LLM 中的含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>智能体（Agent）</td>
+<td>语言模型本身</td>
+</tr>
+<tr>
+<td>状态（State）$s_t$</td>
+<td>当前的输入提示和已生成的 token 序列（上下文）</td>
+</tr>
+<tr>
+<td>动作（Action）$a_t$</td>
+<td>在时刻$t$ 生成的 token（从词汇表中选择）</td>
+</tr>
+<tr>
+<td>动作空间</td>
+<td>词汇表（通常包含数万个 token）</td>
+</tr>
+<tr>
+<td>奖励（Reward）$r_t$</td>
+<td>人类偏好信号（通过奖励模型 RM 评估）</td>
+</tr>
+<tr>
+<td>策略（Policy）$\pi$</td>
+<td>模型的概率分布输出$P(a_t \mid s_t)$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键区别</strong>：</p>
+<ul>
+<li>在 RL 中，每一步都可能获得奖励；在 LLM 中，<strong>奖励通常是稀疏的</strong>，只在序列生成完成时才获得一个标量奖励</li>
+<li>这个差异导致 LLM 中的 RLHF 需要特殊的奖励设计和处理</li>
+</ul>
+<h3 id="2-3-RLHF-训练的必要性"><a href="#2-3-RLHF-训练的必要性" class="headerlink" title="2.3 RLHF 训练的必要性"></a>2.3 RLHF 训练的必要性</h3><p>为什么需要用 RLHF 进行后训练呢？</p>
+<ol>
+<li><p><strong>偏离 SFT 目标</strong>：SFT（Supervised Fine-Tuning）阶段使用人工标注的高质量回答来训练，但这种方法：</p>
+<ul>
+<li>数据成本高昂（需要大量人工标注）</li>
+<li>无法很好地优化人类真实的、多样化的偏好</li>
+</ul>
+</li>
+<li><strong>无法直接优化人类偏好</strong>：SFT 是模仿学习，模型学到的是”如何模仿”而不是”如何做得好”</li>
+<li><strong>奖励函数设计困难</strong>：不同的应用场景对 LLM 的要求不同，需要灵活的奖励机制来指导模型朝着特定目标优化</li>
+<li><strong>充分发挥模型能力</strong>：RLHF 能让已有的语言模型进一步优化，使其生成更符合人类偏好的回答</li>
+</ol>
+<h2 id="3-RLHF-中的模型架构"><a href="#3-RLHF-中的模型架构" class="headerlink" title="3. RLHF 中的模型架构"></a>3. RLHF 中的模型架构</h2><p>在 PPO 阶段的 RLHF 训练中，需要协调多个模型来共同完成优化目标。这一节我们详细介绍这些模型及其作用。</p>
+<h3 id="3-1-四个核心模型"><a href="#3-1-四个核心模型" class="headerlink" title="3.1 四个核心模型"></a>3.1 四个核心模型</h3><p>RLHF 中的 PPO 训练涉及 4 个不同的模型，它们各司其职：</p>
+<p><img src="/images/posts/llm/ppo/rlhf.webp" alt=""></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>全称</th>
+<th>作用</th>
+<th>参数更新</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Actor</td>
+<td>Actor Model</td>
+<td>生成回答的策略模型，最终部署的模型</td>
+<td>✓ 需要</td>
+</tr>
+<tr>
+<td>Critic</td>
+<td>Critic Model</td>
+<td>评估状态价值，估计长期收益</td>
+<td>✓ 需要</td>
+</tr>
+<tr>
+<td>Reward Model</td>
+<td>Reward Model</td>
+<td>评分函数，衡量生成回答的整体质量</td>
+<td>✗ 不需要</td>
+</tr>
+<tr>
+<td>Reference</td>
+<td>Reference Model</td>
+<td>参考标准，限制 Actor 的偏离程度</td>
+<td>✗ 不需要</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="3-2-模型详解"><a href="#3-2-模型详解" class="headerlink" title="3.2 模型详解"></a>3.2 模型详解</h3><h4 id="Actor-Model（策略模型）"><a href="#Actor-Model（策略模型）" class="headerlink" title="Actor Model（策略模型）"></a>Actor Model（策略模型）</h4><p><img src="/images/posts/llm/ppo/actor.webp" alt=""></p>
+<p><strong>职责</strong>：生成符合人类偏好的回答</p>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>基于 SFT 模型微调得到，在 PPO 阶段继续优化</li>
+<li>接收 prompt，生成一系列 token 作为回答</li>
+<li>是 RLHF 训练的直接对象，参数持续更新</li>
+</ul>
+<p><strong>工作流程</strong>：</p>
+<ol>
+<li>给定 prompt 输入</li>
+<li>模型根据学到的策略逐个生成 token</li>
+<li>将”prompt + response”送入损失计算体系进行优化</li>
+<li>通过反向传播更新参数</li>
+</ol>
+<h4 id="Reference-Model（参考模型）"><a href="#Reference-Model（参考模型）" class="headerlink" title="Reference Model（参考模型）"></a>Reference Model（参考模型）</h4><p><img src="/images/posts/llm/ppo/ref.webp" alt=""></p>
+<p><strong>职责</strong>：作为优化的约束，防止 Actor 偏离过大</p>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>通常用 SFT 模型初始化</li>
+<li><strong>参数冻结</strong>，在整个 RLHF 过程中不更新</li>
+<li>代表”原始能力基线”</li>
+</ul>
+<p><strong>核心机制 - KL 散度约束</strong>：</p>
+<p>我们希望训练出来的 Actor 既能达到符合人类偏好的目标，又尽量让输出分布与原始 SFT 模型相近。这通过 <strong>KL（Kullback-Leibler）散度</strong>来衡量：</p>
+<script type="math/tex; mode=display">
+D_{KL}(\pi_{\theta} \| \pi_{\text{SFT}}) = \sum_x \pi_{\theta}(x) \log \frac{\pi_{\theta}(x)}{\pi_{\text{SFT}}(x)}</script><p><strong>防止模型训歪的直观理解</strong>：</p>
+<ul>
+<li>如果 Actor 更新使得某些输出的概率变化太大，KL 散度会很高，产生较大的惩罚</li>
+<li>这种约束防止模型为了追求高奖励而生成虚假、有害或无意义的内容</li>
+<li>保证模型保留原有的知识和能力</li>
+</ul>
+<h4 id="Critic-Model（价值模型）"><a href="#Critic-Model（价值模型）" class="headerlink" title="Critic Model（价值模型）"></a>Critic Model（价值模型）</h4><p><img src="/images/posts/llm/ppo/critic.webp" alt=""></p>
+<p><strong>职责</strong>：估计状态的长期价值，指导策略优化</p>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>架构与 Actor 相似，基于 SFT 模型</li>
+<li>添加了一个”Value Head”输出层：将最后一个 token 的隐藏状态（通常 4096 维）映射到一个标量值</li>
+<li><strong>参数需要更新</strong>，通过 MSE 损失函数优化</li>
+</ul>
+<p><strong>价值头的计算</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">隐藏状态 (d_model,) → 线性层 (1,) → 单一标量价值 V(s_t)</span><br></pre></td></tr></table></figure>
+<p><strong>工作流程</strong>：</p>
+<ol>
+<li>接收相同的 prompt + response 输入</li>
+<li>在每个 token 位置都可以输出一个价值估计 $V(s_t)$</li>
+<li>用于计算时序差分 TD 误差和优势函数</li>
+<li>通过价值函数损失来更新参数</li>
+</ol>
+<h4 id="Reward-Model（奖励模型）"><a href="#Reward-Model（奖励模型）" class="headerlink" title="Reward Model（奖励模型）"></a>Reward Model（奖励模型）</h4><p><img src="/images/posts/llm/ppo/reward.webp" alt=""></p>
+<p><strong>职责</strong>：评估整个生成序列的质量</p>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>在 RLHF 第一阶段（Reward Modeling 阶段）提前训练好</li>
+<li><strong>参数冻结</strong>，PPO 阶段不更新</li>
+<li>提供客观的、绝对的评分标准</li>
+</ul>
+<p><strong>奖励计算</strong>：</p>
+<ul>
+<li>只在序列生成完成时（EOS token）进行<strong>一次</strong>评分</li>
+<li>输出一个标量奖励 $r_{\text{final}}$，代表整个回答的质量</li>
+<li>不对中间 token 进行评分（奖励是稀疏的）</li>
+</ul>
+<p><strong>为什么不更新参数</strong>：</p>
+<ul>
+<li>冻结奖励模型确保评分标准的一致性和客观性</li>
+<li>如果边训练边更新，会导致奖励标准不断变化，模型学习信号混乱</li>
+<li>冻结参数保证了训练过程中有一个稳定的、绝对的评估基准</li>
+</ul>
+<h3 id="3-3-四个模型的关键区别对比"><a href="#3-3-四个模型的关键区别对比" class="headerlink" title="3.3 四个模型的关键区别对比"></a>3.3 四个模型的关键区别对比</h3><p><strong>奖励模型 vs 价值模型</strong>：</p>
+<p>这是初学者最容易混淆的地方。让我们清晰地对比：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Reward Model</th>
+<th>Critic Model</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>评分时机</strong></td>
+<td>序列结束时（EOS），一次性评分</td>
+<td>每个 token 位置都有评分</td>
+</tr>
+<tr>
+<td><strong>评分特性</strong></td>
+<td>稀疏奖励（只在末端）</td>
+<td>密集价值估计（每步都有）</td>
+</tr>
+<tr>
+<td><strong>更新</strong></td>
+<td>冻结不更新</td>
+<td>需要更新参数</td>
+</tr>
+<tr>
+<td><strong>作用</strong></td>
+<td>衡量整体质量</td>
+<td>估计长期收益</td>
+</tr>
+<tr>
+<td><strong>输入</strong></td>
+<td>完整的 prompt + response</td>
+<td>完整的 prompt + response</td>
+</tr>
+<tr>
+<td><strong>评分依据</strong></td>
+<td>人类偏好信号</td>
+<td>TD 误差和实际奖励</td>
+</tr>
+<tr>
+<td><strong>反向传播</strong></td>
+<td>无（冻结参数）</td>
+<td>有（通过 Value Loss）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>直观例子</strong>：</p>
+<ul>
+<li>RM：就像最终的考官，在你完整答题后给一个分数</li>
+<li>Critic：就像教练，在你的每一步都给出潜在的长期收益评估</li>
+</ul>
+<h2 id="4-PPO-损失函数与优化"><a href="#4-PPO-损失函数与优化" class="headerlink" title="4. PPO 损失函数与优化"></a>4. PPO 损失函数与优化</h2><p>PPO 的强大之处在于其巧妙的多目标损失函数设计。让我们深入理解 PPO 如何通过损失函数来平衡多个优化目标。</p>
+<h3 id="4-1-总体损失函数"><a href="#4-1-总体损失函数" class="headerlink" title="4.1 总体损失函数"></a>4.1 总体损失函数</h3><p>PPO 的总损失函数由三部分组成：</p>
+<script type="math/tex; mode=display">
+L_{\text{total}} = L^{\text{CLIP}} - \alpha \cdot L^{\text{KL}} + \beta \cdot L^{\text{VF}}</script><p>其中 $L^{\text{CLIP}}$、$L^{\text{KL}}$、$L^{\text{VF}}$ 分别对应：</p>
+<script type="math/tex; mode=display">
+L^{\text{CLIP}} = \mathbb{E}_{t} [\cdots], \quad L^{\text{KL}} = \mathbb{E}_t [\cdots], \quad L^{\text{VF}} = \mathbb{E}_t [\cdots]</script><p><strong>重要</strong>：这里的 $\mathbb{E}_t$ 表示对<strong>所有 token</strong> 的期望，即：</p>
+<script type="math/tex; mode=display">
+\mathbb{E}_t [\cdot] = \frac{1}{T} \sum_{t=1}^{T} [\cdot]</script><p>也就是说：</p>
+<ol>
+<li>首先对单个序列内的所有 token 计算损失并求平均</li>
+<li>然后对 batch 内的所有序列求平均</li>
+</ol>
+<p>每一项都对应一个特定的优化目标：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>损失项</th>
+<th>来源模型</th>
+<th>目标</th>
+<th>权重</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$L^{\text{CLIP}}$</td>
+<td>Actor</td>
+<td>优化策略以最大化奖励</td>
+<td>1（基准）</td>
+</tr>
+<tr>
+<td>$L^{\text{KL}}$</td>
+<td>Reference</td>
+<td>限制与参考模型的偏离</td>
+<td>$\alpha$ （通常 0.2）</td>
+</tr>
+<tr>
+<td>$L^{\text{VF}}$</td>
+<td>Critic</td>
+<td>训练价值函数估计器</td>
+<td>$\beta$ （通常 0.5）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>直观理解</strong>：</p>
+<ul>
+<li>Actor 想要尽可能追求高奖励</li>
+<li>Reference 在其肩膀上按住，说”别偏离原来的太远”</li>
+<li>Critic 在旁边学习”这个状态值多少钱”</li>
+</ul>
+<h3 id="4-2-策略损失：-L-text-CLIP"><a href="#4-2-策略损失：-L-text-CLIP" class="headerlink" title="4.2 策略损失：$L^{\text{CLIP}}$"></a>4.2 策略损失：$L^{\text{CLIP}}$</h3><p>这是 PPO 的核心创新，我们已经详细讨论过。这里补充一些实现细节。</p>
+<h4 id="定义"><a href="#定义" class="headerlink" title="定义"></a>定义</h4><script type="math/tex; mode=display">
+L^{\text{CLIP}} = \mathbb{E}_{t} \left[\min(r_t(\theta) A_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) A_t)\right]</script><p>其中：</p>
+<ul>
+<li>$r<em>t(\theta) = \frac{\pi</em>\theta(a<em>t|s_t)}{\pi</em>{\theta_{\text{old}}}(a_t|s_t)}$：<strong>Token 级别</strong>的重要性采样比率（新策略相对于旧策略的概率比）</li>
+<li>$A_t$：优势估计（也是 <strong>token 级别</strong>）</li>
+<li>$\epsilon = 0.2$：裁剪范围</li>
+</ul>
+<p><strong>关键点</strong>：PPO 在<strong>每个 token 位置</strong>都计算一个重要性采样比率和优势，然后对这些 token 进行 min 和 clip 操作。这与只考虑序列级别的方法不同。</p>
+<h4 id="为什么使用-min-操作"><a href="#为什么使用-min-操作" class="headerlink" title="为什么使用 min 操作"></a>为什么使用 min 操作</h4><p>PPO 使用 $\min$ 操作和裁剪的巧妙之处：</p>
+<ol>
+<li><p><strong>无裁剪项 $r_t(\theta) A_t$</strong>：</p>
+<ul>
+<li>当 $A_t &gt; 0$ 时，$r_t$ 越大越好（鼓励增加好动作）</li>
+<li>当 $A_t &lt; 0$ 时，$r_t$ 越小越好（鼓励减少坏动作）</li>
+</ul>
+</li>
+<li><p><strong>有裁剪项 $\text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) A_t$</strong>：</p>
+<ul>
+<li>强制 $r_t$ 的范围，防止更新过大</li>
+</ul>
+</li>
+<li><p><strong>$\min$ 操作的作用</strong>：</p>
+<ul>
+<li>当 $A_t &gt; 0$（好动作）时，选择两者中较小的，防止过度优化</li>
+<li>当 $A_t &lt; 0$（坏动作）时，选择两者中较小的，防止过度惩罚</li>
+</ul>
+</li>
+</ol>
+<p><strong>数值例子</strong>：</p>
+<p>假设 $\epsilon = 0.2$，$A_t = 1.0$（好动作）：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>$r_t(\theta)$</th>
+<th>$r_t A_t$</th>
+<th>$\text{clip}(r_t) A_t$</th>
+<th>$\min$ 结果</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.5</td>
+<td>1.5</td>
+<td>1.2</td>
+<td>1.2</td>
+<td>已经足够好了，停止优化</td>
+</tr>
+<tr>
+<td>1.3</td>
+<td>1.3</td>
+<td>1.2</td>
+<td>1.2</td>
+<td>已经足够好了，停止优化</td>
+</tr>
+<tr>
+<td>1.1</td>
+<td>1.1</td>
+<td>1.1</td>
+<td>1.1</td>
+<td>继续鼓励</td>
+</tr>
+<tr>
+<td>0.9</td>
+<td>0.9</td>
+<td>0.9</td>
+<td>0.9</td>
+<td>有所衰退，仍需改进</td>
+</tr>
+<tr>
+<td>0.5</td>
+<td>0.5</td>
+<td>0.8</td>
+<td>0.5</td>
+<td>已经太差了，停止改进</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这个机制保证了：<strong>好的方向上不会过度优化，坏的方向上也不会过度惩罚</strong>。</p>
+<h3 id="4-3-KL-约束损失：-L-text-KL"><a href="#4-3-KL-约束损失：-L-text-KL" class="headerlink" title="4.3 KL 约束损失：$L^{\text{KL}}$"></a>4.3 KL 约束损失：$L^{\text{KL}}$</h3><h4 id="定义-1"><a href="#定义-1" class="headerlink" title="定义"></a>定义</h4><p>KL 散度衡量两个概率分布之间的差异：</p>
+<script type="math/tex; mode=display">
+L^{\text{KL}} = \mathbb{E}_t \left[D_{\text{KL}}(\pi_{\theta}(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t))\right]</script><p>展开后：</p>
+<script type="math/tex; mode=display">
+L^{\text{KL}} = \mathbb{E}_t \left[\sum_{a} \pi_{\theta}(a|s_t) \log \frac{\pi_{\theta}(a|s_t)}{\pi_{\text{ref}}(a|s_t)}\right]</script><h4 id="为什么需要-KL-约束"><a href="#为什么需要-KL-约束" class="headerlink" title="为什么需要 KL 约束"></a>为什么需要 KL 约束</h4><ol>
+<li><strong>防止分布崩溃</strong>：如果不限制，Actor 可能会为了追求高奖励，把所有概率都集中到少数几个高奖励的 token，失去多样性</li>
+<li><strong>保持模型能力</strong>：新 Actor 与 SFT 模型相近，保留了原有的知识和一般化能力，不会因过度优化而”忘记”</li>
+<li><strong>实际部署考虑</strong>：过度优化可能导致模型在某些边缘情况下表现很差，或生成有害内容</li>
+<li><strong>训练稳定性</strong>：限制分布变化范围有助于梯度稳定，防止训练发散</li>
+</ol>
+<h4 id="权重超参数-alpha"><a href="#权重超参数-alpha" class="headerlink" title="权重超参数 $\alpha$"></a>权重超参数 $\alpha$</h4><ul>
+<li>典型值：$\alpha = 0.2$</li>
+<li>含义：平衡追求高奖励和保持分布相似性</li>
+<li>调优：<ul>
+<li>如果 $\alpha$ 过小：模型过度优化奖励，生成不自然回答</li>
+<li>如果 $\alpha$ 过大：模型变化不足，无法充分学习到人类偏好</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-4-价值函数损失：-L-text-VF"><a href="#4-4-价值函数损失：-L-text-VF" class="headerlink" title="4.4 价值函数损失：$L^{\text{VF}}$"></a>4.4 价值函数损失：$L^{\text{VF}}$</h3><h4 id="定义-2"><a href="#定义-2" class="headerlink" title="定义"></a>定义</h4><script type="math/tex; mode=display">
+L^{\text{VF}} = \mathbb{E}_t \left[(V_\phi(s_t) - V_t^{\text{target}})^2\right]</script><p>其中：</p>
+<ul>
+<li>$V_\phi(s_t)$：Critic 模型对状态价值的预测</li>
+<li>$V_t^{\text{target}}$：目标价值（由奖励和下一状态价值计算）</li>
+</ul>
+<h4 id="目标价值的计算"><a href="#目标价值的计算" class="headerlink" title="目标价值的计算"></a>目标价值的计算</h4><p>目标价值通常采用 n-step bootstrap 的方式：</p>
+<script type="math/tex; mode=display">
+V_t^{\text{target}} = r_t + \gamma r_{t+1} + \gamma^2 r_{t+2} + \cdots + \gamma^{n-1} r_{t+n-1} + \gamma^n V(s_{t+n})</script><p>最简单的 1-step 版本：</p>
+<script type="math/tex; mode=display">
+V_t^{\text{target}} = r_t + \gamma V(s_{t+1})</script><h4 id="为什么需要价值函数损失"><a href="#为什么需要价值函数损失" class="headerlink" title="为什么需要价值函数损失"></a>为什么需要价值函数损失</h4><ol>
+<li><strong>训练 Critic</strong>：Critic 需要学会准确评估状态价值，这个损失就是训练信号</li>
+<li><strong>减少方差</strong>：准确的价值估计能更好地作为基线，减少优势函数估计的方差</li>
+<li><strong>稳定优势计算</strong>：优势函数依赖于价值估计，好的 Critic 模型产生更稳定的优势信号</li>
+</ol>
+<h4 id="权重超参数-beta"><a href="#权重超参数-beta" class="headerlink" title="权重超参数 $\beta$"></a>权重超参数 $\beta$</h4><ul>
+<li>典型值：$\beta = 0.5$</li>
+<li>含义：平衡策略优化和价值函数拟合</li>
+<li>调优：<ul>
+<li>如果 $\beta$ 过小：Critic 学习不充分，方差大</li>
+<li>如果 $\beta$ 过大：Critic 过度拟合，策略学习受影响</li>
+</ul>
+</li>
+</ul>
+<h2 id="5-优势函数的计算"><a href="#5-优势函数的计算" class="headerlink" title="5. 优势函数的计算"></a>5. 优势函数的计算</h2><p>优势函数的准确计算对 PPO 的性能至关重要。在 LLM 的 RLHF 场景中，我们需要特别考虑奖励的稀疏性和长序列的特性。</p>
+<h3 id="5-1-Token-级别的即时奖励构造"><a href="#5-1-Token-级别的即时奖励构造" class="headerlink" title="5.1 Token 级别的即时奖励构造"></a>5.1 Token 级别的即时奖励构造</h3><p>在 LLM 中，奖励有一个特殊的特点：<strong>只有序列末端有实际奖励（来自 RM），中间步骤没有直接的奖励信号</strong>。</p>
+<h4 id="奖励的构造方式"><a href="#奖励的构造方式" class="headerlink" title="奖励的构造方式"></a>奖励的构造方式</h4><p>对于生成序列中的第 $t$ 个 token，我们构造其即时奖励为：</p>
+<script type="math/tex; mode=display">
+r_t = \begin{cases}
+-\beta \cdot \log \frac{\pi_\theta(a_t|s_t)}{\pi_{\text{ref}}(a_t|s_t)} & \text{if } t < T \\
+r_{\text{RM}} - \beta \cdot \log \frac{\pi_\theta(a_t|s_t)}{\pi_{\text{ref}}(a_t|s_t)} & \text{if } t = T
+\end{cases}</script><p>其中：</p>
+<ul>
+<li>$T$：序列长度（生成到 EOS 或最大长度）</li>
+<li>$r_{\text{RM}}$：Reward Model 在序列末端给出的奖励</li>
+<li>$\beta$：KL 惩罚的权重（典型值 0.05-0.2）</li>
+</ul>
+<p><strong>关键特点</strong>：</p>
+<ol>
+<li><p><strong>稀疏 RM 奖励</strong>：</p>
+<ul>
+<li>中间 token 的奖励为 0（$t &lt; T$）</li>
+<li>只有最后一个 token（$t = T$）才获得 RM 的评分 $r_{\text{RM}}$</li>
+<li>这反映了现实：我们只在完整回答后才评分</li>
+</ul>
+</li>
+<li><p><strong>密集 KL 惩罚</strong>：</p>
+<ul>
+<li>每个 token 都会产生 KL 惩罚</li>
+<li>防止策略在追求高奖励时偏离参考模型太远</li>
+</ul>
+</li>
+</ol>
+<p><strong>直观理解</strong>：</p>
+<ul>
+<li>前 $T-1$ 个 token：只受 KL 约束的负值惩罚</li>
+<li>第 $T$ 个 token：既获得奖励鼓励，也受 KL 约束</li>
+</ul>
+<h3 id="5-2-时序差分误差与-GAE"><a href="#5-2-时序差分误差与-GAE" class="headerlink" title="5.2 时序差分误差与 GAE"></a>5.2 时序差分误差与 GAE</h3><h4 id="时序差分（TD）误差"><a href="#时序差分（TD）误差" class="headerlink" title="时序差分（TD）误差"></a>时序差分（TD）误差</h4><p>基于上面的即时奖励，我们可以计算每个 token 位置的 TD 误差：</p>
+<script type="math/tex; mode=display">
+\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)</script><p><strong>三项含义</strong>：</p>
+<ul>
+<li>$r_t$：该 token 在该步获得的即时奖励</li>
+<li>$\gamma V(s_{t+1})$：对下一状态价值的折扣期望（$\gamma$ 通常设置为 1）</li>
+<li>$V(s_t)$：当前状态价值的预测</li>
+</ul>
+<p><strong>$\delta_t$ 的含义</strong>：</p>
+<ul>
+<li>这是一个”惊喜”信号：实际观察（$r<em>t + \gamma V(s</em>{t+1})$）vs 预期（$V(s_t)$）</li>
+<li>如果 $\delta_t &gt; 0$：实际比预期更好</li>
+<li>如果 $\delta_t &lt; 0$：实际比预期更差</li>
+<li>Critic 模型通过最小化 $\delta_t^2$ 来改进价值估计</li>
+</ul>
+<h4 id="广义优势估计（GAE）"><a href="#广义优势估计（GAE）" class="headerlink" title="广义优势估计（GAE）"></a>广义优势估计（GAE）</h4><p>直接使用 $\delta_t$ 作为优势估计会有方差大的问题。GAE（Generalized Advantage Estimation）通过加权求和多个 TD 误差来平衡偏差和方差：</p>
+<script type="math/tex; mode=display">
+A_t^{\text{GAE}(\gamma,\lambda)} = \sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}</script><p>其中 $\lambda \in [0,1]$ 是平衡参数。</p>
+<p><strong>展开式（有限长度）</strong>：</p>
+<p>对于长度为 $T$ 的序列，$t$ 时刻的 GAE 为：</p>
+<script type="math/tex; mode=display">
+A_t = \sum_{l=0}^{T-t-1} (\gamma \lambda)^l \delta_{t+l}</script><p>这可以递归计算（效率更高）：</p>
+<script type="math/tex; mode=display">
+A_t = \delta_t + \gamma \lambda A_{t+1}</script><p><strong>GAE 的两个极端</strong>：</p>
+<ol>
+<li><p>当 $\lambda = 0$ 时：$A_t^{\text{GAE}} = \delta_t$（单步 TD）</p>
+<ul>
+<li>低方差，但可能有高偏差（如果 Critic 不准确）</li>
+</ul>
+</li>
+<li><p>当 $\lambda = 1$ 时：$A<em>t^{\text{GAE}} = \sum</em>{l=0}^{\infty} \gamma^l \delta_{t+l}$（蒙特卡洛）</p>
+<ul>
+<li>低偏差（无模型依赖），但高方差（依赖长期轨迹）</li>
+</ul>
+</li>
+</ol>
+<p><strong>$\lambda$ 的选择</strong>：</p>
+<ul>
+<li>典型值：$\lambda = 0.95$</li>
+<li>这个值在低偏差和低方差之间取得很好的平衡</li>
+</ul>
+<h3 id="5-3-完整的优势计算流程"><a href="#5-3-完整的优势计算流程" class="headerlink" title="5.3 完整的优势计算流程"></a>5.3 完整的优势计算流程</h3><p>让我们整理一个完整的算法流程：</p>
+<p><strong>算法：Token 级别优势估计</strong></p>
+<p>输入：</p>
+<ul>
+<li>生成序列：$s_0, a_0, s_1, a_1, \ldots, s_T, a_T$</li>
+<li>Reward Model 输出：$r_{\text{RM}}$（在 $t=T$ 时）</li>
+<li>Critic Model：$V_\phi$（对序列中每个位置的评估）</li>
+<li>超参数：$\gamma$（折扣因子，通常 1），$\lambda$（GAE 参数，通常 0.95），$\beta$（KL 权重）</li>
+</ul>
+<p><strong>步骤 1：计算即时奖励</strong></p>
+<script type="math/tex; mode=display">
+r_t = \begin{cases}
+-\beta \log\frac{\pi_\theta(a_t\mid s_t)}{\pi_{\mathrm{ref}}(a_t\mid s_t)}, & t < T, \\
+r_{\mathrm{RM}} - \beta \log\frac{\pi_\theta(a_T\mid s_T)}{\pi_{\mathrm{ref}}(a_T\mid s_T)}, & t = T.
+\end{cases}</script><p><strong>步骤 2：计算 TD 误差</strong></p>
+<script type="math/tex; mode=display">
+\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t), \quad t = 0,\dots,T,</script><p>其中当 $t=T$ 时，约定 $V(s_{T+1})=0$。</p>
+<p><strong>步骤 3：计算 GAE 优势</strong></p>
+<p>末端初始化并递归计算：</p>
+<script type="math/tex; mode=display">
+A_T = \delta_T,</script><p>并自后向前递归：</p>
+<script type="math/tex; mode=display">
+A_t = \delta_t + \gamma \lambda A_{t+1}, \quad t = T-1, T-2,\dots,0.</script><p><strong>步骤 4：使用优势进行更新</strong></p>
+<p>得到优势 $A[0], A[1], \ldots, A[T]$ 后：</p>
+<ul>
+<li>用于 PPO 策略更新：$L^{\text{CLIP}} = \mathbb{E}[\min(r_t A_t, \text{clip}(r_t) A_t)]$</li>
+<li>用于 Critic 更新：$L^{\text{VF}} = \mathbb{E}[(V(s<em>t) - (r_t + \gamma V(s</em>{t+1})))^2]$</li>
+</ul>
+<h3 id="5-4-一个具体例子"><a href="#5-4-一个具体例子" class="headerlink" title="5.4 一个具体例子"></a>5.4 一个具体例子</h3><p>让我们用一个简单的数值例子来演示整个计算过程。</p>
+<p><strong>假设</strong>：</p>
+<ul>
+<li>序列长度 $T = 3$（3 个 token）</li>
+<li>$\gamma = 1$，$\lambda = 0.95$</li>
+<li>$r_{\text{RM}} = 5$（这是一个好回答）</li>
+<li>$\beta = 0.1$</li>
+<li>Critic 的价值估计：$V(s_0)=2, V(s_1)=3, V(s_2)=4, V(s_3)=0$（边界）</li>
+</ul>
+<p><strong>计算过程</strong>：</p>
+<ol>
+<li><p><strong>即时奖励</strong>（假设 KL 项都是 -0.1）</p>
+<ul>
+<li>$r[0] = -0.1$</li>
+<li>$r[1] = -0.1$</li>
+<li>$r[2] = 5 - 0.1 = 4.9$</li>
+</ul>
+</li>
+<li><p><strong>TD 误差</strong></p>
+<ul>
+<li>$\delta[0] = -0.1 + 1 \times 3 - 2 = 0.9$</li>
+<li>$\delta[1] = -0.1 + 1 \times 4 - 3 = 0.9$</li>
+<li>$\delta[2] = 4.9 + 1 \times 0 - 4 = 0.9$</li>
+</ul>
+</li>
+<li><p><strong>GAE 优势</strong>（从后向前）</p>
+<ul>
+<li>$A[2] = 0.9$</li>
+<li>$A[1] = 0.9 + 0.95 \times 0.9 = 1.755$</li>
+<li>$A[0] = 0.9 + 0.95 \times 1.755 = 2.567$</li>
+</ul>
+</li>
+</ol>
+<p><strong>结果解释</strong>：</p>
+<ul>
+<li>所有 token 都有正的优势，鼓励增加其生成概率</li>
+<li>越早的 token 由于能”看到”后续的奖励，优势越大</li>
+<li>最后一个 token 的优势最小（0.9），因为它直接看到 RM 的奖励</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>PPO 是一个巧妙且实用的强化学习算法，在 LLM 的 RLHF 训练中发挥了关键作用。它的核心优势包括：</p>
+<ol>
+<li><strong>稳定的策略更新</strong>：通过裁剪机制限制策略偏离，避免训练不稳定</li>
+<li><strong>灵活的约束机制</strong>：通过 KL 散度约束保持模型的原有能力</li>
+<li><strong>高效的方差减少</strong>：通过优势函数作为基线大大降低学习信号的方差</li>
+<li><strong>实用的设计</strong>：多个可调的超参数让算法在不同场景下都能表现良好</li>
+</ol>
+<p>理解 PPO 的这些核心原理对于：</p>
+<ul>
+<li>深入掌握 LLM 的后训练方法</li>
+<li>调优 RLHF 训练过程</li>
+<li>开发新的强化学习训练方法</li>
+</ul>
+<p>都是至关重要的。希望通过本文的详细讲解，能帮助你充分理解 PPO 在 LLM 训练中的应用与实现细节。</p>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2025/05/llm-ppo.html" title="LLM 训练：PPO 原理和实现细节">https:&#x2F;&#x2F;murphypei.github.io&#x2F;blog&#x2F;2025&#x2F;05&#x2F;llm-ppo.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-creative-commons&quot;&gt;&lt;&#x2F;i&gt;BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+            
+              <a href="/tags/RLHF/" rel="tag"># RLHF</a>
+            
+              <a href="/tags/PPO/" rel="tag"># PPO</a>
+            
+              <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" rel="tag"># 强化学习</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2024/07/aigc-ddpm.html" rel="next" title="图像生成基础：DDPM">
+                  <i class="fa fa-chevron-left"></i> 图像生成基础：DDPM
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2025/06/llm-dpo.html" rel="prev" title="LLM 训练：DPO 深入与实践">
+                  LLM 训练：DPO 深入与实践 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E5%9F%BA%E7%A1%80"><span class="nav-number">1.</span> <span class="nav-text">1. 强化学习基础</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-1-%E4%BB%80%E4%B9%88%E6%98%AF%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 什么是强化学习</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-2-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E7%9A%84%E6%A0%B8%E5%BF%83%E8%A6%81%E7%B4%A0"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 强化学习的核心要素</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-3-%E4%BA%A4%E4%BA%92%E8%BF%87%E7%A8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">1.3 交互过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-4-%E7%AD%96%E7%95%A5%E6%A2%AF%E5%BA%A6%E5%AE%9A%E7%90%86"><span class="nav-number">1.4.</span> <span class="nav-text">1.4 策略梯度定理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87%E5%87%BD%E6%95%B0"><span class="nav-number">1.4.1.</span> <span class="nav-text">目标函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AD%96%E7%95%A5%E6%A2%AF%E5%BA%A6%E5%AE%9A%E7%90%86%E7%9A%84%E6%A0%B8%E5%BF%83%E5%86%85%E5%AE%B9"><span class="nav-number">1.4.2.</span> <span class="nav-text">策略梯度定理的核心内容</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AD%96%E7%95%A5%E6%A2%AF%E5%BA%A6%E6%96%B9%E6%B3%95%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="nav-number">1.4.3.</span> <span class="nav-text">策略梯度方法的局限性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-5-PPO-%E7%AE%97%E6%B3%95%E7%9A%84%E6%A0%B8%E5%BF%83%E6%80%9D%E6%83%B3"><span class="nav-number">1.5.</span> <span class="nav-text">1.5 PPO 算法的核心思想</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%87%8D%E8%A6%81%E6%80%A7%E9%87%87%E6%A0%B7%E6%AF%94%E7%8E%87"><span class="nav-number">1.5.1.</span> <span class="nav-text">重要性采样比率</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E9%99%90%E5%88%B6%E7%AD%96%E7%95%A5%E6%9B%B4%E6%96%B0%E5%B9%85%E5%BA%A6"><span class="nav-number">1.5.2.</span> <span class="nav-text">为什么需要限制策略更新幅度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#PPO-%E7%9A%84%E8%A3%81%E5%89%AA%E6%9C%BA%E5%88%B6"><span class="nav-number">1.5.3.</span> <span class="nav-text">PPO 的裁剪机制</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-6-%E4%BB%B7%E5%80%BC%E5%87%BD%E6%95%B0"><span class="nav-number">1.6.</span> <span class="nav-text">1.6 价值函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E4%BB%B7%E5%80%BC%E5%87%BD%E6%95%B0"><span class="nav-number">1.6.1.</span> <span class="nav-text">为什么需要价值函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%8A%B6%E6%80%81%E4%BB%B7%E5%80%BC%E5%87%BD%E6%95%B0"><span class="nav-number">1.6.2.</span> <span class="nav-text">状态价值函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8A%A8%E4%BD%9C%E4%BB%B7%E5%80%BC%E5%87%BD%E6%95%B0"><span class="nav-number">1.6.3.</span> <span class="nav-text">动作价值函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%A4%E7%A7%8D%E4%BB%B7%E5%80%BC%E5%87%BD%E6%95%B0%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.6.4.</span> <span class="nav-text">两种价值函数的关系</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#1-7-%E4%BC%98%E5%8A%BF%E5%87%BD%E6%95%B0"><span class="nav-number">1.7.</span> <span class="nav-text">1.7 优势函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%A6%82%E5%BF%B5%E5%AE%9A%E4%B9%89"><span class="nav-number">1.7.1.</span> <span class="nav-text">概念定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%98%E5%8A%BF%E5%87%BD%E6%95%B0%E7%9A%84%E7%9B%B4%E8%A7%82%E7%90%86%E8%A7%A3"><span class="nav-number">1.7.2.</span> <span class="nav-text">优势函数的直观理解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%98%E5%8A%BF%E5%87%BD%E6%95%B0%E7%9A%84%E4%BC%98%E5%8A%BF%EF%BC%88%E4%B8%BA%E4%BB%80%E4%B9%88%E7%94%A8%E5%AE%83%EF%BC%89"><span class="nav-number">1.7.3.</span> <span class="nav-text">优势函数的优势（为什么用它）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%B6%E5%BA%8F%E5%B7%AE%E5%88%86%E4%BC%B0%E8%AE%A1"><span class="nav-number">1.7.4.</span> <span class="nav-text">时序差分估计</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-LLM-%E4%B8%AD%E7%9A%84%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E5%BA%94%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">2. LLM 中的强化学习应用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-LLM-%E7%9A%84%E7%94%9F%E6%88%90%E8%BF%87%E7%A8%8B"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 LLM 的生成过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-LLM-%E7%94%9F%E6%88%90%E8%BF%87%E7%A8%8B%E4%B8%AD%E7%9A%84-RL-%E6%98%A0%E5%B0%84"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 LLM 生成过程中的 RL 映射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-RLHF-%E8%AE%AD%E7%BB%83%E7%9A%84%E5%BF%85%E8%A6%81%E6%80%A7"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 RLHF 训练的必要性</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-RLHF-%E4%B8%AD%E7%9A%84%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">3. RLHF 中的模型架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%9B%9B%E4%B8%AA%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 四个核心模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E6%A8%A1%E5%9E%8B%E8%AF%A6%E8%A7%A3"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 模型详解</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Actor-Model%EF%BC%88%E7%AD%96%E7%95%A5%E6%A8%A1%E5%9E%8B%EF%BC%89"><span class="nav-number">3.2.1.</span> <span class="nav-text">Actor Model（策略模型）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Reference-Model%EF%BC%88%E5%8F%82%E8%80%83%E6%A8%A1%E5%9E%8B%EF%BC%89"><span class="nav-number">3.2.2.</span> <span class="nav-text">Reference Model（参考模型）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Critic-Model%EF%BC%88%E4%BB%B7%E5%80%BC%E6%A8%A1%E5%9E%8B%EF%BC%89"><span class="nav-number">3.2.3.</span> <span class="nav-text">Critic Model（价值模型）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Reward-Model%EF%BC%88%E5%A5%96%E5%8A%B1%E6%A8%A1%E5%9E%8B%EF%BC%89"><span class="nav-number">3.2.4.</span> <span class="nav-text">Reward Model（奖励模型）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%9B%9B%E4%B8%AA%E6%A8%A1%E5%9E%8B%E7%9A%84%E5%85%B3%E9%94%AE%E5%8C%BA%E5%88%AB%E5%AF%B9%E6%AF%94"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 四个模型的关键区别对比</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-PPO-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E4%B8%8E%E4%BC%98%E5%8C%96"><span class="nav-number">4.</span> <span class="nav-text">4. PPO 损失函数与优化</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E6%80%BB%E4%BD%93%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 总体损失函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E7%AD%96%E7%95%A5%E6%8D%9F%E5%A4%B1%EF%BC%9A-L-text-CLIP"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 策略损失：$L^{\text{CLIP}}$</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89"><span class="nav-number">4.2.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8-min-%E6%93%8D%E4%BD%9C"><span class="nav-number">4.2.2.</span> <span class="nav-text">为什么使用 min 操作</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-KL-%E7%BA%A6%E6%9D%9F%E6%8D%9F%E5%A4%B1%EF%BC%9A-L-text-KL"><span class="nav-number">4.3.</span> <span class="nav-text">4.3 KL 约束损失：$L^{\text{KL}}$</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89-1"><span class="nav-number">4.3.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-KL-%E7%BA%A6%E6%9D%9F"><span class="nav-number">4.3.2.</span> <span class="nav-text">为什么需要 KL 约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9D%83%E9%87%8D%E8%B6%85%E5%8F%82%E6%95%B0-alpha"><span class="nav-number">4.3.3.</span> <span class="nav-text">权重超参数 $\alpha$</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-%E4%BB%B7%E5%80%BC%E5%87%BD%E6%95%B0%E6%8D%9F%E5%A4%B1%EF%BC%9A-L-text-VF"><span class="nav-number">4.4.</span> <span class="nav-text">4.4 价值函数损失：$L^{\text{VF}}$</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9A%E4%B9%89-2"><span class="nav-number">4.4.1.</span> <span class="nav-text">定义</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%9B%AE%E6%A0%87%E4%BB%B7%E5%80%BC%E7%9A%84%E8%AE%A1%E7%AE%97"><span class="nav-number">4.4.2.</span> <span class="nav-text">目标价值的计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E4%BB%B7%E5%80%BC%E5%87%BD%E6%95%B0%E6%8D%9F%E5%A4%B1"><span class="nav-number">4.4.3.</span> <span class="nav-text">为什么需要价值函数损失</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9D%83%E9%87%8D%E8%B6%85%E5%8F%82%E6%95%B0-beta"><span class="nav-number">4.4.4.</span> <span class="nav-text">权重超参数 $\beta$</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E4%BC%98%E5%8A%BF%E5%87%BD%E6%95%B0%E7%9A%84%E8%AE%A1%E7%AE%97"><span class="nav-number">5.</span> <span class="nav-text">5. 优势函数的计算</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-Token-%E7%BA%A7%E5%88%AB%E7%9A%84%E5%8D%B3%E6%97%B6%E5%A5%96%E5%8A%B1%E6%9E%84%E9%80%A0"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 Token 级别的即时奖励构造</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A5%96%E5%8A%B1%E7%9A%84%E6%9E%84%E9%80%A0%E6%96%B9%E5%BC%8F"><span class="nav-number">5.1.1.</span> <span class="nav-text">奖励的构造方式</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E6%97%B6%E5%BA%8F%E5%B7%AE%E5%88%86%E8%AF%AF%E5%B7%AE%E4%B8%8E-GAE"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 时序差分误差与 GAE</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%97%B6%E5%BA%8F%E5%B7%AE%E5%88%86%EF%BC%88TD%EF%BC%89%E8%AF%AF%E5%B7%AE"><span class="nav-number">5.2.1.</span> <span class="nav-text">时序差分（TD）误差</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B9%BF%E4%B9%89%E4%BC%98%E5%8A%BF%E4%BC%B0%E8%AE%A1%EF%BC%88GAE%EF%BC%89"><span class="nav-number">5.2.2.</span> <span class="nav-text">广义优势估计（GAE）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E5%AE%8C%E6%95%B4%E7%9A%84%E4%BC%98%E5%8A%BF%E8%AE%A1%E7%AE%97%E6%B5%81%E7%A8%8B"><span class="nav-number">5.3.</span> <span class="nav-text">5.3 完整的优势计算流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-4-%E4%B8%80%E4%B8%AA%E5%85%B7%E4%BD%93%E4%BE%8B%E5%AD%90"><span class="nav-number">5.4.</span> <span class="nav-text">5.4 一个具体例子</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/%20%7C%7C%20archive">
+        
+          <span class="site-state-item-count">188</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/%20%7C%7C%20th">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/%20%7C%7C%20tags">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">494</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &amp;rarr; https:&#x2F;&#x2F;github.com&#x2F;murphypei" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-github&quot;&gt;&lt;&#x2F;i&gt;GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &amp;rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-envelope&quot;&gt;&lt;&#x2F;i&gt;E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;guo-jia-66-80&#x2F;activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2026</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">697k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">19:22</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js?v=7.3.0.js"></script>
+
+<script src="/js/motion.js?v=7.3.0.js"></script>
+
+
+<script src="/js/schemes/muse.js?v=7.3.0.js"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: 'de6d4fb0b0dbd1883db22785e1575719',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

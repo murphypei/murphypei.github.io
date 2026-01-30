@@ -1,0 +1,2058 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="一篇关于 C++11 右值引用的一篇总结，觉得其中对于常见误用的总结很不错，想起来了当年自己走过的一些坑，转载做个记录。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="C++ 右值引用使用总结">
+<meta property="og:url" content="https://murphypei.github.io/blog/2020/02/right-reference.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="一篇关于 C++11 右值引用的一篇总结，觉得其中对于常见误用的总结很不错，想起来了当年自己走过的一些坑，转载做个记录。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-02-24T11:38:13.000Z">
+<meta property="article:modified_time" content="2026-01-07T08:41:01.081Z">
+<meta property="article:author" content="AngryBirds">
+<meta property="article:tag" content="C++11">
+<meta property="article:tag" content="右值引用">
+<meta property="article:tag" content="移动">
+<meta property="article:tag" content="完美转发">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2020/02/right-reference">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>C++ 右值引用使用总结 | 拾荒志</title>
+  <meta name="generator" content="Hexo 5.4.2">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于
+    </a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2020/02/right-reference.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">C++ 右值引用使用总结
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2020-02-24 19:38:13" itemprop="dateCreated datePublished" datetime="2020-02-24T19:38:13+08:00">2020-02-24</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2026-01-07 16:41:01" itemprop="dateModified" datetime="2026-01-07T16:41:01+08:00">2026-01-07</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/C-C/" itemprop="url" rel="index"><span itemprop="name">C/C++</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>13k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>21 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>一篇关于 C++11 右值引用的一篇总结，觉得其中对于常见误用的总结很不错，想起来了当年自己走过的一些坑，转载做个记录。</p>
+<span id="more"></span>
+<h3 id="写在前面"><a href="#写在前面" class="headerlink" title="写在前面"></a>写在前面</h3><blockquote>
+<p>如果你还不知道 C++ 11 引入的右值引用是什么，可以读读这篇文章，看看有什么 <strong>启发</strong>；如果你已经对右值引用了如指掌，也可以读读这篇文章，看看有什么 <strong>补充</strong>。欢迎交流~ </p>
+</blockquote>
+<p>尽管 C++ 17 标准已经发布了，很多人还不熟悉 C++ 11 的 <strong>右值引用/移动语义/拷贝省略/通用引用/完美转发</strong> 等概念，甚至对一些细节 <strong>有所误解</strong>（包括我）。</p>
+<p>本文将以最短的篇幅，一步步解释 关于右值引用的 <strong>为什么/是什么/怎么做</strong>。先分享几个我曾经犯过的错误。</p>
+<h4 id="误解1：返回前，移动局部变量"><a href="#误解1：返回前，移动局部变量" class="headerlink" title="误解1：返回前，移动局部变量"></a>误解1：返回前，移动局部变量</h4><blockquote>
+<p><a target="_blank" rel="noopener" href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Res-move">ES.56: Write <code>std::move()</code> only when you need to explicitly move an object to another scope</a></p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">std::string base_url = tag-&gt;<span class="built_in">GetBaseUrl</span>();</span><br><span class="line"><span class="keyword">if</span> (!base_url.<span class="built_in">empty</span>()) &#123;</span><br><span class="line">  <span class="built_in">UpdateQueryUrl</span>(std::<span class="built_in">move</span>(base_url) + <span class="string">&quot;&amp;q=&quot;</span> + word_);</span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">LOG</span>(INFO) &lt;&lt; base_url;  <span class="comment">// |base_url| may be moved-from</span></span><br></pre></td></tr></table></figure>
+<p>上述代码的问题在于：使用 <code>std::move()</code> 移动局部变量 <code>base_url</code>，会导致后续代码不能使用该变量；如果使用，会出现 <strong>未定义行为</strong> <em>(undefined behavior)</em>（参考：<a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/string/basic_string/basic_string"><code>std::basic_string(basic_string&amp;&amp;)</code></a>）。</p>
+<p>如何检查 <strong>移动后使用</strong> <em>(use after move)</em>：</p>
+<ul>
+<li>运行时，在 移动构造/移动赋值 函数中，将被移动的值设置为无效状态，并在每次使用前检查有效性</li>
+<li>编译时，使用 Clang 标记对移动语义进行静态检查（参考：<a target="_blank" rel="noopener" href="https://clang.llvm.org/docs/AttributeReference.html#consumed-annotation-checking">Consumed Annotation Checking | Attributes in Clang</a>）</li>
+</ul>
+<h4 id="误解2：被移动的值不能再使用"><a href="#误解2：被移动的值不能再使用" class="headerlink" title="误解2：被移动的值不能再使用"></a>误解2：被移动的值不能再使用</h4><blockquote>
+<p><a target="_blank" rel="noopener" href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rc-move-semantic">C.64: A move operation should move and leave its source in a valid state</a></p>
+</blockquote>
+<p>很多人认为：被移动的值会进入一个 <strong>非法状态</strong> <em>(invalid state)</em>，对应的 <strong>内存不能再访问</strong>。</p>
+<p>其实，C++ 标准要求对象 遵守 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#移动语义">§ 3</a> <strong>移动语义</strong> —— 被移动的对象进入一个 <strong>合法但未指定状态</strong> <em>(valid but unspecified state)</em>，调用该对象的方法（包括析构函数）不会出现异常，甚至在重新赋值后可以继续使用：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">auto</span> p = std::<span class="built_in">make_unique</span>&lt;<span class="type">int</span>&gt;(<span class="number">1</span>);</span><br><span class="line"><span class="keyword">auto</span> q = std::<span class="built_in">move</span>(p);</span><br><span class="line"></span><br><span class="line"><span class="built_in">assert</span>(p == <span class="literal">nullptr</span>);  <span class="comment">// OK: reset to default</span></span><br><span class="line">p.<span class="built_in">reset</span>(<span class="keyword">new</span> <span class="type">int</span>&#123;<span class="number">2</span>&#125;);   <span class="comment">// or p = std::make_unique&lt;int&gt;(2);</span></span><br><span class="line"><span class="built_in">assert</span>(*p == <span class="number">2</span>);       <span class="comment">// OK: reset to int*(2)</span></span><br></pre></td></tr></table></figure>
+<p>另外，基本类型（例如 <code>int/double</code>）的移动语义 和拷贝相同：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> i = <span class="number">1</span>;</span><br><span class="line"><span class="type">int</span> j = std::<span class="built_in">move</span>(i);</span><br><span class="line"></span><br><span class="line"><span class="built_in">assert</span>(i == j);</span><br></pre></td></tr></table></figure>
+<h4 id="误解3：移动非引用返回值"><a href="#误解3：移动非引用返回值" class="headerlink" title="误解3：移动非引用返回值"></a>误解3：移动非引用返回值</h4><blockquote>
+<p><a target="_blank" rel="noopener" href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local">F.48: Don’t <code>return std::move(local)</code></a></p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">std::unique_ptr&lt;<span class="type">int</span>&gt; <span class="title">foo</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">auto</span> ret = std::<span class="built_in">make_unique</span>&lt;<span class="type">int</span>&gt;(<span class="number">1</span>);</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">  <span class="keyword">return</span> std::<span class="built_in">move</span>(ret);  <span class="comment">// -&gt; return ret;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码的问题在于：没必要使用 <code>std::move()</code> 移动非引用返回值。</p>
+<p>C++ 会把即将离开作用域的 <strong>非引用类型的</strong> 返回值当成 <strong>右值</strong>（参考 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#值类别-vs-变量类型">§ 2.1</a>），对返回的对象进行 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#移动语义">§ 3</a> 移动构造（语言标准）；如果编译器允许 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#拷贝省略">§ 4</a> 拷贝省略，还可以省略这一步的构造，直接把 <code>ret</code> 存放到返回值的内存里（编译器优化）。</p>
+<blockquote>
+<p>Never apply <code>std::move()</code> or <code>std::forward()</code> to local objects if they would otherwise be eligible for the return value optimization. —— Scott Meyers, <em>Effective Modern C++</em></p>
+</blockquote>
+<p>另外，误用 <code>std::move()</code> 会 <strong>阻止</strong> 编译器的拷贝省略 <strong>优化</strong>。不过聪明的 Clang 会提示 <a target="_blank" rel="noopener" href="https://developers.redhat.com/blog/2019/04/12/understanding-when-not-to-stdmove-in-c/"><code>-Wpessimizing-move</code>/<code>-Wredundant-move</code></a> 警告。</p>
+<h4 id="误解4：不移动右值引用参数"><a href="#误解4：不移动右值引用参数" class="headerlink" title="误解4：不移动右值引用参数"></a>误解4：不移动右值引用参数</h4><blockquote>
+<p><a target="_blank" rel="noopener" href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-consume">F.18: For “will-move-from” parameters, pass by <code>X&amp;&amp;</code> and <code>std::move()</code> the parameter</a></p>
+</blockquote>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">std::unique_ptr&lt;<span class="type">int</span>&gt; <span class="title">bar</span><span class="params">(std::unique_ptr&lt;<span class="type">int</span>&gt;&amp;&amp; val)</span> </span>&#123;</span><br><span class="line">  <span class="comment">//...</span></span><br><span class="line">  <span class="keyword">return</span> val;    <span class="comment">// not compile</span></span><br><span class="line">                 <span class="comment">// -&gt; return std::move/forward(val);</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码的问题在于：没有对返回值使用 <code>std::move()</code>（编译器提示 <code>std::unique_ptr(const std::unique_ptr&amp;) = delete</code> 错误）。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="http://thbecker.net/articles/rvalue_references/section_05.html#no_name">If-it-has-a-name Rule</a>:</p>
+<ul>
+<li>Named rvalue references are lvalues.</li>
+<li>Unnamed rvalue references are rvalues.</li>
+</ul>
+</blockquote>
+<p>因为不论 <strong>左值引用</strong> 还是 <strong>右值引用</strong> 的变量（或参数）在初始化后，都是左值（参考 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#值类别-vs-变量类型">§ 2.1</a>）：</p>
+<ul>
+<li><strong>命名的右值引用</strong> <em>(named rvalue reference)</em> <strong>变量</strong> 是 <strong>左值</strong>，但变量类型却是 <strong>右值引用</strong>。</li>
+<li>在作用域内，<strong>左值变量</strong> 可以通过 <strong>变量名</strong> <em>(variable name)</em> <strong>被取地址、被赋值</strong>。</li>
+</ul>
+<p>所以，返回右值引用变量时，需要使用 <code>std::move()</code>/<code>std::forward()</code> 显式的 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#移动转发">§ 5.4</a> <strong>移动转发</strong> 或 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#完美转发">§ 5.3</a> <strong>完美转发</strong>，将变量 “还原” 为右值（右值引用类型）。</p>
+<blockquote>
+<p>这里补充一下，这里说的是右值引用的变量，常见于函数的参数，函数参数传递会导致外面的右值引用进入函数内部作为参数变成了左值变量。</p>
+</blockquote>
+<h4 id="误解5：手写错误的移动构造函数"><a href="#误解5：手写错误的移动构造函数" class="headerlink" title="误解5：手写错误的移动构造函数"></a>误解5：手写错误的移动构造函数</h4><blockquote>
+<p><a target="_blank" rel="noopener" href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rc-zero">C.20: If you can avoid defining default operations, do</a></p>
+<p><a target="_blank" rel="noopener" href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rc-five">C.21: If you define or <code>=delete</code> any default operation, define or <code>=delete</code> them all</a></p>
+<p><a target="_blank" rel="noopener" href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rc-eqdefault">C.80: Use <code>=default</code> if you have to be explicit about using the default semantics</a></p>
+<p><a target="_blank" rel="noopener" href="https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rc-move-noexcept">C.66: Make move operations <code>noexcept</code></a></p>
+</blockquote>
+<p>实际上，多数情况下：</p>
+<ul>
+<li>如果 <strong>没有定义</strong> 拷贝构造/拷贝赋值/移动构造/移动赋值/析构 函数的任何一个，编译器会 <strong>自动生成</strong> 移动构造/移动赋值 函数（<a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/rule_of_three#Rule_of_zero">rule of zero</a>）</li>
+<li>如果 <strong>需要定义</strong> 拷贝构造/拷贝赋值/移动构造/移动赋值/析构 函数的任何一个，不要忘了 移动构造/移动赋值 函数，否则对象会 <strong>不可移动</strong>（<a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/rule_of_three#Rule_of_five">rule of five</a>）</li>
+<li><strong>尽量使用</strong> <code>=default</code> 让编译器生成 移动构造/移动赋值 函数，否则 <strong>容易写错</strong></li>
+<li>如果 <strong>需要自定义</strong> 移动构造/移动赋值 函数，尽量定义为 <code>noexcept</code> 不抛出异常（编译器生成的版本会自动添加），否则 <strong>不能高效</strong> 使用标准库和语言工具</li>
+</ul>
+<p>例如，标准库容器 <code>std::vector</code> 在扩容时，会通过 <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/container/vector/reserve#Exceptions"><code>std::vector::reserve()</code></a> 重新分配空间，并转移已有元素。如果扩容失败，<code>std::vector</code> 满足 <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/exceptions#Exception_safety"><strong>强异常保证</strong> <em>(strong exception guarantee)</em></a>，可以回滚到失败前的状态。</p>
+<p>为此，<code>std::vector</code> 使用 <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/utility/move_if_noexcept"><code>std::move_if_noexcept()</code></a> 进行元素的转移操作：</p>
+<ul>
+<li>优先 使用 <code>noexcept</code> 移动构造函数（高效；不抛出异常）</li>
+<li>其次 使用 拷贝构造函数（低效；如果异常，可以回滚）</li>
+<li>再次 使用 非 <code>noexcept</code> 移动构造函数（高效；如果异常，<strong>无法回滚</strong>）</li>
+<li>最后 如果 不可拷贝、不可移动，<strong>编译失败</strong></li>
+</ul>
+<p>如果 没有定义移动构造函数或自定义的移动构造函数没有 <code>noexcept</code>，会导致 <code>std::vector</code> 扩容时执行无用的拷贝，<strong>不易发现</strong>。</p>
+<h3 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h3><p>之所以会出现上边的误解，往往是因为 C++ 语言的复杂性和使用者对基础知识的掌握程度不匹配。</p>
+<h4 id="值类别-vs-变量类型"><a href="#值类别-vs-变量类型" class="headerlink" title="值类别 vs 变量类型"></a>值类别 vs 变量类型</h4><p><strong>划重点</strong> —— <strong>值</strong> <em>(value)</em> 和 <strong>变量</strong> <em>(variable)</em> 是两个独立的概念：</p>
+<ul>
+<li>值只有 <strong>类别</strong> <em>(category)</em> 的划分，变量 只有 <strong>类型</strong> <em>(type)</em> 的划分 😵</li>
+<li>值不一定拥有 <strong>身份</strong> <em>(identity)</em>，也不一定拥有 变量名（例如 表达式中间结果 <code>i + j + k</code>）</li>
+</ul>
+<p><a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/value_category"><strong>值类别</strong> <em>(value category)</em></a> 可以分为两种：</p>
+<ul>
+<li><strong>左值</strong> <em>(lvalue, left value)</em> 是能被取地址、不能被移动的值</li>
+<li><strong>右值</strong> <em>(rvalue, right value)</em> 是表达式中间结果/函数返回值（可能拥有变量名，也可能没有）</li>
+</ul>
+<blockquote>
+<p>C++ 17 细化了 <code>prvalue/xvalue/lvalue</code> 和 <code>rvalue/glvalue</code> 类别，本文不详细讨论。</p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/reference"><strong>引用类型</strong> <em>(reference type)</em></a> 属于一种 <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/type"><strong>变量类型</strong> <em>(variable type)</em></a>，将在 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#左值引用-vs-右值引用-vs-常引用">§ 2.2</a> 详细讨论。</p>
+<p>在变量 <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/initialization"><strong>初始化</strong> <em>(initialization)</em></a> 时，需要将 <strong>初始值</strong> <em>(initial value)</em> 绑定到变量上；但 <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/reference_initialization"><strong>引用类型变量</strong> 的初始化</a> 和其他的值类型（非引用类型）变量不同：</p>
+<ul>
+<li>创建时，<strong>必须显式初始化</strong>（和指针不同，不允许 <strong>空引用</strong> <em>(null reference)</em>；但可能存在 <strong>悬垂引用</strong> <em>(dangling reference)</em>）</li>
+<li>相当于是 其引用的值 的一个 <strong>别名</strong> <em>(alias)</em>（例如，对引用变量的 <strong>赋值运算</strong> <em>(assignment operation)</em> 会赋值到 其引用的值 上）</li>
+<li>一旦绑定了初始值，就 <strong>不能重新绑定</strong> 到其他值上了（和指针不同，赋值运算不能修改引用的指向；而对于 Java/JavaScript 等语言，对引用变量赋值 可以重新绑定）</li>
+</ul>
+<h4 id="左值引用-vs-右值引用-vs-常引用"><a href="#左值引用-vs-右值引用-vs-常引用" class="headerlink" title="左值引用 vs 右值引用 vs 常引用"></a>左值引用 vs 右值引用 vs 常引用</h4><p>引用类型 可以分为两种：</p>
+<ul>
+<li><strong>左值引用</strong> <em>(l-ref, lvalue reference)</em> 用 <code>&amp;</code> 符号引用 左值（但不能引用右值）</li>
+<li><strong>右值引用</strong> <em>(r-ref, rvalue reference)</em> 用 <code>&amp;&amp;</code> 符号引用 右值（也可以移动左值）</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">(Data&amp;  data)</span></span>;  <span class="comment">// 1, data is l-ref</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">(Data&amp;&amp; data)</span></span>;  <span class="comment">// 2, data is r-ref</span></span><br><span class="line">Data   data;</span><br><span class="line"></span><br><span class="line">Data&amp;  data1 = data;             <span class="comment">// OK</span></span><br><span class="line">Data&amp;  data1 = Data&#123;&#125;;           <span class="comment">// not compile: invalid binding</span></span><br><span class="line">Data&amp;&amp; data2 = Data&#123;&#125;;           <span class="comment">// OK</span></span><br><span class="line">Data&amp;&amp; data2 = data;             <span class="comment">// not compile: invalid binding</span></span><br><span class="line">Data&amp;&amp; data2 = std::<span class="built_in">move</span>(data);  <span class="comment">// OK</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">f</span>(data);    <span class="comment">// 1, data is lvalue</span></span><br><span class="line"><span class="built_in">f</span>(Data&#123;&#125;);  <span class="comment">// 2, data is rvalue</span></span><br><span class="line"><span class="built_in">f</span>(data1);   <span class="comment">// 1, data1 is l-ref type and lvalue</span></span><br><span class="line"><span class="built_in">f</span>(data2);   <span class="comment">// 1, data2 is r-ref type but lvalue</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>左值引用变量 <code>data1</code> 在初始化时，不能绑定右值 <code>Data&#123;&#125;</code></li>
+<li>右值引用变量 <code>data2</code> 在初始化时，不能绑定左值 <code>data</code>，但可以通过 <code>std::move()</code> 将左值 <strong>转为右值引用</strong>（参考 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#移动转发">§ 5.4</a>）</li>
+<li><strong>右值引用</strong> 变量 <code>data2</code> 被初始化后，在作用域内是 <strong>左值</strong>（参考 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#误解-不移动右值引用参数">§ 1.4</a>），所以匹配 <code>f()</code> 的 <strong>重载 2</strong></li>
+</ul>
+<p>另外，C++ 还支持了 <strong>常引用</strong> <em>(c-ref, const reference)</em>，<strong>同时接受</strong> 左值/右值 进行初始化：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">g</span><span class="params">(<span class="type">const</span> Data&amp; data)</span></span>;  <span class="comment">// data is c-ref</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">g</span>(data);    <span class="comment">// ok, data is lvalue</span></span><br><span class="line"><span class="built_in">g</span>(Data&#123;&#125;);  <span class="comment">// ok, data is rvalue</span></span><br></pre></td></tr></table></figure>
+<p>常引用和右值引用 都能接受右值的绑定，有什么区别呢？</p>
+<ul>
+<li>通过 右值引用/常引用 初始化的右值，都可以将 <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/reference_initialization#Lifetime_of_a_temporary"><strong>生命周期扩展</strong> <em>(lifetime extension)</em></a> 到 绑定该右值的 引用的生命周期</li>
+<li>初始化时 绑定了右值后，右值引用 <strong>可以修改</strong> 引用的右值，而 常引用 不能修改</li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">const</span> Data&amp; data1 = Data&#123;&#125;;   <span class="comment">// OK: extend lifetime</span></span><br><span class="line">data<span class="number">1.</span><span class="built_in">modify</span>();               <span class="comment">// not compile: const</span></span><br><span class="line"></span><br><span class="line">Data&amp;&amp; data2 = Data&#123;&#125;;        <span class="comment">// OK: extend lifetime</span></span><br><span class="line">data<span class="number">2.</span><span class="built_in">modify</span>();               <span class="comment">// OK: non-const</span></span><br></pre></td></tr></table></figure>
+<h4 id="引用参数重载优先级"><a href="#引用参数重载优先级" class="headerlink" title="引用参数重载优先级"></a>引用参数重载优先级</h4><p>如果函数重载同时接受 右值引用/常引用 参数，编译器 <strong>优先重载</strong> 右值引用参数 —— 是 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#移动语义">§ 3</a> 移动语义 的实现基础：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">(<span class="type">const</span> Data&amp; data)</span></span>;  <span class="comment">// 1, data is c-ref</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">f</span><span class="params">(Data&amp;&amp; data)</span></span>;       <span class="comment">// 2, data is r-ref</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">f</span>(Data&#123;&#125;);  <span class="comment">// 2, prefer 2 over 1 for rvalue</span></span><br></pre></td></tr></table></figure>
+<p>针对不同左右值 <strong>实参</strong> <em>(argument)</em> 重载 引用类型 <strong>形参</strong> <em>(parameter)</em> 的优先级如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">实参/形参</th>
+<th style="text-align:center">T&amp;</th>
+<th style="text-align:center">const T&amp;</th>
+<th style="text-align:center">T&amp;&amp;</th>
+<th style="text-align:center">const T&amp;&amp;</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">lvalue</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">2</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">const lvalue</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">1</td>
+<td style="text-align:center"></td>
+<td style="text-align:center"></td>
+</tr>
+<tr>
+<td style="text-align:center">rvalue</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">3</td>
+<td style="text-align:center">1</td>
+<td style="text-align:center">2</td>
+</tr>
+<tr>
+<td style="text-align:center">const rvalue</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">2</td>
+<td style="text-align:center"></td>
+<td style="text-align:center">1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li>数值越小，优先级越高；如果不存在，则重载失败</li>
+<li>如果同时存在 <strong>传值</strong> <em>(by value)</em> 重载（接受值类型参数 <code>T</code>），会和上述 <strong>传引用</strong> <em>(by reference)</em> 重载产生歧义，编译失败</li>
+<li><strong>常右值引用</strong> <em>(const rvalue reference)</em> <code>const T&amp;&amp;</code> 一般不直接使用（<a target="_blank" rel="noopener" href="https://codesynthesis.com/~boris/blog/2012/07/24/const-rvalue-references/">参考</a>）</li>
+</ul>
+<h4 id="引用折叠"><a href="#引用折叠" class="headerlink" title="引用折叠"></a>引用折叠</h4><p><a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/reference#Reference_collapsing"><strong>引用折叠</strong> <em>(reference collapsing)</em></a> 是 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#移动转发">§ 5.4</a> <code>std::move()</code> 和 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#完美转发">§ 5.3</a> <code>std::forward()</code> 的实现基础：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">using</span> Lref = Data&amp;;</span><br><span class="line"><span class="keyword">using</span> Rref = Data&amp;&amp;;</span><br><span class="line">Data data;</span><br><span class="line"></span><br><span class="line">Lref&amp;  r1 = data;    <span class="comment">// r1 is Data&amp;</span></span><br><span class="line">Lref&amp;&amp; r2 = data;    <span class="comment">// r2 is Data&amp;</span></span><br><span class="line">Rref&amp;  r3 = data;    <span class="comment">// r3 is Data&amp;</span></span><br><span class="line">Rref&amp;&amp; r4 = Data&#123;&#125;;  <span class="comment">// r4 is Data&amp;&amp;</span></span><br></pre></td></tr></table></figure>
+<h3 id="移动语义"><a href="#移动语义" class="headerlink" title="移动语义"></a>移动语义</h3><p>在 C++ 11 强化了左右值概念后，提出了 <strong>移动语义</strong> <em>(move semantic)</em> 优化：由于右值对象一般是临时对象，在移动时，对象包含的资源 <strong>不需要先拷贝再删除</strong>，只需要直接 <strong>从旧对象移动到新对象</strong>。</p>
+<p>同时，要求 <strong>被移动的对象</strong> 处于 <strong>合法但未指定状态</strong>（参考 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#误解-被移动的值不能再使用">§ 1.2</a>）：</p>
+<ul>
+<li>（基本要求）能正确析构（不会重复释放已经被移动了的资源，例如 <code>std::unique_ptr::~unique_ptr()</code> 检查指针是否需要 <code>delete</code>）</li>
+<li>（一般要求）重新赋值后，和新的对象没有差别（C++ 标准库基于这个假设）</li>
+<li>（更高要求）恢复为默认值（例如 <code>std::unique_ptr</code> 恢复为 <code>nullptr</code>）</li>
+</ul>
+<p>由于<strong>基本类型不包含资源，其移动和拷贝相同：被移动后，保持为原有值</strong>。</p>
+<h4 id="避免先拷贝再释放资源"><a href="#避免先拷贝再释放资源" class="headerlink" title="避免先拷贝再释放资源"></a>避免先拷贝再释放资源</h4><p>一般通过 <strong>重载构造/赋值函数</strong> 实现移动语义。例如，<code>std::vector</code> 有：</p>
+<ul>
+<li>以常引用作为参数的 <strong>拷贝构造函数</strong> <em>(copy constructor)</em></li>
+<li>以右值引用作为参数的 <strong>移动构造函数</strong> <em>(move constructor)</em></li>
+</ul>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">vector</span> &#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="built_in">vector</span>(<span class="type">const</span> vector&amp; rhs);      <span class="comment">// copy data</span></span><br><span class="line">  <span class="built_in">vector</span>(vector&amp;&amp; rhs) <span class="keyword">noexcept</span>;  <span class="comment">// move data</span></span><br><span class="line">  ~<span class="built_in">vector</span>();                      <span class="comment">// dtor</span></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  T* data_ = <span class="literal">nullptr</span>;</span><br><span class="line">  <span class="type">size_t</span> size_ = <span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">vector::<span class="built_in">vector</span>(<span class="type">const</span> vector&amp; rhs) : <span class="built_in">data_</span>(<span class="keyword">new</span> T[rhs.size_]) &#123;</span><br><span class="line">  <span class="keyword">auto</span> &amp;lhs = *<span class="keyword">this</span>;</span><br><span class="line">  lhs.size_ = rhs.size_;</span><br><span class="line">  std::<span class="built_in">copy_n</span>(rhs.data_, rhs.size_, lhs.data_);  <span class="comment">// copy data</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">vector::<span class="built_in">vector</span>(vector&amp;&amp; rhs) <span class="keyword">noexcept</span> &#123;</span><br><span class="line">  <span class="keyword">auto</span> &amp;lhs = *<span class="keyword">this</span>;</span><br><span class="line">  lhs.size_ = rhs.size_;</span><br><span class="line">  lhs.data_ = rhs.data_;  <span class="comment">// move data</span></span><br><span class="line">  rhs.size_ = <span class="number">0</span>;</span><br><span class="line">  rhs.data_ = <span class="literal">nullptr</span>;    <span class="comment">// set data of rhs to null</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">vector::~<span class="built_in">vector</span>() &#123;</span><br><span class="line">  <span class="keyword">if</span> (data_)              <span class="comment">// release only if owned</span></span><br><span class="line">    <span class="keyword">delete</span>[] data_;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码中，构造函数 <code>vector::vector()</code> 根据实参判断（重载优先级参考 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#引用参数重载优先级">§ 2.3</a>）：</p>
+<ul>
+<li>实参为左值时，拷贝构造，使用 <code>new[]</code>/<code>std::copy_n</code> 拷贝原对象的所有元素（本方案有一次冗余的默认构造，仅用于演示）。</li>
+<li>实参为右值时，移动构造，把指向原对象内存的指针 <code>data_</code>、内存大小 <code>size_</code> 拷贝到新对象，并把原对象这两个成员置 <code>0</code>。</li>
+</ul>
+<p>析构函数 <code>vector::~vector()</code> 检查 data_ 是否有效，决定是否需要释放资源。</p>
+<blockquote>
+<p>此处省略 拷贝赋值/移动赋值 函数，但建议加上。（参考 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#误解-手写错误的移动构造函数">§ 1.5</a>）</p>
+</blockquote>
+<p>此外，<strong>类的成员函数</strong> 还可以通过 <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/member_functions#const-.2C_volatile-.2C_and_ref-qualified_member_functions"><strong>引用限定符</strong> <em>(reference qualifier)</em></a>，针对当前对象本身的左右值状态（以及 const-volatile）重载：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">Foo</span> &#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="function">Data <span class="title">data</span><span class="params">()</span> &amp;&amp; </span>&#123; <span class="keyword">return</span> std::<span class="built_in">move</span>(data_); &#125;  <span class="comment">// rvalue, move-out</span></span><br><span class="line">  <span class="function">Data <span class="title">data</span><span class="params">()</span> <span class="type">const</span>&amp; </span>&#123; <span class="keyword">return</span> data_; &#125;         <span class="comment">// otherwise, copy</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">auto</span> ret1 = foo.<span class="built_in">data</span>();    <span class="comment">// foo   is lvalue, copy</span></span><br><span class="line"><span class="keyword">auto</span> ret2 = Foo&#123;&#125;.<span class="built_in">data</span>();  <span class="comment">// Foo&#123;&#125; is rvalue, move</span></span><br></pre></td></tr></table></figure>
+<h4 id="转移不可拷贝的资源"><a href="#转移不可拷贝的资源" class="headerlink" title="转移不可拷贝的资源"></a>转移不可拷贝的资源</h4><blockquote>
+<p>在之前写的 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Resource-Management#资源和对象的映射关系">资源管理小记</a> 提到：如果资源是 <strong>不可拷贝</strong> <em>(non-copyable)</em> 的，那么装载资源的对象也应该是不可拷贝的。</p>
+</blockquote>
+<p>如果资源对象不可拷贝，一般需要定义 移动构造/移动赋值 函数，并禁用 拷贝构造/拷贝赋值 函数。例如，智能指针 <code>std::unique_ptr</code> <strong>只能移动</strong> <em>(move only)</em>：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="keyword">class</span> <span class="title class_">unique_ptr</span> &#123;</span><br><span class="line"> <span class="keyword">public</span>:</span><br><span class="line">  <span class="built_in">unique_ptr</span>(<span class="type">const</span> unique_ptr&amp; rhs) = <span class="keyword">delete</span>;</span><br><span class="line">  <span class="built_in">unique_ptr</span>(unique_ptr&amp;&amp; rhs) <span class="keyword">noexcept</span>;  <span class="comment">// move only</span></span><br><span class="line"> <span class="keyword">private</span>:</span><br><span class="line">  T* data_ = <span class="literal">nullptr</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">unique_ptr::<span class="built_in">unique_ptr</span>(unique_ptr&amp;&amp; rhs) <span class="keyword">noexcept</span> &#123;</span><br><span class="line">  <span class="keyword">auto</span> &amp;lhs = *<span class="keyword">this</span>;</span><br><span class="line">  lhs.data_ = rhs.data_;</span><br><span class="line">  rhs.data_ = <span class="literal">nullptr</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码中，<code>unique_ptr</code> 的移动构造过程和 <code>vector</code> 类似：</p>
+<ul>
+<li>把指向原对象内存的指针 <code>data_</code> 拷贝到新对象</li>
+<li>把原对象的指针 <code>data_</code> 置为空</li>
+</ul>
+<h4 id="反例：不遵守移动语义"><a href="#反例：不遵守移动语义" class="headerlink" title="反例：不遵守移动语义"></a>反例：不遵守移动语义</h4><p>移动语义只是语言上的一个 <strong>概念</strong>，具体是否移动对象的资源、如何移动对象的资源，都需要通过编写代码 <strong>实现</strong>。而移动语义常常被 <strong>误认为</strong>，编译器 <strong>自动生成</strong> 移动对象本身的代码（<a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#拷贝省略">§ 4</a> 拷贝省略）。</p>
+<p>为了证明这一点，我们可以实现不遵守移动语义的 <code>bad_vec::bad_vec(bad_vec&amp;&amp; rhs)</code>，执行拷贝语义：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">bad_vec::<span class="built_in">bad_vec</span>(bad_vec&amp;&amp; rhs) : <span class="built_in">data_</span>(<span class="keyword">new</span> T[rhs.size_]) &#123;</span><br><span class="line">  <span class="keyword">auto</span> &amp;lhs = *<span class="keyword">this</span>;</span><br><span class="line">  lhs.size_ = rhs.size_;</span><br><span class="line">  std::<span class="built_in">copy_n</span>(rhs.data_, rhs.size_, lhs.data_);  <span class="comment">// copy data</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>那么，一个 <code>bad_vec</code> 对象在被 <code>move</code> 移动后仍然可用：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">bad_vec&lt;<span class="type">int</span>&gt; v_old &#123; <span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span> &#125;;</span><br><span class="line"><span class="keyword">auto</span> v_new = std::<span class="built_in">move</span>(v_old);</span><br><span class="line"></span><br><span class="line">v_old[<span class="number">0</span>] = v_new[<span class="number">3</span>];           <span class="comment">// ok, but odd :-)</span></span><br><span class="line"><span class="built_in">assert</span>(v_old[<span class="number">0</span>] != v_new[<span class="number">0</span>]);</span><br><span class="line"><span class="built_in">assert</span>(v_old[<span class="number">0</span>] == v_new[<span class="number">3</span>]);</span><br></pre></td></tr></table></figure>
+<p>虽然代码可以那么写，但是在语义上有问题：进行了拷贝操作，违背了移动语义的初衷。</p>
+<h3 id="拷贝省略"><a href="#拷贝省略" class="headerlink" title="拷贝省略"></a>拷贝省略</h3><p>尽管 C++ 引入了移动语义，移动的过程 仍有优化的空间 —— 与其调用一次 没有意义的移动构造函数，不如让编译器 直接跳过这个过程 —— 于是就有了 <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/language/copy_elision">拷贝省略 <em>(copy elision)</em></a>。</p>
+<p>然而，很多人会把移动语义和拷贝省略 <strong>混淆</strong>：</p>
+<ul>
+<li>移动语义是 <strong>语言标准</strong> 提出的概念，通过编写遵守移动语义的 移动构造函数、右值限定成员函数，<strong>逻辑上</strong> 优化 <strong>对象内资源</strong> 的转移流程</li>
+<li>拷贝省略是（C++ 17 前）非标准的 <strong>编译器优化</strong>，跳过移动/拷贝构造函数，让编译器直接在 <strong>移动后的对象</strong> 内存上，构造 <strong>被移动的对象</strong>（例如 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#误解-移动非引用返回值">§ 1.3</a> 的代码，直接在 函数返回值对象 的内存上，构造 函数局部对象 <code>ret</code> —— 在 <strong>不同作用域</strong> 里，共享 <strong>同一块内存</strong>）</li>
+</ul>
+<p>C++ 17 要求编译器对 <strong>纯右值</strong> <em>(prvalue, pure rvalue)</em> 进行拷贝省略优化。（<a target="_blank" rel="noopener" href="https://jonasdevlieghere.com/guaranteed-copy-elision/">参考</a>）</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">Data <span class="title">f</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  Data val;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">throw</span> val;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">  <span class="keyword">return</span> val;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// NRVO from lvalue to ret (not guaranteed)</span></span><br><span class="line">  <span class="comment">// if NRVO is disabled, move ctor is called</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">g</span><span class="params">(Date arg)</span></span>;</span><br><span class="line"></span><br><span class="line">Data v = <span class="built_in">f</span>();     <span class="comment">// copy elision from prvalue (C++ 17)</span></span><br><span class="line"><span class="built_in">g</span>(<span class="built_in">f</span>());           <span class="comment">// copy elision from prvalue (C++ 17)</span></span><br></pre></td></tr></table></figure>
+<p>初始化 局部变量、函数参数时，传入的纯右值可以确保被优化 —— Return Value Optimization <em>(RVO)</em>；而返回的 <strong>将亡值</strong> <em>(xvalue, eXpiring value)</em> 不保证被优化 —— Named Return Value Optimization <em>(NRVO)</em>。</p>
+<h3 id="通用引用和完美转发"><a href="#通用引用和完美转发" class="headerlink" title="通用引用和完美转发"></a>通用引用和完美转发</h3><blockquote>
+<p>揭示 <code>std::move()</code>/<code>std::forward()</code> 的原理，需要读者有一定的 <strong>模板编程基础</strong>。</p>
+</blockquote>
+<h4 id="为什么需要通用引用"><a href="#为什么需要通用引用" class="headerlink" title="为什么需要通用引用"></a>为什么需要通用引用</h4><p>C++ 11 引入了变长模板的概念，允许向模板参数里传入不同类型的不定长引用参数。由于每个类型可能是左值引用或右值引用，针对所有可能的左右值引用组合，<strong>特化所有模板</strong> 是 <strong>不现实的</strong>。</p>
+<p><strong>假设没有</strong> 通用引用的概念，模板 <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/memory/unique_ptr/make_unique"><code>std::make_unique&lt;&gt;</code></a> 至少需要两个重载：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Args&gt;</span></span><br><span class="line"><span class="function">unique_ptr&lt;T&gt; <span class="title">make_unique</span><span class="params">(<span class="type">const</span> Args&amp;... args)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> unique_ptr&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">new</span> T &#123; args... &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Args&gt;</span></span><br><span class="line"><span class="function">unique_ptr&lt;T&gt; <span class="title">make_unique</span><span class="params">(Args&amp;&amp;... args)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> unique_ptr&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">new</span> T &#123; std::<span class="built_in">move</span>&lt;Args&gt;(args)... &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>对于传入的左值引用 <code>const Args&amp;... args</code>，只要展开 <code>args...</code> 就可以转发这一组左值引用</li>
+<li>对于传入的右值引用 <code>Args&amp;&amp;... args</code>，需要通过 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#移动转发">§ 5.4</a> <code>std::move()</code> 转发出去，即 <code>std::move(args)...</code>（为什么要转发：参考 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#误解-不移动右值引用参数">§ 1.4</a>）</li>
+</ul>
+<p>上述代码的问题在于：如果传入的 <code>args</code> <strong>既有</strong> 左值引用 <strong>又有</strong> 右值引用，那么这两个模板都 <strong>无法匹配</strong>。</p>
+<h4 id="通用引用"><a href="#通用引用" class="headerlink" title="通用引用"></a>通用引用</h4><blockquote>
+<p>Item 24: Distinguish universal references from rvalue references. —— Scott Meyers, <em>Effective Modern C++</em></p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://isocpp.org/blog/2012/11/universal-references-in-c11-scott-meyers">Scott Meyers 指出</a>：有时候符号 <code>&amp;&amp;</code> 并不一定代表右值引用，它也可能是左值引用 —— 如果一个引用符号需要通过 左右值类型推导（模板参数类型 或 <code>auto</code> 推导），那么这个符号可能是左值引用或右值引用 —— 这叫做 <strong>通用引用</strong> <em>(universal reference)</em>。</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// rvalue ref: no type deduction</span></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">f1</span><span class="params">(Widget&amp;&amp; param1)</span></span>;</span><br><span class="line">Widget&amp;&amp; var1 = <span class="built_in">Widget</span>();</span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt; <span class="type">void</span> <span class="title">f2</span><span class="params">(vector&lt;T&gt;&amp;&amp; param2)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// universal ref: type deduction</span></span><br><span class="line"><span class="keyword">auto</span>&amp;&amp; var2 = var1;</span><br><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt; <span class="type">void</span> <span class="title">f3</span><span class="params">(T&amp;&amp; param)</span></span>;</span><br></pre></td></tr></table></figure>
+<p>上述代码中，前三个 <code>&amp;&amp;</code> 符号不涉及引用符号的左右值类型推导，都是右值引用；而后两个 <code>&amp;&amp;</code> 符号会 <strong>根据初始值推导左右值类型</strong>：</p>
+<ul>
+<li>对于 <code>var2</code>，因为 <code>var1</code> 是左值，所以 <code>var2</code> 也是左值引用<ul>
+<li>推导不会参考 <code>var1</code> 的变量类型</li>
+</ul>
+</li>
+<li>对于 <code>T&amp;&amp;</code>：<ul>
+<li>如果 <code>param</code> 传入左值，<code>T&amp;&amp;</code> 是左值引用 <code>std::remove_reference_t&amp;</code></li>
+<li>如果 <code>param</code> 传入右值，<code>T&amp;&amp;</code> 是右值引用 <code>std::remove_reference_t&amp;&amp;</code></li>
+</ul>
+</li>
+</ul>
+<p>基于通用引用，<a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#为什么需要通用引用">§ 5.1</a> 的模板 <code>std::make_unique&lt;&gt;</code> 只需要一个重载：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span>... Args&gt;</span></span><br><span class="line"><span class="function">unique_ptr&lt;T&gt; <span class="title">make_unique</span><span class="params">(Args&amp;&amp;... args)</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> unique_ptr&lt;T&gt; &#123;</span><br><span class="line">    <span class="keyword">new</span> T &#123; std::forward&lt;Args&gt;(args)... &#125;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>其中，<code>std::forward()</code> 实现了 <strong>针对不同左右值参数的转发</strong> —— 完美转发。</p>
+<blockquote>
+<p>这里就是完美转发真正的意义所在，会将形参的引用类型转发出去。</p>
+</blockquote>
+<h4 id="完美转发"><a href="#完美转发" class="headerlink" title="完美转发"></a>完美转发</h4><p>什么是 <strong>完美转发</strong> <em>(perfect forwarding)</em>：</p>
+<ul>
+<li>如果参数是 <strong>左值引用</strong>，直接以 <strong>左值引用</strong> 的形式，转发给下一个函数</li>
+<li>如果参数是 <strong>右值引用</strong>，要先 “还原” 为 <strong>右值引用</strong> 的形式，再转发给下一个函数</li>
+</ul>
+<p>因此，<a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/utility/forward"><code>std::forward()</code></a> 定义两个 <strong>不涉及</strong> 左右值类型 <strong>推导</strong> 的模板（不能使用 通用引用参数）：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function">T&amp;&amp; <span class="title">forward</span><span class="params">(std::<span class="type">remove_reference_t</span>&lt;T&gt;&amp; val)</span> <span class="keyword">noexcept</span> </span>&#123;  <span class="comment">// #1</span></span><br><span class="line">  <span class="comment">// forward lvalue as either lvalue or rvalue</span></span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">static_cast</span>&lt;T&amp;&amp;&gt;(val);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function">T&amp;&amp; <span class="title">forward</span><span class="params">(std::<span class="type">remove_reference_t</span>&lt;T&gt;&amp;&amp; val)</span> <span class="keyword">noexcept</span> </span>&#123;  <span class="comment">// #2</span></span><br><span class="line">  <span class="comment">// forward rvalue as rvalue (not lvalue)</span></span><br><span class="line">  <span class="built_in">static_assert</span>(!std::is_lvalue_reference_v&lt;T&gt;,</span><br><span class="line">                <span class="string">&quot;Cannot forward rvalue as lvalue.&quot;</span>);</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">static_cast</span>&lt;T&amp;&amp;&gt;(val);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">实参/返回值</th>
+<th style="text-align:center">重载</th>
+<th style="text-align:center">l-ref 返回值</th>
+<th style="text-align:center">r-ref 返回值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">l-ref 实参</td>
+<td style="text-align:center">#1</td>
+<td style="text-align:center">完美转发</td>
+<td style="text-align:center"><strong>移动转发</strong></td>
+</tr>
+<tr>
+<td style="text-align:center">r-ref 实参</td>
+<td style="text-align:center">#2</td>
+<td style="text-align:center"><strong>语义错误</strong></td>
+<td style="text-align:center">完美转发</td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li>尽管初始化后的变量都是 <strong>左值</strong>（参考 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#误解-不移动右值引用参数">§ 1.4</a>），但原始的 <strong>变量类型</strong> 仍会保留</li>
+<li>因此，可以根据 <strong>实参类型</strong> 选择重载，<strong>和模板参数 <code>T</code> 的类型无关</strong></li>
+<li><strong>返回值类型</strong> <code>static_cast(val)</code> 经过模板参数 <code>T&amp;&amp;</code> <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#引用折叠">§ 2.4</a> 引用折叠 实现 完美转发/移动转发，<strong>和实参类型无关</strong></li>
+<li>“将 l-ref 实参 转发为 r-ref 返回值” 等价于 <a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference#移动转发">§ 5.4</a> <code>std::move()</code> 移动转发</li>
+</ul>
+<h4 id="移动转发"><a href="#移动转发" class="headerlink" title="移动转发"></a>移动转发</h4><p>类似的，<a target="_blank" rel="noopener" href="https://en.cppreference.com/w/cpp/utility/move"><code>std::move()</code></a> 只转发为右值引用类型：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="function">std::<span class="type">remove_reference_t</span>&lt;T&gt;&amp;&amp; <span class="title">move</span><span class="params">(T&amp;&amp; val)</span> <span class="keyword">noexcept</span> </span>&#123;</span><br><span class="line">  <span class="comment">// forward either lvalue or rvalue as rvalue</span></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">static_cast</span>&lt;std::<span class="type">remove_reference_t</span>&lt;T&gt;&amp;&amp;&gt;(val);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:center">实参/返回值</th>
+<th style="text-align:center">r-ref 返回值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">l-ref 实参</td>
+<td style="text-align:center">移动转发</td>
+</tr>
+<tr>
+<td style="text-align:center">r-ref 实参</td>
+<td style="text-align:center">移动转发（完美转发）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li>接受 通用引用模板参数 <code>T&amp;&amp;</code>（无需两个模板，使用时不区分 <code>T</code> 的引用类型）</li>
+<li>返回值 <code>static_cast&amp;&amp;&gt;(val)</code> 将实参 <strong>转为将亡值</strong>（右值引用类型）</li>
+<li>所以 <code>std::move()</code> 等价于 <code>std::forward&amp;&amp;&gt;()</code></li>
+</ul>
+<p>最后，<code>std::move()</code>/<code>std::forward()</code> 只是编译时的变量类型转换，不会产生目标代码。</p>
+<h3 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h3><ul>
+<li>原文链接：<a target="_blank" rel="noopener" href="https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference">https://bot-man-jl.github.io/articles/?post=2018/Cpp-Rvalue-Reference</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2020/02/right-reference.html" title="C++ 右值引用使用总结">https:&#x2F;&#x2F;murphypei.github.io&#x2F;blog&#x2F;2020&#x2F;02&#x2F;right-reference.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-creative-commons&quot;&gt;&lt;&#x2F;i&gt;BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/C-11/" rel="tag"># C++11</a>
+            
+              <a href="/tags/%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8/" rel="tag"># 右值引用</a>
+            
+              <a href="/tags/%E7%A7%BB%E5%8A%A8/" rel="tag"># 移动</a>
+            
+              <a href="/tags/%E5%AE%8C%E7%BE%8E%E8%BD%AC%E5%8F%91/" rel="tag"># 完美转发</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2020/02/thread-local.html" rel="next" title="C++11 thread_local 用法">
+                  <i class="fa fa-chevron-left"></i> C++11 thread_local 用法
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2020/03/call-derived-function.html" rel="prev" title="父类成员函数调用子类成员函数">
+                  父类成员函数调用子类成员函数 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%99%E5%9C%A8%E5%89%8D%E9%9D%A2"><span class="nav-number">1.</span> <span class="nav-text">写在前面</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%AF%E8%A7%A31%EF%BC%9A%E8%BF%94%E5%9B%9E%E5%89%8D%EF%BC%8C%E7%A7%BB%E5%8A%A8%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F"><span class="nav-number">1.1.</span> <span class="nav-text">误解1：返回前，移动局部变量</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%AF%E8%A7%A32%EF%BC%9A%E8%A2%AB%E7%A7%BB%E5%8A%A8%E7%9A%84%E5%80%BC%E4%B8%8D%E8%83%BD%E5%86%8D%E4%BD%BF%E7%94%A8"><span class="nav-number">1.2.</span> <span class="nav-text">误解2：被移动的值不能再使用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%AF%E8%A7%A33%EF%BC%9A%E7%A7%BB%E5%8A%A8%E9%9D%9E%E5%BC%95%E7%94%A8%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="nav-number">1.3.</span> <span class="nav-text">误解3：移动非引用返回值</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%AF%E8%A7%A34%EF%BC%9A%E4%B8%8D%E7%A7%BB%E5%8A%A8%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8%E5%8F%82%E6%95%B0"><span class="nav-number">1.4.</span> <span class="nav-text">误解4：不移动右值引用参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%AF%E8%A7%A35%EF%BC%9A%E6%89%8B%E5%86%99%E9%94%99%E8%AF%AF%E7%9A%84%E7%A7%BB%E5%8A%A8%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-number">1.5.</span> <span class="nav-text">误解5：手写错误的移动构造函数</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86"><span class="nav-number">2.</span> <span class="nav-text">基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%80%BC%E7%B1%BB%E5%88%AB-vs-%E5%8F%98%E9%87%8F%E7%B1%BB%E5%9E%8B"><span class="nav-number">2.1.</span> <span class="nav-text">值类别 vs 变量类型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%B7%A6%E5%80%BC%E5%BC%95%E7%94%A8-vs-%E5%8F%B3%E5%80%BC%E5%BC%95%E7%94%A8-vs-%E5%B8%B8%E5%BC%95%E7%94%A8"><span class="nav-number">2.2.</span> <span class="nav-text">左值引用 vs 右值引用 vs 常引用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%95%E7%94%A8%E5%8F%82%E6%95%B0%E9%87%8D%E8%BD%BD%E4%BC%98%E5%85%88%E7%BA%A7"><span class="nav-number">2.3.</span> <span class="nav-text">引用参数重载优先级</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%95%E7%94%A8%E6%8A%98%E5%8F%A0"><span class="nav-number">2.4.</span> <span class="nav-text">引用折叠</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89"><span class="nav-number">3.</span> <span class="nav-text">移动语义</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%81%BF%E5%85%8D%E5%85%88%E6%8B%B7%E8%B4%9D%E5%86%8D%E9%87%8A%E6%94%BE%E8%B5%84%E6%BA%90"><span class="nav-number">3.1.</span> <span class="nav-text">避免先拷贝再释放资源</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BD%AC%E7%A7%BB%E4%B8%8D%E5%8F%AF%E6%8B%B7%E8%B4%9D%E7%9A%84%E8%B5%84%E6%BA%90"><span class="nav-number">3.2.</span> <span class="nav-text">转移不可拷贝的资源</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%8D%E4%BE%8B%EF%BC%9A%E4%B8%8D%E9%81%B5%E5%AE%88%E7%A7%BB%E5%8A%A8%E8%AF%AD%E4%B9%89"><span class="nav-number">3.3.</span> <span class="nav-text">反例：不遵守移动语义</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8B%B7%E8%B4%9D%E7%9C%81%E7%95%A5"><span class="nav-number">4.</span> <span class="nav-text">拷贝省略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E7%94%A8%E5%BC%95%E7%94%A8%E5%92%8C%E5%AE%8C%E7%BE%8E%E8%BD%AC%E5%8F%91"><span class="nav-number">5.</span> <span class="nav-text">通用引用和完美转发</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E9%80%9A%E7%94%A8%E5%BC%95%E7%94%A8"><span class="nav-number">5.1.</span> <span class="nav-text">为什么需要通用引用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%9A%E7%94%A8%E5%BC%95%E7%94%A8"><span class="nav-number">5.2.</span> <span class="nav-text">通用引用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%8C%E7%BE%8E%E8%BD%AC%E5%8F%91"><span class="nav-number">5.3.</span> <span class="nav-text">完美转发</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A7%BB%E5%8A%A8%E8%BD%AC%E5%8F%91"><span class="nav-number">5.4.</span> <span class="nav-text">移动转发</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/%20%7C%7C%20archive">
+        
+          <span class="site-state-item-count">188</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/%20%7C%7C%20th">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/%20%7C%7C%20tags">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">494</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &amp;rarr; https:&#x2F;&#x2F;github.com&#x2F;murphypei" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-github&quot;&gt;&lt;&#x2F;i&gt;GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &amp;rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-envelope&quot;&gt;&lt;&#x2F;i&gt;E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;guo-jia-66-80&#x2F;activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2026</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">697k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">19:22</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js?v=7.3.0.js"></script>
+
+<script src="/js/motion.js?v=7.3.0.js"></script>
+
+
+<script src="/js/schemes/muse.js?v=7.3.0.js"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '7640d0bbfbcaedc8d69a783ac3fe8ea7',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

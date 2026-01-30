@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="目标检测中常见的mAP计算说起来比较麻烦，所以结合VOC的计算代码进行一次详细的解析。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="目标检测mAP计算方式">
+<meta property="og:url" content="https://murphypei.github.io/blog/2018/09/map-calc.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="目标检测中常见的mAP计算说起来比较麻烦，所以结合VOC的计算代码进行一次详细的解析。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/dl/map/precision_recall.jpg">
+<meta property="article:published_time" content="2018-09-06T22:59:20.000Z">
+<meta property="article:modified_time" content="2026-01-07T08:41:01.070Z">
+<meta property="article:author" content="AngryBirds">
+<meta property="article:tag" content="深度学习">
+<meta property="article:tag" content="目标检测">
+<meta property="article:tag" content="mAP">
+<meta property="article:tag" content="召回率">
+<meta property="article:tag" content="准确率">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://murphypei.github.io/images/posts/dl/map/precision_recall.jpg">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2018/09/map-calc">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>目标检测mAP计算方式 | 拾荒志</title>
+  <meta name="generator" content="Hexo 5.4.2">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于
+    </a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2018/09/map-calc.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">目标检测mAP计算方式
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2018-09-07 06:59:20" itemprop="dateCreated datePublished" datetime="2018-09-07T06:59:20+08:00">2018-09-07</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2026-01-07 16:41:01" itemprop="dateModified" datetime="2026-01-07T16:41:01+08:00">2026-01-07</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/DeepLearning/" itemprop="url" rel="index"><span itemprop="name">DeepLearning</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>4.3k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>7 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>目标检测中常见的mAP计算说起来比较麻烦，所以结合VOC的计算代码进行一次详细的解析。</p>
+<span id="more"></span>
+<h3 id="precision和recall"><a href="#precision和recall" class="headerlink" title="precision和recall"></a>precision和recall</h3><p>首先我们应该有了解准确率（precision）和召回率（recall）的基本计算方式，参考下图：</p>
+<p><img src="/images/posts/dl/map/precision_recall.jpg" alt="准确率和召回率"></p>
+<p>图中上部分：</p>
+<ul>
+<li>左边一整个矩形中（false negative 和 true positive）的数表示 ground truth 之中为 1 的（即为正确的）数据。</li>
+<li>右边一整个矩形中的数表示 ground truth 之中为 0 的数据。</li>
+<li>精度 precision 的计算是用检测正确的数据个数 / 总的检测个数。</li>
+<li>召回率 recall 的计算是用检测正确的数据个数 / ground truth之中所有正数据个数。</li>
+</ul>
+<p>对于目标检测，我们通常设置一个 iou 的阈值来表示是否检测正确，也就是一个检测 box 和相应目标的 ground truth 的 iou 超过一定的阈值，并且分类正确则认为检测到一个正确的目标。</p>
+<h3 id="PR-曲线和-AP，mAP"><a href="#PR-曲线和-AP，mAP" class="headerlink" title="PR 曲线和 AP，mAP"></a>PR 曲线和 AP，mAP</h3><p>由上述定义可知，召回率和准确率受到了阈值设置的影响，而且阈值对于两个指标的影响是相反的：阈值提高则准确率增加，召回率降低，反之亦然。那么我们就可以通过设置一系列的阈值来得到一系列的（准确率，召回率）的指标对，然后利用这些指标对画出坐标图，这就是 PR 曲线，而AP（average precision）就是这个曲线下的面积。</p>
+<p>mAP 就是多个分类任务的 AP 的平均值。</p>
+<h3 id="VOC-的-mAP-代码实现"><a href="#VOC-的-mAP-代码实现" class="headerlink" title="VOC 的 mAP 代码实现"></a>VOC 的 mAP 代码实现</h3><figure class="highlight py"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">voc_ap</span>(<span class="params">self, rec, prec, use_07_metric=<span class="literal">True</span></span>):</span><br><span class="line">    <span class="keyword">if</span> use_07_metric:</span><br><span class="line">        ap = <span class="number">0.</span></span><br><span class="line">        <span class="comment"># 2010年以前按recall等间隔取11个不同点处的精度值做平均(0., 0.1, 0.2, …, 0.9, 1.0)</span></span><br><span class="line">        <span class="keyword">for</span> t <span class="keyword">in</span> np.arange(<span class="number">0.</span>, <span class="number">1.1</span>, <span class="number">0.1</span>):</span><br><span class="line">            <span class="keyword">if</span> np.<span class="built_in">sum</span>(rec &gt;= t) == <span class="number">0</span>:</span><br><span class="line">                p = <span class="number">0</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                <span class="comment"># 取最大值等价于2010以后先计算包络线的操作，保证precise非减</span></span><br><span class="line">                p = np.<span class="built_in">max</span>(prec[rec &gt;= t])</span><br><span class="line">            ap = ap + p / <span class="number">11.</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        <span class="comment"># 2010年以后取所有不同的recall对应的点处的精度值做平均</span></span><br><span class="line">        <span class="comment"># first append sentinel values at the end</span></span><br><span class="line">        mrec = np.concatenate(([<span class="number">0.</span>], rec, [<span class="number">1.</span>]))</span><br><span class="line">        mpre = np.concatenate(([<span class="number">0.</span>], prec, [<span class="number">0.</span>]))</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 计算包络线，从后往前取最大保证precise非减</span></span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(mpre.size - <span class="number">1</span>, <span class="number">0</span>, -<span class="number">1</span>):</span><br><span class="line">            mpre[i - <span class="number">1</span>] = np.maximum(mpre[i - <span class="number">1</span>], mpre[i])</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 找出所有检测结果中recall不同的点</span></span><br><span class="line">        i = np.where(mrec[<span class="number">1</span>:] != mrec[:-<span class="number">1</span>])[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">        <span class="comment"># and sum (\Delta recall) * prec</span></span><br><span class="line">        <span class="comment"># 用recall的间隔对精度作加权平均</span></span><br><span class="line">        ap = np.<span class="built_in">sum</span>((mrec[i + <span class="number">1</span>] - mrec[i]) * mpre[i + <span class="number">1</span>])</span><br><span class="line">    <span class="keyword">return</span> ap</span><br><span class="line"></span><br><span class="line"><span class="comment"># 计算每个类别对应的AP，mAP是所有类别AP的平均值</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">voc_eval</span>(<span class="params">self, detpath,</span></span><br><span class="line"><span class="params">             classname,</span></span><br><span class="line"><span class="params">             ovthresh=<span class="number">0.5</span>,</span></span><br><span class="line"><span class="params">             use_07_metric=<span class="literal">True</span></span>):</span><br><span class="line">    <span class="comment"># 提取所有测试图片中当前类别所对应的所有ground_truth</span></span><br><span class="line">    class_recs = &#123;&#125;</span><br><span class="line">    npos = <span class="number">0</span></span><br><span class="line">    <span class="comment"># 遍历所有测试图片</span></span><br><span class="line">    <span class="keyword">for</span> imagename <span class="keyword">in</span> imagenames:</span><br><span class="line">        <span class="comment"># 找出所有当前类别对应的object</span></span><br><span class="line">        R = [obj <span class="keyword">for</span> obj <span class="keyword">in</span> recs[imagename] <span class="keyword">if</span> obj[<span class="string">&#x27;name&#x27;</span>] == classname]</span><br><span class="line">        <span class="comment"># 该图片中该类别对应的所有bbox</span></span><br><span class="line">        bbox = np.array([x[<span class="string">&#x27;bbox&#x27;</span>] <span class="keyword">for</span> x <span class="keyword">in</span> R])</span><br><span class="line">        difficult = np.array([x[<span class="string">&#x27;difficult&#x27;</span>] <span class="keyword">for</span> x <span class="keyword">in</span> R]).astype(np.<span class="built_in">bool</span>)</span><br><span class="line">        <span class="comment"># 该图片中该类别对应的所有bbox的是否已被匹配的标志位</span></span><br><span class="line">        det = [<span class="literal">False</span>] * <span class="built_in">len</span>(R)</span><br><span class="line">        <span class="comment"># 累计所有图片中的该类别目标的总数，不算diffcult</span></span><br><span class="line">        npos = npos + <span class="built_in">sum</span>(~difficult)</span><br><span class="line">        class_recs[imagename] = &#123;<span class="string">&#x27;bbox&#x27;</span>: bbox,</span><br><span class="line">                                <span class="string">&#x27;difficult&#x27;</span>: difficult,</span><br><span class="line">                                <span class="string">&#x27;det&#x27;</span>: det&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment"># 读取相应类别的检测结果文件，每一行对应一个检测目标</span></span><br><span class="line">    <span class="keyword">if</span> <span class="built_in">any</span>(lines) == <span class="number">1</span>:</span><br><span class="line">        <span class="comment"># 某一行对应的检测目标所属的图像名</span></span><br><span class="line">        image_ids = [x[<span class="number">0</span>] <span class="keyword">for</span> x <span class="keyword">in</span> splitlines]</span><br><span class="line">        <span class="comment"># 读取该目标对应的置信度</span></span><br><span class="line">        confidence = np.array([<span class="built_in">float</span>(x[<span class="number">1</span>]) <span class="keyword">for</span> x <span class="keyword">in</span> splitlines])</span><br><span class="line">        <span class="comment"># 读取该目标对应的bbox</span></span><br><span class="line">        BB = np.array([[<span class="built_in">float</span>(z) <span class="keyword">for</span> z <span class="keyword">in</span> x[<span class="number">2</span>:]] <span class="keyword">for</span> x <span class="keyword">in</span> splitlines])</span><br><span class="line"></span><br><span class="line">        <span class="comment"># 将该类别的检测结果按照置信度大小降序排列</span></span><br><span class="line">        sorted_ind = np.argsort(-confidence)</span><br><span class="line">        sorted_scores = np.sort(-confidence)</span><br><span class="line">        BB = BB[sorted_ind, :]</span><br><span class="line">        image_ids = [image_ids[x] <span class="keyword">for</span> x <span class="keyword">in</span> sorted_ind]</span><br><span class="line">        <span class="comment"># 该类别检测结果的总数（所有检测出的bbox的数目）</span></span><br><span class="line">        nd = <span class="built_in">len</span>(image_ids)</span><br><span class="line">        <span class="comment"># 用于标记每个检测结果是tp还是fp</span></span><br><span class="line">        tp = np.zeros(nd)</span><br><span class="line">        fp = np.zeros(nd)</span><br><span class="line">        <span class="comment"># 按置信度遍历每个检测结果</span></span><br><span class="line">        <span class="keyword">for</span> d <span class="keyword">in</span> <span class="built_in">range</span>(nd):</span><br><span class="line">            <span class="comment"># 取出该条检测结果所属图片中的所有ground truth</span></span><br><span class="line">            R = class_recs[image_ids[d]]</span><br><span class="line">            bb = BB[d, :].astype(<span class="built_in">float</span>)</span><br><span class="line">            ovmax = -np.inf</span><br><span class="line">            BBGT = R[<span class="string">&#x27;bbox&#x27;</span>].astype(<span class="built_in">float</span>)</span><br><span class="line">            <span class="comment"># 计算与该图片中所有ground truth的最大重叠度</span></span><br><span class="line">            <span class="keyword">if</span> BBGT.size &gt; <span class="number">0</span>:</span><br><span class="line">                ......</span><br><span class="line">                overlaps = inters / uni</span><br><span class="line">                ovmax = np.<span class="built_in">max</span>(overlaps)</span><br><span class="line">                jmax = np.argmax(overlaps)</span><br><span class="line">            <span class="comment"># 如果最大的重叠度大于一定的阈值</span></span><br><span class="line">            <span class="keyword">if</span> ovmax &gt; ovthresh:</span><br><span class="line">                <span class="comment"># 如果最大重叠度对应的ground truth为difficult就忽略</span></span><br><span class="line">                <span class="keyword">if</span> <span class="keyword">not</span> R[<span class="string">&#x27;difficult&#x27;</span>][jmax]:</span><br><span class="line">                    <span class="comment"># 如果对应的最大重叠度的ground truth以前没被匹配过则匹配成功，即tp</span></span><br><span class="line">                    <span class="keyword">if</span> <span class="keyword">not</span> R[<span class="string">&#x27;det&#x27;</span>][jmax]:</span><br><span class="line">                        tp[d] = <span class="number">1.</span></span><br><span class="line">                        R[<span class="string">&#x27;det&#x27;</span>][jmax] = <span class="number">1</span></span><br><span class="line">                    <span class="comment"># 若之前有置信度更高的检测结果匹配过这个ground truth，则此次检测结果为fp</span></span><br><span class="line">                    <span class="keyword">else</span>:</span><br><span class="line">                        fp[d] = <span class="number">1.</span></span><br><span class="line">            <span class="comment"># 该图片中没有对应类别的目标ground truth或者与所有ground truth重叠度都小于阈值</span></span><br><span class="line">            <span class="keyword">else</span>:</span><br><span class="line">                fp[d] = <span class="number">1.</span></span><br><span class="line"></span><br><span class="line">        <span class="comment"># 按置信度取不同数量检测结果时的累计fp和tp</span></span><br><span class="line">        <span class="comment"># np.cumsum([1, 2, 3, 4]) -&gt; [1, 3, 6, 10]</span></span><br><span class="line">        fp = np.cumsum(fp)</span><br><span class="line">        tp = np.cumsum(tp)</span><br><span class="line">        <span class="comment"># 召回率为占所有真实目标数量的比例，非减的，注意npos本身就排除了difficult，因此npos=tp+fn</span></span><br><span class="line">        rec = tp / <span class="built_in">float</span>(npos)</span><br><span class="line">        <span class="comment"># 精度为取的所有检测结果中tp的比例</span></span><br><span class="line">        prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)</span><br><span class="line">        <span class="comment"># 计算recall-precise曲线下面积（严格来说并不是面积）</span></span><br><span class="line">        ap = <span class="variable language_">self</span>.voc_ap(rec, prec, use_07_metric)</span><br><span class="line">    <span class="comment"># 如果这个类别对应的检测结果为空，那么都是-1</span></span><br><span class="line">    <span class="keyword">else</span>:</span><br><span class="line">        rec = -<span class="number">1.</span></span><br><span class="line">        prec = -<span class="number">1.</span></span><br><span class="line">        ap = -<span class="number">1.</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> rec, prec, ap</span><br></pre></td></tr></table></figure>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>mAP 计算的总结如下，得到检测结果 dets 之后：</p>
+<ol>
+<li>将所有的 det_box 按 det_score 进行降序排序；</li>
+<li>计算每个 det_box 与所有 gt_box(ground-truth) 的 iou</li>
+<li>取 iou 最大(max_IOU)的 gt_box 作为这个 det_box 的预测结果是否正确的判断依据，然后根据 max_IOU 的结果判断预测结果是TP还是FP。</li>
+</ol>
+<p>针对上述的第3步，每个类别单独处理：</p>
+<ul>
+<li>preTP：max_IOU 大于 ovp_thresh，同时分类结果与 max_IOU 对应的 gt_box 的类别是一致的，则该 det_box 归为 preTP，同时将这个 gt_box 从候选 gt_box 中去除。</li>
+<li>preFP：det_box 是 A 类，但是对应 max_IOU 的 gt_box 是 B 类。<ul>
+<li>如果一个 det_box 的 max_IOU 与一个已经被前面 det_score 较大的 det_box 对应并且从候选的 gt_box 中去除了，则这个 det_box 也是一个 preFP。</li>
+</ul>
+</li>
+<li>FN：没有被检测到的 gt_box，也就是没有 det_box 的 max_IOU 的目标是这个 gt_box。</li>
+</ul>
+<p>上述的计算过程可以简化，也就是对每个 det_box，我们计算与其预测类别一样的 gt_box 的 IOU 就行，然后取 max_IOU，<strong>如果 max_IOU 大于 ovp_thresh，并且这个 max_IOU 对应的 gt_box 还没有被别的 det_box 预测（设置一个 found 的标志位）</strong>，则这个 det_box 就是 preTP，并将该 gt_box 的 found 设置为 true，否则就是 preFP。遍历完之后就可以判断，found 为 false 的 gt_box 为 FN。</p>
+<p>注意到，上述的过程中，det_score 是没有用到的，只是最初做了一个排序，所以求得的是 preTP 和 preFP，还不是最终结果，然后在不同的 det_score 的阈值下处理上述的结果，就得到了 TP 和 FP，就可以计算不同阈值下的 recall 和 precision，画出 PR 曲线，计算每个类别的 ap，然后得到目标检测算法的 mAP。</p>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2018/09/map-calc.html" title="目标检测mAP计算方式">https:&#x2F;&#x2F;murphypei.github.io&#x2F;blog&#x2F;2018&#x2F;09&#x2F;map-calc.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-creative-commons&quot;&gt;&lt;&#x2F;i&gt;BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" rel="tag"># 深度学习</a>
+            
+              <a href="/tags/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B/" rel="tag"># 目标检测</a>
+            
+              <a href="/tags/mAP/" rel="tag"># mAP</a>
+            
+              <a href="/tags/%E5%8F%AC%E5%9B%9E%E7%8E%87/" rel="tag"># 召回率</a>
+            
+              <a href="/tags/%E5%87%86%E7%A1%AE%E7%8E%87/" rel="tag"># 准确率</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2018/08/mxnet-load-pretrained.html" rel="next" title="MXNet框架学习（4）：模型加载和使用">
+                  <i class="fa fa-chevron-left"></i> MXNet框架学习（4）：模型加载和使用
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2018/09/kmeans.html" rel="prev" title="K-Means聚类算法">
+                  K-Means聚类算法 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#precision%E5%92%8Crecall"><span class="nav-number">1.</span> <span class="nav-text">precision和recall</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PR-%E6%9B%B2%E7%BA%BF%E5%92%8C-AP%EF%BC%8CmAP"><span class="nav-number">2.</span> <span class="nav-text">PR 曲线和 AP，mAP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#VOC-%E7%9A%84-mAP-%E4%BB%A3%E7%A0%81%E5%AE%9E%E7%8E%B0"><span class="nav-number">3.</span> <span class="nav-text">VOC 的 mAP 代码实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/%20%7C%7C%20archive">
+        
+          <span class="site-state-item-count">188</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/%20%7C%7C%20th">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/%20%7C%7C%20tags">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">494</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &amp;rarr; https:&#x2F;&#x2F;github.com&#x2F;murphypei" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-github&quot;&gt;&lt;&#x2F;i&gt;GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &amp;rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-envelope&quot;&gt;&lt;&#x2F;i&gt;E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;guo-jia-66-80&#x2F;activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2026</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">697k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">19:22</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js?v=7.3.0.js"></script>
+
+<script src="/js/motion.js?v=7.3.0.js"></script>
+
+
+<script src="/js/schemes/muse.js?v=7.3.0.js"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '984daf0f10c45933c3a312c02fa588da',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

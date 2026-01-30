@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="在之前的 PPO 细节探讨中，我们详细介绍了 PPO 算法和 GAE 优势估计。今天我们来深入探讨 GRPO（Group Relative Policy Optimization）算法，这是 PPO 在大语言模型训练中的一个重要改进版本。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LLM 训练：GRPO 算法详解">
+<meta property="og:url" content="https://murphypei.github.io/blog/2025/07/llm-grpo.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="在之前的 PPO 细节探讨中，我们详细介绍了 PPO 算法和 GAE 优势估计。今天我们来深入探讨 GRPO（Group Relative Policy Optimization）算法，这是 PPO 在大语言模型训练中的一个重要改进版本。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-07-22T17:43:43.000Z">
+<meta property="article:modified_time" content="2026-01-13T03:49:48.689Z">
+<meta property="article:author" content="AngryBirds">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="强化学习">
+<meta property="article:tag" content="rlhf">
+<meta property="article:tag" content="ppo">
+<meta property="article:tag" content="grpo">
+<meta property="article:tag" content="advantage">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2025/07/llm-grpo">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>LLM 训练：GRPO 算法详解 | 拾荒志</title>
+  <meta name="generator" content="Hexo 5.4.2">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于
+    </a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2025/07/llm-grpo.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">LLM 训练：GRPO 算法详解
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2025-07-23 01:43:43" itemprop="dateCreated datePublished" datetime="2025-07-23T01:43:43+08:00">2025-07-23</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2026-01-13 11:49:48" itemprop="dateModified" datetime="2026-01-13T11:49:48+08:00">2026-01-13</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/LLM/" itemprop="url" rel="index"><span itemprop="name">LLM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>14k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>23 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>在<a href="https://murphypei.github.io/blog/2025/05/llm-ppo.html">之前的 PPO 细节探讨</a>中，我们详细介绍了 PPO 算法和 GAE 优势估计。今天我们来深入探讨 GRPO（Group Relative Policy Optimization）算法，这是 PPO 在大语言模型训练中的一个重要改进版本。</p>
+<span id="more"></span>
+<h2 id="GRPO-算法概述"><a href="#GRPO-算法概述" class="headerlink" title="GRPO 算法概述"></a>GRPO 算法概述</h2><p>在 LLM 的 RLHF 训练中，PPO 虽然表现良好，但仍存在一些可以改进的地方：</p>
+<ol>
+<li><strong>GAE 的复杂性</strong>：PPO 使用 GAE 计算每个 token 的优势，涉及多个超参数（$\lambda$、$\gamma$）的调优</li>
+<li><strong>价值函数的需求</strong>：PPO 需要训练一个 Critic 模型来估计状态价值，增加计算和内存成本</li>
+<li><strong>训练不稳定</strong>：在某些场景下，GAE 估计的方差仍然较大，导致训练波动</li>
+</ol>
+<p>GRPO 通过一个更直接的方法来解决这些问题：<strong>将序列级的奖励直接分配到 token 级别，然后通过组内相对比较来计算优势</strong>。这种方法在实践中被证明更加稳定高效。</p>
+<p><strong>GRPO 的核心创新</strong>：</p>
+<ol>
+<li><strong>简化优势计算</strong>：不使用 GAE，而是通过组内相对奖励直接计算优势</li>
+<li><strong>减少计算负担</strong>：虽然仍需要参考模型，但优势计算逻辑更简洁</li>
+<li><strong>提高训练稳定性</strong>：通过序列奖励的分解和组内比较，减少方差</li>
+<li><strong>Token 级别的精细控制</strong>：在每个 token 级别进行重要性采样和裁剪</li>
+</ol>
+<h3 id="GRPO-的动机"><a href="#GRPO-的动机" class="headerlink" title="GRPO 的动机"></a>GRPO 的动机</h3><p>GRPO 相比 PPO 的改进方向：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>PPO 解法</th>
+<th>GRPO 改进</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>优势计算</strong></td>
+<td>需要 Critic 估计价值，使用 GAE</td>
+<td>不需要 Critic，直接使用组内相对比较</td>
+</tr>
+<tr>
+<td><strong>方差</strong></td>
+<td>GAE 通过多步累积，仍有较大方差</td>
+<td>通过组内比较，方差更小</td>
+</tr>
+<tr>
+<td><strong>超参数</strong></td>
+<td>$\lambda, \gamma$ 需要调优</td>
+<td>更少的超参数</td>
+</tr>
+<tr>
+<td><strong>计算成本</strong></td>
+<td>需要训练两个模型</td>
+<td>只需要一个模型+参考模型</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="GRPO-的三个核心模型"><a href="#GRPO-的三个核心模型" class="headerlink" title="GRPO 的三个核心模型"></a>GRPO 的三个核心模型</h3><p>与 PPO 不同，GRPO 只需要三个模型：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>作用</th>
+<th>参数更新</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Actor</strong></td>
+<td>生成回答的策略模型</td>
+<td>✓ 需要</td>
+<td>最终要部署的模型</td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>参考模型，计算 KL 约束</td>
+<td>✗ 不需要</td>
+<td>通常是 SFT 模型的初始状态</td>
+</tr>
+<tr>
+<td><strong>Reward Model</strong></td>
+<td>评分函数，评估整体质量</td>
+<td>✗ 不需要</td>
+<td>在 RLHF 第一阶段提前训练好</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键区别</strong>：GRPO 相比 PPO <strong>不需要 Critic 模型</strong>，这大大减少了训练的计算和内存成本。</p>
+<hr>
+<h2 id="GRPO-的算法原理"><a href="#GRPO-的算法原理" class="headerlink" title="GRPO 的算法原理"></a>GRPO 的算法原理</h2><h3 id="1-序列奖励的分解"><a href="#1-序列奖励的分解" class="headerlink" title="1. 序列奖励的分解"></a>1. 序列奖励的分解</h3><p>GRPO 的核心创新是如何将<strong>序列级的奖励</strong>分配到<strong>token 级别</strong>。</p>
+<h4 id="奖励分配机制"><a href="#奖励分配机制" class="headerlink" title="奖励分配机制"></a>奖励分配机制</h4><p>对于长度为 $T$ 的生成序列，Reward Model 给出一个标量奖励 $r_{\text{RM}}$。GRPO 将这个奖励分配到每个 token：</p>
+<script type="math/tex; mode=display">
+r_t = \begin{cases}
+0, & t = 0, 1, \ldots, T-1 \\
+r_{\text{RM}}, & t = T
+\end{cases}</script><p>即：<strong>只有最后一个 token（序列终止位置）获得奖励，中间所有 token 的奖励为 0</strong>。</p>
+<p>这与 PPO 中的 KL 惩罚方式不同（PPO 中每个 token 都有 <script type="math/tex">-\beta \log \frac{\pi_\theta}{\pi_{\text{ref}}}</script> 的惩罚）。</p>
+<h4 id="为什么这样分配"><a href="#为什么这样分配" class="headerlink" title="为什么这样分配"></a>为什么这样分配</h4><ul>
+<li><strong>简洁性</strong>：不需要为每个 token 计算即时奖励和 KL 惩罚的组合</li>
+<li><strong>合理性</strong>：反映了现实情况——我们只在完整回答后评分</li>
+<li><strong>直观性</strong>：整个序列的质量用一个数字衡量，然后均等分配（或按距离衰减）</li>
+</ul>
+<h3 id="2-Token-级别的重要性采样与裁剪"><a href="#2-Token-级别的重要性采样与裁剪" class="headerlink" title="2. Token 级别的重要性采样与裁剪"></a>2. Token 级别的重要性采样与裁剪</h3><p>这是 GRPO 与 PPO 最重要的区别之一。</p>
+<h4 id="PPO-的做法（token-级别）"><a href="#PPO-的做法（token-级别）" class="headerlink" title="PPO 的做法（token 级别）"></a>PPO 的做法（token 级别）</h4><p>PPO 对每个 token 计算重要性采样比率：</p>
+<script type="math/tex; mode=display">
+r_t^{\text{PPO}}(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\theta_{\text{old}}}(a_t|s_t)}</script><p>然后进行裁剪和加权：</p>
+<script type="math/tex; mode=display">
+L^{\text{CLIP}} = \mathbb{E}_t \left[\min(r_t(\theta) A_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) A_t)\right]</script><p><strong>特点</strong>：重要性采样是 <strong>token 级别</strong>的，优势 $A_t$ 也是 <strong>token 级别</strong>的。</p>
+<h4 id="GRPO-的做法（仍是-token-级别，但优势不同）"><a href="#GRPO-的做法（仍是-token-级别，但优势不同）" class="headerlink" title="GRPO 的做法（仍是 token 级别，但优势不同）"></a>GRPO 的做法（仍是 token 级别，但优势不同）</h4><p>GRPO 同样对每个 token 计算重要性采样比率：</p>
+<script type="math/tex; mode=display">
+r_t^{\text{GRPO}}(\theta) = \frac{\pi_\theta(a_t|s_t)}{\pi_{\text{ref}}(a_t|s_t)}</script><p>然后进行裁剪和加权：</p>
+<script type="math/tex; mode=display">
+L_{\text{seq}} = \frac{1}{T} \sum_{t=1}^{T} \min(r_t(\theta) \tilde{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \tilde{A}_t)</script><p>其中 $\tilde{A}_t$ 是 token 级别的归一化优势（见下一节）。</p>
+<p><strong>重要</strong>：GRPO 仍然是 <strong>token 级别</strong>的重要性采样和裁剪，但优势的计算方式不同。</p>
+<h3 id="3-组内相对优势计算"><a href="#3-组内相对优势计算" class="headerlink" title="3. 组内相对优势计算"></a>3. 组内相对优势计算</h3><p>这是 GRPO 最核心的创新。</p>
+<h4 id="序列优势（第一步）"><a href="#序列优势（第一步）" class="headerlink" title="序列优势（第一步）"></a>序列优势（第一步）</h4><p>对于生成的每个序列 $i$，根据其奖励计算序列级优势：</p>
+<script type="math/tex; mode=display">
+A_i^{\text{seq}} = r_i - \bar{r}</script><p>其中：</p>
+<ul>
+<li>$r_i$：第 $i$ 个序列的 RM 奖励</li>
+<li>$\bar{r} = \frac{1}{G} \sum_{j=1}^{G} r_j$：组内（所有 $G$ 个序列）的平均奖励</li>
+</ul>
+<p><strong>含义</strong>：这个序列相对于组内平均水平的相对优势。</p>
+<h4 id="Token-级优势（第二步）"><a href="#Token-级优势（第二步）" class="headerlink" title="Token 级优势（第二步）"></a>Token 级优势（第二步）</h4><p>GRPO 将序列优势分配给序列中的每个 token。最简单的做法是<strong>均等分配</strong>：</p>
+<script type="math/tex; mode=display">
+\tilde{A}_t^{(i)} = \frac{A_i^{\text{seq}}}{T_i}</script><p>其中 $T_i$ 是第 $i$ 个序列的长度。</p>
+<p><strong>也可以使用折扣分配</strong>（越靠近末端权重越高）：</p>
+<script type="math/tex; mode=display">
+\tilde{A}_t^{(i)} = \frac{\gamma^{T_i-t} A_i^{\text{seq}}}{T_i}</script><p>其中 $\gamma \in [0,1]$ 是折扣因子（通常 0.99）。折扣分配的好处是给予序列末端（生成过程的最后）更高的权重，这更符合直觉：序列的最后部分对最终质量影响更大。</p>
+<h4 id="优势归一化"><a href="#优势归一化" class="headerlink" title="优势归一化"></a>优势归一化</h4><p>为了稳定训练，对组内的优势进行归一化：</p>
+<script type="math/tex; mode=display">
+\hat{A}_t^{(i)} = \frac{\tilde{A}_t^{(i)} - \mu_A}{\sigma_A + \epsilon}</script><p>其中：</p>
+<ul>
+<li>$\mu_A = \frac{1}{G \cdot T} \sum_i \sum_t \tilde{A}_t^{(i)}$：所有 token 优势的平均值</li>
+<li>$\sigma_A$：所有 token 优势的标准差</li>
+<li>$\epsilon$：小常数防止除零</li>
+</ul>
+<h3 id="4-完整的损失函数"><a href="#4-完整的损失函数" class="headerlink" title="4. 完整的损失函数"></a>4. 完整的损失函数</h3><p>GRPO 的损失函数包含两部分：</p>
+<script type="math/tex; mode=display">
+L_{\text{GRPO}} = L_{\text{Policy}} + \beta \cdot L_{\text{KL}}</script><h4 id="策略损失"><a href="#策略损失" class="headerlink" title="策略损失"></a>策略损失</h4><script type="math/tex; mode=display">
+L_{\text{Policy}} = -\mathbb{E}_{i,t} \left[\log \pi_\theta(a_t|s_t) \hat{A}_t^{(i)}\right]</script><p>或者使用 PPO 风格的裁剪：</p>
+<script type="math/tex; mode=display">
+L_{\text{Policy}}^{\text{CLIP}} = \mathbb{E}_{i,t} \left[\min(r_t(\theta) \hat{A}_t^{(i)}, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t^{(i)})\right]</script><h4 id="KL-约束损失"><a href="#KL-约束损失" class="headerlink" title="KL 约束损失"></a>KL 约束损失</h4><script type="math/tex; mode=display">
+L_{\text{KL}} = \mathbb{E}_{i,t} \left[D_{\text{KL}}(\pi_\theta(\cdot|s_t) \| \pi_{\text{ref}}(\cdot|s_t))\right]</script><p><strong>注意</strong>：GRPO 仍然保留 KL 约束，防止策略偏离参考模型太远。</p>
+<hr>
+<h2 id="GRPO-与-PPO-的详细对比"><a href="#GRPO-与-PPO-的详细对比" class="headerlink" title="GRPO 与 PPO 的详细对比"></a>GRPO 与 PPO 的详细对比</h2><h3 id="模型架构对比"><a href="#模型架构对比" class="headerlink" title="模型架构对比"></a>模型架构对比</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>PPO</th>
+<th>GRPO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Actor</strong></td>
+<td>✓ 需要训练</td>
+<td>✓ 需要训练</td>
+</tr>
+<tr>
+<td><strong>Critic</strong></td>
+<td>✓ 需要训练</td>
+<td>✗ <strong>不需要</strong></td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td>✓ 需要冻结</td>
+<td>✓ 需要冻结</td>
+</tr>
+<tr>
+<td><strong>Reward Model</strong></td>
+<td>✓ 需要冻结</td>
+<td>✓ 需要冻结</td>
+</tr>
+<tr>
+<td><strong>总体模型数</strong></td>
+<td>4 个</td>
+<td>3 个</td>
+</tr>
+<tr>
+<td><strong>可训练参数</strong></td>
+<td>Actor + Critic</td>
+<td><strong>仅 Actor</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="优势计算对比"><a href="#优势计算对比" class="headerlink" title="优势计算对比"></a>优势计算对比</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>PPO</th>
+<th>GRPO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>信息来源</strong></td>
+<td>单个序列的 token 奖励 + Critic 价值估计</td>
+<td>组内序列的相对奖励</td>
+</tr>
+<tr>
+<td><strong>计算方式</strong></td>
+<td>GAE（加权累加多步 TD 误差）</td>
+<td>组内平均 - 单序列奖励</td>
+</tr>
+<tr>
+<td><strong>需要模型</strong></td>
+<td>Critic 模型</td>
+<td><strong>无需额外模型</strong></td>
+</tr>
+<tr>
+<td><strong>超参数</strong></td>
+<td>$\lambda, \gamma, \beta_{\text{vf}}$ 等</td>
+<td>组大小 $G$、折扣 $\gamma$、权重 $\beta$</td>
+</tr>
+<tr>
+<td><strong>方差</strong></td>
+<td>中等（GAE 加权后）</td>
+<td><strong>较低</strong>（组内比较）</td>
+</tr>
+<tr>
+<td><strong>偏差</strong></td>
+<td>低（无模型依赖）</td>
+<td>中等（依赖同组其他序列）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="重要性采样对比"><a href="#重要性采样对比" class="headerlink" title="重要性采样对比"></a>重要性采样对比</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>PPO</th>
+<th>GRPO</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>采样粒度</strong></td>
+<td>Token 级别</td>
+<td><strong>Token 级别</strong>（与 PPO 相同）</td>
+</tr>
+<tr>
+<td><strong>参考模型</strong></td>
+<td>$\pi<em>{\theta</em>{\text{old}}}$（旧策略）</td>
+<td>$\pi_{\text{ref}}$（参考模型）</td>
+</tr>
+<tr>
+<td><strong>裁剪范围</strong></td>
+<td>Token 级别</td>
+<td><strong>Token 级别</strong>（与 PPO 相同）</td>
+</tr>
+<tr>
+<td><strong>损失聚合</strong></td>
+<td>先平均 token 再平均序列</td>
+<td><strong>先平均 token 再平均序列</strong>（相同）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键相同点</strong>：GRPO 和 PPO 都在 token 级别进行重要性采样和裁剪，区别在于优势的计算来源。</p>
+<h3 id="优缺点对比"><a href="#优缺点对比" class="headerlink" title="优缺点对比"></a>优缺点对比</h3><h4 id="PPO-的优势"><a href="#PPO-的优势" class="headerlink" title="PPO 的优势"></a>PPO 的优势</h4><ol>
+<li><strong>原理清晰</strong>：基于价值函数的强化学习理论</li>
+<li><strong>广泛应用</strong>：在各种 RL 任务中都有良好表现</li>
+<li><strong>灵活性强</strong>：可以适应各种奖励结构</li>
+<li><strong>理论支持</strong>：GAE 有深厚的理论基础</li>
+</ol>
+<h4 id="PPO-的缺陷"><a href="#PPO-的缺陷" class="headerlink" title="PPO 的缺陷"></a>PPO 的缺陷</h4><ol>
+<li><strong>模型多</strong>：需要训练两个大模型（Actor + Critic）</li>
+<li><strong>Critic 不准确</strong>：Critic 的价值估计可能不准确，导致优势估计有偏差</li>
+<li><strong>超参数多</strong>：GAE 的 $\lambda, \gamma$ 需要调优</li>
+<li><strong>计算成本高</strong>：训练 Critic 占用显存和计算力</li>
+</ol>
+<h4 id="GRPO-的优势"><a href="#GRPO-的优势" class="headerlink" title="GRPO 的优势"></a>GRPO 的优势</h4><ol>
+<li><strong>模型少</strong>：无需额外训练 Critic，只需 Actor</li>
+<li><strong>方差小</strong>：组内比较天然降低方差，不依赖模型准确性</li>
+<li><strong>简洁直接</strong>：优势计算逻辑简单明了</li>
+<li><strong>计算成本低</strong>：节省 Critic 的计算和内存</li>
+</ol>
+<h4 id="GRPO-的缺陷"><a href="#GRPO-的缺陷" class="headerlink" title="GRPO 的缺陷"></a>GRPO 的缺陷</h4><ol>
+<li><strong>需要分组</strong>：必须采样一个组的序列，组大小 $G$ 需要调优</li>
+<li><strong>依赖组质量</strong>：如果组内所有序列都很差，相对优势可能无法有效指导</li>
+<li><strong>序列奖励稀疏</strong>：不能充分利用中间步骤的反馈信息</li>
+<li><strong>较少应用</strong>：目前应用不如 PPO 广泛</li>
+</ol>
+<hr>
+<h2 id="GRPO-的实现细节"><a href="#GRPO-的实现细节" class="headerlink" title="GRPO 的实现细节"></a>GRPO 的实现细节</h2><h3 id="1-分组采样"><a href="#1-分组采样" class="headerlink" title="1. 分组采样"></a>1. 分组采样</h3><p>GRPO 的关键是在每次更新时采样一个<strong>组</strong>的序列。</p>
+<h4 id="采样策略"><a href="#采样策略" class="headerlink" title="采样策略"></a>采样策略</h4><ol>
+<li><strong>输入</strong>：一个 batch 的 prompts，共 $B$ 个</li>
+<li><strong>采样</strong>：对每个 prompt，采样 $G$ 个序列（即 $G$ 个不同的回答）</li>
+<li><strong>结果</strong>：得到 $B \times G$ 个序列</li>
+</ol>
+<h4 id="组大小选择"><a href="#组大小选择" class="headerlink" title="组大小选择"></a>组大小选择</h4><ul>
+<li><strong>$G = 4$</strong>：计算效率高，但相对优势估计可能不够准确</li>
+<li><strong>$G = 8 \sim 16$</strong>：平衡效率和准确性（推荐）</li>
+<li><strong>$G = 32$</strong>：优势估计准确，但计算成本大</li>
+</ul>
+<p><strong>实践建议</strong>：根据显存和计算资源选择，通常 $G = 8$ 或 $G = 16$。</p>
+<h3 id="2-奖励获取与归一化"><a href="#2-奖励获取与归一化" class="headerlink" title="2. 奖励获取与归一化"></a>2. 奖励获取与归一化</h3><h4 id="奖励获取流程"><a href="#奖励获取流程" class="headerlink" title="奖励获取流程"></a>奖励获取流程</h4><p>对每个序列：</p>
+<ol>
+<li><strong>Actor 生成</strong>：Actor 生成完整序列</li>
+<li><strong>RM 评分</strong>：将序列输入 RM，得到标量奖励 $r_{\text{RM}}$</li>
+<li><strong>记录</strong>：保存奖励值</li>
+</ol>
+<h4 id="奖励归一化"><a href="#奖励归一化" class="headerlink" title="奖励归一化"></a>奖励归一化</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 对每个 prompt 的 G 个序列的奖励进行归一化</span></span><br><span class="line"><span class="keyword">for</span> prompt_idx <span class="keyword">in</span> <span class="built_in">range</span>(B):</span><br><span class="line">    rewards = [r[prompt_idx, :] <span class="keyword">for</span> r <span class="keyword">in</span> reward_scores]  <span class="comment"># G 个奖励</span></span><br><span class="line">    mu = np.mean(rewards)</span><br><span class="line">    sigma = np.std(rewards)</span><br><span class="line">    normalized_rewards = (rewards - mu) / (sigma + <span class="number">1e-8</span>)</span><br></pre></td></tr></table></figure>
+<p><strong>为什么归一化</strong>：</p>
+<ul>
+<li>不同的 prompt 可能有不同的奖励尺度</li>
+<li>归一化后的优势在 0 附近，梯度更稳定</li>
+</ul>
+<h3 id="3-Token-优势计算"><a href="#3-Token-优势计算" class="headerlink" title="3. Token 优势计算"></a>3. Token 优势计算</h3><h4 id="算法步骤"><a href="#算法步骤" class="headerlink" title="算法步骤"></a>算法步骤</h4><p>对于第 $i$ 个序列（长度 $T_i$，奖励 $r_i$）：</p>
+<p><strong>步骤 1</strong>：计算序列优势</p>
+<script type="math/tex; mode=display">A_i^{\text{seq}} = r_i - \bar{r}</script><p><strong>步骤 2</strong>：分配到每个 token（选择一种）</p>
+<p><em>方式 A：均等分配</em></p>
+<script type="math/tex; mode=display">\tilde{A}_t^{(i)} = \frac{A_i^{\text{seq}}}{T_i}</script><p><em>方式 B：折扣分配</em></p>
+<script type="math/tex; mode=display">\tilde{A}_t^{(i)} = \frac{\gamma^{T_i-t} A_i^{\text{seq}}}{\sum_{k=1}^{T_i} \gamma^{T_i-k}}</script><p><strong>步骤 3</strong>：全局归一化</p>
+<script type="math/tex; mode=display">\hat{A}_t^{(i)} = \frac{\tilde{A}_t^{(i)} - \mu_A}{\sigma_A + \epsilon}</script><h4 id="Python-伪代码"><a href="#Python-伪代码" class="headerlink" title="Python 伪代码"></a>Python 伪代码</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">compute_advantages</span>(<span class="params">rewards, sequence_lengths, discount=<span class="number">0.99</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        rewards: shape (B, G) - B 个 prompts，每个 G 个序列的奖励</span></span><br><span class="line"><span class="string">        sequence_lengths: shape (B, G) - 每个序列的长度</span></span><br><span class="line"><span class="string">        discount: 折扣因子</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        advantages: shape (B, G, T_max) - 每个 token 的优势</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    B, G, T_max = rewards.shape[<span class="number">0</span>], rewards.shape[<span class="number">1</span>], sequence_lengths.<span class="built_in">max</span>()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 全局平均奖励</span></span><br><span class="line">    global_mean = rewards.mean()</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 序列优势</span></span><br><span class="line">    seq_advantages = rewards - global_mean  <span class="comment"># shape (B, G)</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># token 级优势（折扣分配）</span></span><br><span class="line">    token_advantages = np.zeros((B, G, T_max))</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> b <span class="keyword">in</span> <span class="built_in">range</span>(B):</span><br><span class="line">        <span class="keyword">for</span> g <span class="keyword">in</span> <span class="built_in">range</span>(G):</span><br><span class="line">            T = sequence_lengths[b, g]</span><br><span class="line">            A_seq = seq_advantages[b, g]</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 计算折扣和</span></span><br><span class="line">            discount_sum = <span class="built_in">sum</span>(discount**(T-<span class="number">1</span>-t) <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(T))</span><br><span class="line">            </span><br><span class="line">            <span class="comment"># 分配到每个 token</span></span><br><span class="line">            <span class="keyword">for</span> t <span class="keyword">in</span> <span class="built_in">range</span>(T):</span><br><span class="line">                token_advantages[b, g, t] = (</span><br><span class="line">                    discount**(T-<span class="number">1</span>-t) * A_seq / discount_sum</span><br><span class="line">                )</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 全局归一化</span></span><br><span class="line">    mean_adv = token_advantages.mean()</span><br><span class="line">    std_adv = token_advantages.std()</span><br><span class="line">    normalized_advantages = (token_advantages - mean_adv) / (std_adv + <span class="number">1e-8</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">return</span> normalized_advantages</span><br></pre></td></tr></table></figure>
+<h3 id="4-损失计算与反向传播"><a href="#4-损失计算与反向传播" class="headerlink" title="4. 损失计算与反向传播"></a>4. 损失计算与反向传播</h3><h4 id="Token-级别的损失计算"><a href="#Token-级别的损失计算" class="headerlink" title="Token 级别的损失计算"></a>Token 级别的损失计算</h4><p>对于第 $i$ 个序列的第 $t$ 个 token：</p>
+<p><strong>重要性采样比率</strong>：</p>
+<script type="math/tex; mode=display">r_t^{(i)} = \frac{\pi_\theta(a_t^{(i)}|s_t^{(i)})}{\pi_{\text{ref}}(a_t^{(i)}|s_t^{(i)})}</script><p><strong>PPO 风格的裁剪损失</strong>：</p>
+<script type="math/tex; mode=display">\ell_t^{(i)} = \min\left(r_t^{(i)} \hat{A}_t^{(i)}, \text{clip}(r_t^{(i)}, 1-\epsilon, 1+\epsilon) \hat{A}_t^{(i)}\right)</script><p>其中 $\epsilon = 0.2$（裁剪范围）。</p>
+<h4 id="KL-约束"><a href="#KL-约束" class="headerlink" title="KL 约束"></a>KL 约束</h4><script type="math/tex; mode=display">\ell_t^{\text{KL},(i)} = D_{\text{KL}}(\pi_\theta(\cdot|s_t^{(i)}) \| \pi_{\text{ref}}(\cdot|s_t^{(i)}))</script><p><strong>计算方式</strong>（对于语言模型）：</p>
+<script type="math/tex; mode=display">D_{\text{KL}} = \sum_v \pi_\theta(v|s) \log \frac{\pi_\theta(v|s)}{\pi_{\text{ref}}(v|s)}</script><p>在实际实现中，通常只计算被生成 token 处的 KL：</p>
+<script type="math/tex; mode=display">\ell_t^{\text{KL},(i)} \approx \log \pi_\theta(a_t^{(i)}|s_t^{(i)}) - \log \pi_{\text{ref}}(a_t^{(i)}|s_t^{(i)})</script><h4 id="总体损失"><a href="#总体损失" class="headerlink" title="总体损失"></a>总体损失</h4><p><strong>单个序列的损失</strong>（先 token 后序列平均）：</p>
+<script type="math/tex; mode=display">L_i = \frac{1}{T_i} \sum_{t=1}^{T_i} \left[\ell_t^{(i)} + \beta \ell_t^{\text{KL},(i)}\right]</script><p><strong>整个组的损失</strong>（序列平均）：</p>
+<script type="math/tex; mode=display">L = \frac{1}{B \cdot G} \sum_{i=1}^{B \times G} L_i</script><h4 id="Python-伪代码-1"><a href="#Python-伪代码-1" class="headerlink" title="Python 伪代码"></a>Python 伪代码</h4><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">compute_loss</span>(<span class="params">logits, reference_logits, advantages, token_ids, beta=<span class="number">0.05</span>, epsilon=<span class="number">0.2</span></span>):</span><br><span class="line">    <span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">    Args:</span></span><br><span class="line"><span class="string">        logits: shape (B, G, T, V) - Actor 模型输出</span></span><br><span class="line"><span class="string">        reference_logits: shape (B, G, T, V) - Reference 模型输出</span></span><br><span class="line"><span class="string">        advantages: shape (B, G, T) - 归一化优势</span></span><br><span class="line"><span class="string">        token_ids: shape (B, G, T) - 生成的 token IDs</span></span><br><span class="line"><span class="string">        beta: KL 权重</span></span><br><span class="line"><span class="string">        epsilon: 裁剪范围</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">    Returns:</span></span><br><span class="line"><span class="string">        loss: 标量损失</span></span><br><span class="line"><span class="string">    &quot;&quot;&quot;</span></span><br><span class="line">    B, G, T, V = logits.shape</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 计算 log 概率</span></span><br><span class="line">    log_probs = log_softmax(logits, dim=-<span class="number">1</span>)  <span class="comment"># shape (B, G, T, V)</span></span><br><span class="line">    ref_log_probs = log_softmax(reference_logits, dim=-<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 选择生成 token 的概率</span></span><br><span class="line">    chosen_log_probs = log_probs.gather(-<span class="number">1</span>, token_ids.unsqueeze(-<span class="number">1</span>)).squeeze(-<span class="number">1</span>)</span><br><span class="line">    chosen_ref_log_probs = ref_log_probs.gather(-<span class="number">1</span>, token_ids.unsqueeze(-<span class="number">1</span>)).squeeze(-<span class="number">1</span>)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 重要性采样比率</span></span><br><span class="line">    log_ratio = chosen_log_probs - chosen_ref_log_probs  <span class="comment"># log(pi/pi_ref)</span></span><br><span class="line">    ratio = exp(log_ratio)  <span class="comment"># pi/pi_ref</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># PPO 裁剪损失</span></span><br><span class="line">    clipped_ratio = clamp(ratio, <span class="number">1</span> - epsilon, <span class="number">1</span> + epsilon)</span><br><span class="line">    policy_loss = -<span class="built_in">min</span>(ratio * advantages, clipped_ratio * advantages)</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># KL 散度（简化版，只计算生成的 token）</span></span><br><span class="line">    kl_loss = log_ratio  <span class="comment"># 近似</span></span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 总损失</span></span><br><span class="line">    total_loss = policy_loss + beta * kl_loss</span><br><span class="line">    </span><br><span class="line">    <span class="comment"># 求平均</span></span><br><span class="line">    <span class="keyword">return</span> total_loss.mean()</span><br></pre></td></tr></table></figure>
+<h3 id="5-超参数设置"><a href="#5-超参数设置" class="headerlink" title="5. 超参数设置"></a>5. 超参数设置</h3><h4 id="关键超参数"><a href="#关键超参数" class="headerlink" title="关键超参数"></a>关键超参数</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>超参数</th>
+<th>典型值</th>
+<th>范围</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>$G$ (组大小)</strong></td>
+<td>8-16</td>
+<td>4-32</td>
+<td>更大的组更稳定但计算成本高</td>
+</tr>
+<tr>
+<td><strong>$\epsilon$ (裁剪范围)</strong></td>
+<td>0.2</td>
+<td>0.1-0.3</td>
+<td>限制重要性采样比率的范围</td>
+</tr>
+<tr>
+<td><strong>$\beta$ (KL 权重)</strong></td>
+<td>0.05</td>
+<td>0.01-0.2</td>
+<td>平衡奖励追求和分布约束</td>
+</tr>
+<tr>
+<td><strong>$\gamma$ (折扣因子)</strong></td>
+<td>0.99</td>
+<td>0.95-1.0</td>
+<td>控制到末端 token 的权重衰减</td>
+</tr>
+<tr>
+<td><strong>学习率</strong></td>
+<td>5e-7</td>
+<td>1e-7-1e-6</td>
+<td>较小的学习率，通常比 SFT 小 100 倍</td>
+</tr>
+<tr>
+<td><strong>批大小</strong></td>
+<td>$B=8, G=16$</td>
+<td>-</td>
+<td>总共 $B \times G$ 个序列</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="调优建议"><a href="#调优建议" class="headerlink" title="调优建议"></a>调优建议</h4><ol>
+<li><p><strong>$G$ 的选择</strong>：</p>
+<ul>
+<li>显存充足：使用 $G = 16$ 或更大</li>
+<li>显存紧张：使用 $G = 4$ 或 $G = 8$</li>
+<li>避免 $G$ 过小（$&lt; 4$），否则相对优势不可靠</li>
+</ul>
+</li>
+<li><p><strong>$\beta$ 的调优</strong>：</p>
+<ul>
+<li>若 KL 散度过大：增大 $\beta$</li>
+<li>若训练不动（模型变化太慢）：减小 $\beta$</li>
+<li>推荐从 $0.05$ 开始，根据 KL 散度监测值调整</li>
+</ul>
+</li>
+<li><p><strong>学习率的选择</strong>：</p>
+<ul>
+<li>GRPO 的学习率通常比 SFT 小 100-1000 倍</li>
+<li>从 5e-7 开始，根据梯度范数调整</li>
+<li>避免学习率过大，否则训练不稳定</li>
+</ul>
+</li>
+<li><p><strong>折扣因子 $\gamma$</strong>：</p>
+<ul>
+<li>$\gamma = 0.99$：末端 token 权重约为前端的 $0.37$ 倍</li>
+<li>$\gamma = 1.0$：均等分配（最简单）</li>
+<li>推荐从 $\gamma = 1.0$ 开始，必要时调整</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="GRPO-的完整训练流程"><a href="#GRPO-的完整训练流程" class="headerlink" title="GRPO 的完整训练流程"></a>GRPO 的完整训练流程</h2><h3 id="算法伪代码"><a href="#算法伪代码" class="headerlink" title="算法伪代码"></a>算法伪代码</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">算法：GRPO 训练</span><br><span class="line"></span><br><span class="line">初始化：</span><br><span class="line">  - Actor 模型 π_θ（可以从 SFT 初始化）</span><br><span class="line">  - Reference 模型 π_ref（冻结，使用 SFT 模型或 Actor 的检查点）</span><br><span class="line">  - Reward Model R（冻结，提前训练）</span><br><span class="line"></span><br><span class="line">主循环：</span><br><span class="line">  for epoch = 1 to num_epochs:</span><br><span class="line">    for batch_idx = 1 to num_batches:</span><br><span class="line">      </span><br><span class="line">      # 步骤 1: 采样</span><br><span class="line">      prompts = get_batch()  # B 个 prompts</span><br><span class="line">      sequences = []</span><br><span class="line">      log_probs = []</span><br><span class="line">      </span><br><span class="line">      for g = 1 to G:</span><br><span class="line">        # 使用 Actor 生成 G 个回答</span><br><span class="line">        seq_g, logprobs_g = generate_from_actor(prompts, π_θ)</span><br><span class="line">        sequences.append(seq_g)</span><br><span class="line">        log_probs.append(logprobs_g)</span><br><span class="line">      </span><br><span class="line">      # 步骤 2: 获取奖励</span><br><span class="line">      rewards = reward_model.score(sequences)  # shape (B, G)</span><br><span class="line">      </span><br><span class="line">      # 步骤 3: 计算优势</span><br><span class="line">      advantages = compute_advantages(rewards, sequences)  # shape (B, G, T)</span><br><span class="line">      </span><br><span class="line">      # 步骤 4: 前向传播</span><br><span class="line">      actor_outputs = actor(sequences)  # 获取 Actor 的 logits</span><br><span class="line">      ref_outputs = reference_model(sequences)  # 获取 Reference 的 logits</span><br><span class="line">      </span><br><span class="line">      # 步骤 5: 计算损失</span><br><span class="line">      loss = 0</span><br><span class="line">      for each token:</span><br><span class="line">        ratio = exp(log_pi_theta - log_pi_ref)</span><br><span class="line">        clipped_ratio = clip(ratio, 1-ε, 1+ε)</span><br><span class="line">        policy_loss += min(ratio * A, clipped_ratio * A)</span><br><span class="line">        kl_loss += (log_pi_theta - log_pi_ref)</span><br><span class="line">      </span><br><span class="line">      total_loss = policy_loss + β * kl_loss</span><br><span class="line">      </span><br><span class="line">      # 步骤 6: 反向传播和更新</span><br><span class="line">      optimizer.zero_grad()</span><br><span class="line">      total_loss.backward()</span><br><span class="line">      optimizer.step()</span><br><span class="line">      </span><br><span class="line">      # 步骤 7: 监测</span><br><span class="line">      log(loss, kl_div, reward_mean, reward_std)</span><br></pre></td></tr></table></figure>
+<h3 id="训练流程图"><a href="#训练流程图" class="headerlink" title="训练流程图"></a>训练流程图</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────────────────────────┐</span><br><span class="line">│ 输入：Batch of Prompts                               │</span><br><span class="line">└─────────────────────┬───────────────────────────────┘</span><br><span class="line">                      ↓</span><br><span class="line">            ┌─────────────────────┐</span><br><span class="line">            │ Actor 采样 G 个序列  │  （并行，每个 prompt）</span><br><span class="line">            └──────────┬──────────┘</span><br><span class="line">                       ↓</span><br><span class="line">      ┌────────────────────────────────┐</span><br><span class="line">      │ Reward Model 评分每个序列       │</span><br><span class="line">      │ 得到 (B, G) 的奖励矩阵         │</span><br><span class="line">      └────────────┬───────────────────┘</span><br><span class="line">                   ↓</span><br><span class="line">      ┌────────────────────────────────┐</span><br><span class="line">      │ 计算序列优势（组内相对比较）   │</span><br><span class="line">      │ A_i^seq = r_i - mean(r)        │</span><br><span class="line">      └────────────┬───────────────────┘</span><br><span class="line">                   ↓</span><br><span class="line">      ┌────────────────────────────────┐</span><br><span class="line">      │ 分配到 Token 级优势             │</span><br><span class="line">      │ A_t = discount^(T-t) * A_seq   │</span><br><span class="line">      └────────────┬───────────────────┘</span><br><span class="line">                   ↓</span><br><span class="line">      ┌────────────────────────────────┐</span><br><span class="line">      │ 全局归一化优势                 │</span><br><span class="line">      │ A_hat = (A - mean) / std       │</span><br><span class="line">      └────────────┬───────────────────┘</span><br><span class="line">                   ↓</span><br><span class="line">      ┌────────────────────────────────┐</span><br><span class="line">      │ 计算 PPO 损失（token 级别）    │</span><br><span class="line">      │ L = min(r*A, clip(r)*A)        │</span><br><span class="line">      │ + β * KL(π_θ || π_ref)        │</span><br><span class="line">      └────────────┬───────────────────┘</span><br><span class="line">                   ↓</span><br><span class="line">      ┌────────────────────────────────┐</span><br><span class="line">      │ 反向传播和梯度更新             │</span><br><span class="line">      │ θ ← θ - α ∇L                   │</span><br><span class="line">      └────────────┬───────────────────┘</span><br><span class="line">                   ↓</span><br><span class="line">            ┌──────────────────┐</span><br><span class="line">            │ 输出：更新的 Actor │</span><br><span class="line">            └──────────────────┘</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="GRPO-完整数值示例"><a href="#GRPO-完整数值示例" class="headerlink" title="GRPO 完整数值示例"></a>GRPO 完整数值示例</h2><p>让我们用一个具体例子演示整个计算过程。</p>
+<h3 id="假设条件"><a href="#假设条件" class="headerlink" title="假设条件"></a>假设条件</h3><ul>
+<li><strong>批大小</strong>：$B = 1$（1 个 prompt）</li>
+<li><strong>组大小</strong>：$G = 2$（2 个序列）</li>
+<li><strong>序列长度</strong>：$T_1 = 3, T_2 = 4$（两个序列长度不同）</li>
+<li><strong>奖励</strong>：$r_1 = 0.8, r_2 = 0.6$（第一个序列更好）</li>
+<li><strong>折扣因子</strong>：$\gamma = 0.99$</li>
+<li><strong>裁剪范围</strong>：$\epsilon = 0.2$</li>
+<li><strong>KL 权重</strong>：$\beta = 0.05$</li>
+</ul>
+<h3 id="计算过程"><a href="#计算过程" class="headerlink" title="计算过程"></a>计算过程</h3><h4 id="步骤-1-计算序列优势"><a href="#步骤-1-计算序列优势" class="headerlink" title="步骤 1: 计算序列优势"></a>步骤 1: 计算序列优势</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">序列 1: r_1 = 0.8, T_1 = 3</span><br><span class="line">序列 2: r_2 = 0.6, T_2 = 4</span><br><span class="line"></span><br><span class="line">平均奖励: r_bar = (0.8 + 0.6) / 2 = 0.7</span><br><span class="line"></span><br><span class="line">序列优势:</span><br><span class="line">  A_1^seq = 0.8 - 0.7 = 0.1</span><br><span class="line">  A_2^seq = 0.6 - 0.7 = -0.1</span><br></pre></td></tr></table></figure>
+<p><strong>解释</strong>：序列 1 相对于平均水平好一点，序列 2 相对于平均水平差一点。</p>
+<h4 id="步骤-2-分配到-Token-级（使用折扣分配）"><a href="#步骤-2-分配到-Token-级（使用折扣分配）" class="headerlink" title="步骤 2: 分配到 Token 级（使用折扣分配）"></a>步骤 2: 分配到 Token 级（使用折扣分配）</h4><p><strong>折扣分配公式</strong>：</p>
+<script type="math/tex; mode=display">\tilde{A}_t^{(i)} = \frac{\gamma^{T_i-t} A_i^{\text{seq}}}{\sum_{k=1}^{T_i} \gamma^{T_i-k}}</script><p>其中分母是折扣权重的和。</p>
+<p><strong>序列 1 计算</strong>（$T_1 = 3$）：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">折扣权重: γ^(3-1)=0.9801, γ^(3-2)=0.99, γ^(3-3)=1.0</span><br><span class="line">权重和: 0.9801 + 0.99 + 1.0 = 2.9701</span><br><span class="line"></span><br><span class="line">Token 1: A_1^(1) = (0.9801 * 0.1) / 2.9701 = 0.0330</span><br><span class="line">Token 2: A_2^(1) = (0.99 * 0.1) / 2.9701 = 0.0333</span><br><span class="line">Token 3: A_3^(1) = (1.0 * 0.1) / 2.9701 = 0.0337</span><br></pre></td></tr></table></figure></p>
+<p><strong>序列 2 计算</strong>（$T_2 = 4$）：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">折扣权重: γ^(4-1)=0.9703, γ^(4-2)=0.9801, γ^(4-3)=0.99, γ^(4-4)=1.0</span><br><span class="line">权重和: 0.9703 + 0.9801 + 0.99 + 1.0 = 3.9404</span><br><span class="line"></span><br><span class="line">Token 1: A_1^(2) = (0.9703 * (-0.1)) / 3.9404 = -0.0246</span><br><span class="line">Token 2: A_2^(2) = (0.9801 * (-0.1)) / 3.9404 = -0.0249</span><br><span class="line">Token 3: A_3^(2) = (0.99 * (-0.1)) / 3.9404 = -0.0251</span><br><span class="line">Token 4: A_4^(2) = (1.0 * (-0.1)) / 3.9404 = -0.0254</span><br></pre></td></tr></table></figure></p>
+<p><strong>观察</strong>：</p>
+<ul>
+<li>序列 1 的最后 token (0.0337) 权重高于最前 token (0.0330)</li>
+<li>序列 2 的所有优势都是负的（因为序列质量较差）</li>
+</ul>
+<h4 id="步骤-3-全局归一化"><a href="#步骤-3-全局归一化" class="headerlink" title="步骤 3: 全局归一化"></a>步骤 3: 全局归一化</h4><p>所有 token 的优势值：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">序列 1: [0.0330, 0.0333, 0.0337]</span><br><span class="line">序列 2: [-0.0246, -0.0249, -0.0251, -0.0254]</span><br><span class="line"></span><br><span class="line">合并: [0.0330, 0.0333, 0.0337, -0.0246, -0.0249, -0.0251, -0.0254]</span><br><span class="line"></span><br><span class="line">均值: μ_A = (0.0330 + 0.0333 + 0.0337 - 0.0246 - 0.0249 - 0.0251 - 0.0254) / 7</span><br><span class="line">           = 0 / 7 = 0 (近似)</span><br><span class="line"></span><br><span class="line">方差: σ_A ≈ 0.0291</span><br></pre></td></tr></table></figure></p>
+<p>归一化后（减去均值、除以标准差）：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">序列 1: [0.1134, 0.1145, 0.1159]  (正值，鼓励)</span><br><span class="line">序列 2: [-0.0846, -0.0856, -0.0863, -0.0873]  (负值，惩罚)</span><br></pre></td></tr></table></figure></p>
+<h4 id="步骤-4-计算-PPO-损失"><a href="#步骤-4-计算-PPO-损失" class="headerlink" title="步骤 4: 计算 PPO 损失"></a>步骤 4: 计算 PPO 损失</h4><p>假设 Actor 和 Reference 模型在序列 1 的第 1 个 token 处：</p>
+<ul>
+<li>Actor log_prob: -1.5</li>
+<li>Reference log_prob: -1.6</li>
+<li>生成的 token ID</li>
+</ul>
+<p><strong>计算过程</strong>：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">log_ratio = -1.5 - (-1.6) = 0.1</span><br><span class="line">ratio = exp(0.1) ≈ 1.105</span><br><span class="line"></span><br><span class="line">优势: A_hat_1^(1) = 0.1134</span><br><span class="line"></span><br><span class="line">无裁剪: ratio * A_hat = 1.105 * 0.1134 ≈ 0.1253</span><br><span class="line">有裁剪: clip(ratio, 0.8, 1.2) = 1.105</span><br><span class="line">        clipped * A_hat = 1.105 * 0.1134 ≈ 0.1253</span><br><span class="line"></span><br><span class="line">PPO loss: min(0.1253, 0.1253) = 0.1253</span><br></pre></td></tr></table></figure></p>
+<h4 id="步骤-5-KL-散度"><a href="#步骤-5-KL-散度" class="headerlink" title="步骤 5: KL 散度"></a>步骤 5: KL 散度</h4><p>假设 KL 散度计算（简化）：<br><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">KL_1^(1) = log_ratio = 0.1</span><br><span class="line"></span><br><span class="line">总 KL 损失 (简化，仅示意):</span><br><span class="line">L_KL = β * log_ratio_sum / num_tokens</span><br><span class="line">     = 0.05 * (所有 log_ratio 之和) / 7</span><br></pre></td></tr></table></figure></p>
+<h4 id="最终损失"><a href="#最终损失" class="headerlink" title="最终损失"></a>最终损失</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">序列 1 损失: L_1 = (L_policy_1 + β * L_KL_1) / 3</span><br><span class="line">序列 2 损失: L_2 = (L_policy_2 + β * L_KL_2) / 4</span><br><span class="line"></span><br><span class="line">总损失: L = (L_1 + L_2) / 2</span><br></pre></td></tr></table></figure>
+<p><strong>关键观察</strong>：</p>
+<ul>
+<li>序列 1 的优势为正，鼓励增加这些 token 的概率</li>
+<li>序列 2 的优势为负，抑制这些 token 的概率</li>
+<li>Token 级别的优势差异（末端 &gt; 前端）反映了对最终质量的贡献</li>
+</ul>
+<hr>
+<h2 id="GRPO-的收敛性与稳定性"><a href="#GRPO-的收敛性与稳定性" class="headerlink" title="GRPO 的收敛性与稳定性"></a>GRPO 的收敛性与稳定性</h2><h3 id="方差分析"><a href="#方差分析" class="headerlink" title="方差分析"></a>方差分析</h3><p>GRPO 相比 PPO 的方差优势来自于：</p>
+<ol>
+<li><p><strong>组内相对比较</strong>：</p>
+<ul>
+<li>PPO 使用单个序列的价值函数差分 $\delta_t$，仅与该序列相关</li>
+<li>GRPO 使用组内所有序列的平均，$E[\text{Var}(A_t)]$ 更小</li>
+</ul>
+</li>
+<li><p><strong>不依赖模型准确性</strong>：</p>
+<ul>
+<li>PPO 的 GAE 依赖 Critic 的准确性</li>
+<li>GRPO 直接使用真实奖励，无模型误差</li>
+</ul>
+</li>
+<li><p><strong>折扣分配的效果</strong>：</p>
+<ul>
+<li>给予末端更高权重，减少信号的不确定性</li>
+</ul>
+</li>
+</ol>
+<h3 id="收敛性证明"><a href="#收敛性证明" class="headerlink" title="收敛性证明"></a>收敛性证明</h3><p>GRPO 的收敛性可以通过以下论证：</p>
+<ol>
+<li><strong>策略改进</strong>：每次更新时，$\mathbb{E}[r_t A_t] \geq 0$ 当 $A_t &gt; 0$</li>
+<li><strong>KL 约束限制</strong>：防止策略离开信任域（trust region）</li>
+<li><strong>优势无偏估计</strong>：组内比较提供无偏的相对信号</li>
+</ol>
+<p><strong>定理（简化版）</strong>：在合理的假设下，GRPO 的策略序列收敛到满足 KL 约束的最优策略。</p>
+<hr>
+<h2 id="GRPO-在实践中的表现"><a href="#GRPO-在实践中的表现" class="headerlink" title="GRPO 在实践中的表现"></a>GRPO 在实践中的表现</h2><h3 id="DeepSeek-的实验结果"><a href="#DeepSeek-的实验结果" class="headerlink" title="DeepSeek 的实验结果"></a>DeepSeek 的实验结果</h3><p>根据 DeepSeek 的研究报告，GRPO 在以下指标上表现出色：</p>
+<h4 id="数学推理任务（GSM8K-MATH）"><a href="#数学推理任务（GSM8K-MATH）" class="headerlink" title="数学推理任务（GSM8K/MATH）"></a>数学推理任务（GSM8K/MATH）</h4><ul>
+<li><strong>收敛速度</strong>：更快（通常 10-50% 的步数）</li>
+<li><strong>最终效果</strong>：相当或优于 PPO（特别是在数学问题上）</li>
+<li><strong>训练稳定性</strong>：更稳定，奖励波动更小</li>
+</ul>
+<h4 id="通用能力（基准测试）"><a href="#通用能力（基准测试）" class="headerlink" title="通用能力（基准测试）"></a>通用能力（基准测试）</h4><ul>
+<li><strong>不会显著退化</strong>：通过 KL 约束保持基础能力</li>
+<li><strong>任务特定性强</strong>：在目标任务上显著改进，日常闲聊改进不大</li>
+<li><strong>内存节省</strong>：相比 PPO 节省 20-30% 的显存（无需 Critic）</li>
+</ul>
+<h3 id="什么情况下-GRPO-更好"><a href="#什么情况下-GRPO-更好" class="headerlink" title="什么情况下 GRPO 更好"></a>什么情况下 GRPO 更好</h3><ol>
+<li><strong>有明确的 RM 评分</strong>：任务有定量的奖励信号（数学、代码、写作评分等）</li>
+<li><strong>大规模模型</strong>：模型越大，Critic 的省省成本越显著</li>
+<li><strong>单轮生成</strong>：适合生成单个长序列的场景（如数学推导、代码）</li>
+</ol>
+<h3 id="GRPO-可能不如-PPO-的情况"><a href="#GRPO-可能不如-PPO-的情况" class="headerlink" title="GRPO 可能不如 PPO 的情况"></a>GRPO 可能不如 PPO 的情况</h3><ol>
+<li><strong>奖励信号不清晰</strong>：RM 评分方差大、不稳定</li>
+<li><strong>组大小受限</strong>：显存不足，无法采样足够大的组</li>
+<li><strong>多步交互任务</strong>：需要按步骤获得反馈的任务</li>
+</ol>
+<hr>
+<h2 id="常见问题与解答"><a href="#常见问题与解答" class="headerlink" title="常见问题与解答"></a>常见问题与解答</h2><h3 id="Q1-GRPO-是否需要参考模型？"><a href="#Q1-GRPO-是否需要参考模型？" class="headerlink" title="Q1: GRPO 是否需要参考模型？"></a>Q1: GRPO 是否需要参考模型？</h3><p><strong>A</strong>: 是的。GRPO 需要参考模型来计算 KL 约束，防止策略漂移。虽然 GRPO 不需要 Critic，但仍需要 Reference 模型（通常是 SFT 模型的冻结副本）。</p>
+<h3 id="Q2-GRPO-的组大小-G-应该怎么选？"><a href="#Q2-GRPO-的组大小-G-应该怎么选？" class="headerlink" title="Q2: GRPO 的组大小 G 应该怎么选？"></a>Q2: GRPO 的组大小 G 应该怎么选？</h3><p><strong>A</strong>: </p>
+<ul>
+<li>最小值：$G \geq 4$（否则相对优势不可靠）</li>
+<li>推荐值：$G = 8 \sim 16$（平衡准确性和效率）</li>
+<li>最大值：受显存限制，通常 $G \leq 32$</li>
+</ul>
+<p>根据经验，$G$ 增加一倍通常能稍微改进效果但计算成本翻倍。</p>
+<h3 id="Q3-GRPO-会过度拟合组内序列吗？"><a href="#Q3-GRPO-会过度拟合组内序列吗？" class="headerlink" title="Q3: GRPO 会过度拟合组内序列吗？"></a>Q3: GRPO 会过度拟合组内序列吗？</h3><p><strong>A</strong>: 有可能。如果组大小 $G$ 太小，相对优势的估计可能不稳定。解决方案：</p>
+<ol>
+<li>增加 $G$ 的大小</li>
+<li>跨 batch 计算优势（不仅限于单个 batch 内的序列）</li>
+<li>加入额外的正则化</li>
+</ol>
+<h3 id="Q4-GRPO-的-KL-散度约束怎么调？"><a href="#Q4-GRPO-的-KL-散度约束怎么调？" class="headerlink" title="Q4: GRPO 的 KL 散度约束怎么调？"></a>Q4: GRPO 的 KL 散度约束怎么调？</h3><p><strong>A</strong>: 观察 KL 散度的值：</p>
+<ul>
+<li>若 KL &gt; 0.1：$\beta$ 太小，增大 $\beta$</li>
+<li>若 KL &lt; 0.01：$\beta$ 太大，减小 $\beta$</li>
+<li>目标范围：0.01-0.05</li>
+</ul>
+<h3 id="Q5-GRPO-vs-PPO，我应该选哪个？"><a href="#Q5-GRPO-vs-PPO，我应该选哪个？" class="headerlink" title="Q5: GRPO vs PPO，我应该选哪个？"></a>Q5: GRPO vs PPO，我应该选哪个？</h3><p><strong>A</strong>: 根据以下决策树：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">计算资源充足？</span><br><span class="line">  ├─ 是 → PPO（通用性强，理论支持好）</span><br><span class="line">  └─ 否 → GRPO（节省 Critic 显存）</span><br><span class="line"></span><br><span class="line">任务类型？</span><br><span class="line">  ├─ 数学/代码 → GRPO 可能更好</span><br><span class="line">  ├─ 通用闲聊 → PPO 或 GRPO 都可</span><br><span class="line">  └─ 多步交互 → PPO 更安全</span><br><span class="line"></span><br><span class="line">显存约束是否严格？</span><br><span class="line">  ├─ 是 → GRPO</span><br><span class="line">  └─ 否 → PPO 或 GRPO</span><br></pre></td></tr></table></figure>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>GRPO 代表了 LLM RLHF 训练的一个重要方向，其核心贡献包括：</p>
+<ol>
+<li><strong>简化优势计算</strong>：从复杂的 GAE 到简单的组内相对比较</li>
+<li><strong>减少计算负担</strong>：不需要额外的 Critic 模型</li>
+<li><strong>提高稳定性</strong>：组内比较天然降低方差</li>
+<li><strong>实用高效</strong>：在大规模模型上表现更好</li>
+</ol>
+<p><strong>关键理解</strong>：</p>
+<ul>
+<li>GRPO 仍然是 token 级别的重要性采样和裁剪（与 PPO 相同）</li>
+<li>GRPO 的创新在于优势的计算方式（组内相对而非 GAE）</li>
+<li>GRPO 和 PPO 是互补的方法，根据具体场景选择</li>
+</ul>
+<p><strong>推荐阅读</strong>：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2402.10240">Efficient Stage-wise Pretraining for Large Language Models (GRPO 原论文)</a></li>
+<li><a href="https://murphypei.github.io/blog/2024/07/llm-rlhf-ppo.html">配合 PPO 博文</a> 理解两种算法的异同</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2025/07/llm-grpo.html" title="LLM 训练：GRPO 算法详解">https:&#x2F;&#x2F;murphypei.github.io&#x2F;blog&#x2F;2025&#x2F;07&#x2F;llm-grpo.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-creative-commons&quot;&gt;&lt;&#x2F;i&gt;BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+            
+              <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" rel="tag"># 强化学习</a>
+            
+              <a href="/tags/rlhf/" rel="tag"># rlhf</a>
+            
+              <a href="/tags/ppo/" rel="tag"># ppo</a>
+            
+              <a href="/tags/grpo/" rel="tag"># grpo</a>
+            
+              <a href="/tags/advantage/" rel="tag"># advantage</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2025/07/kv-cache.html" rel="next" title="LLM 推理： KV Cache 原理与优化">
+                  <i class="fa fa-chevron-left"></i> LLM 推理： KV Cache 原理与优化
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2025/07/llm-zero.html" rel="prev" title="LLM 训练：ZeRO 技术详解">
+                  LLM 训练：ZeRO 技术详解 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#GRPO-%E7%AE%97%E6%B3%95%E6%A6%82%E8%BF%B0"><span class="nav-number">1.</span> <span class="nav-text">GRPO 算法概述</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#GRPO-%E7%9A%84%E5%8A%A8%E6%9C%BA"><span class="nav-number">1.1.</span> <span class="nav-text">GRPO 的动机</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GRPO-%E7%9A%84%E4%B8%89%E4%B8%AA%E6%A0%B8%E5%BF%83%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.2.</span> <span class="nav-text">GRPO 的三个核心模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRPO-%E7%9A%84%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">GRPO 的算法原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%BA%8F%E5%88%97%E5%A5%96%E5%8A%B1%E7%9A%84%E5%88%86%E8%A7%A3"><span class="nav-number">2.1.</span> <span class="nav-text">1. 序列奖励的分解</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A5%96%E5%8A%B1%E5%88%86%E9%85%8D%E6%9C%BA%E5%88%B6"><span class="nav-number">2.1.1.</span> <span class="nav-text">奖励分配机制</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E6%A0%B7%E5%88%86%E9%85%8D"><span class="nav-number">2.1.2.</span> <span class="nav-text">为什么这样分配</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-Token-%E7%BA%A7%E5%88%AB%E7%9A%84%E9%87%8D%E8%A6%81%E6%80%A7%E9%87%87%E6%A0%B7%E4%B8%8E%E8%A3%81%E5%89%AA"><span class="nav-number">2.2.</span> <span class="nav-text">2. Token 级别的重要性采样与裁剪</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#PPO-%E7%9A%84%E5%81%9A%E6%B3%95%EF%BC%88token-%E7%BA%A7%E5%88%AB%EF%BC%89"><span class="nav-number">2.2.1.</span> <span class="nav-text">PPO 的做法（token 级别）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GRPO-%E7%9A%84%E5%81%9A%E6%B3%95%EF%BC%88%E4%BB%8D%E6%98%AF-token-%E7%BA%A7%E5%88%AB%EF%BC%8C%E4%BD%86%E4%BC%98%E5%8A%BF%E4%B8%8D%E5%90%8C%EF%BC%89"><span class="nav-number">2.2.2.</span> <span class="nav-text">GRPO 的做法（仍是 token 级别，但优势不同）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E7%BB%84%E5%86%85%E7%9B%B8%E5%AF%B9%E4%BC%98%E5%8A%BF%E8%AE%A1%E7%AE%97"><span class="nav-number">2.3.</span> <span class="nav-text">3. 组内相对优势计算</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BA%8F%E5%88%97%E4%BC%98%E5%8A%BF%EF%BC%88%E7%AC%AC%E4%B8%80%E6%AD%A5%EF%BC%89"><span class="nav-number">2.3.1.</span> <span class="nav-text">序列优势（第一步）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Token-%E7%BA%A7%E4%BC%98%E5%8A%BF%EF%BC%88%E7%AC%AC%E4%BA%8C%E6%AD%A5%EF%BC%89"><span class="nav-number">2.3.2.</span> <span class="nav-text">Token 级优势（第二步）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BC%98%E5%8A%BF%E5%BD%92%E4%B8%80%E5%8C%96"><span class="nav-number">2.3.3.</span> <span class="nav-text">优势归一化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%AE%8C%E6%95%B4%E7%9A%84%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="nav-number">2.4.</span> <span class="nav-text">4. 完整的损失函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AD%96%E7%95%A5%E6%8D%9F%E5%A4%B1"><span class="nav-number">2.4.1.</span> <span class="nav-text">策略损失</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#KL-%E7%BA%A6%E6%9D%9F%E6%8D%9F%E5%A4%B1"><span class="nav-number">2.4.2.</span> <span class="nav-text">KL 约束损失</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRPO-%E4%B8%8E-PPO-%E7%9A%84%E8%AF%A6%E7%BB%86%E5%AF%B9%E6%AF%94"><span class="nav-number">3.</span> <span class="nav-text">GRPO 与 PPO 的详细对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84%E5%AF%B9%E6%AF%94"><span class="nav-number">3.1.</span> <span class="nav-text">模型架构对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E5%8A%BF%E8%AE%A1%E7%AE%97%E5%AF%B9%E6%AF%94"><span class="nav-number">3.2.</span> <span class="nav-text">优势计算对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E8%A6%81%E6%80%A7%E9%87%87%E6%A0%B7%E5%AF%B9%E6%AF%94"><span class="nav-number">3.3.</span> <span class="nav-text">重要性采样对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BC%98%E7%BC%BA%E7%82%B9%E5%AF%B9%E6%AF%94"><span class="nav-number">3.4.</span> <span class="nav-text">优缺点对比</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#PPO-%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="nav-number">3.4.1.</span> <span class="nav-text">PPO 的优势</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#PPO-%E7%9A%84%E7%BC%BA%E9%99%B7"><span class="nav-number">3.4.2.</span> <span class="nav-text">PPO 的缺陷</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GRPO-%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="nav-number">3.4.3.</span> <span class="nav-text">GRPO 的优势</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#GRPO-%E7%9A%84%E7%BC%BA%E9%99%B7"><span class="nav-number">3.4.4.</span> <span class="nav-text">GRPO 的缺陷</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRPO-%E7%9A%84%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82"><span class="nav-number">4.</span> <span class="nav-text">GRPO 的实现细节</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%88%86%E7%BB%84%E9%87%87%E6%A0%B7"><span class="nav-number">4.1.</span> <span class="nav-text">1. 分组采样</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%87%87%E6%A0%B7%E7%AD%96%E7%95%A5"><span class="nav-number">4.1.1.</span> <span class="nav-text">采样策略</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%84%E5%A4%A7%E5%B0%8F%E9%80%89%E6%8B%A9"><span class="nav-number">4.1.2.</span> <span class="nav-text">组大小选择</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%A5%96%E5%8A%B1%E8%8E%B7%E5%8F%96%E4%B8%8E%E5%BD%92%E4%B8%80%E5%8C%96"><span class="nav-number">4.2.</span> <span class="nav-text">2. 奖励获取与归一化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A5%96%E5%8A%B1%E8%8E%B7%E5%8F%96%E6%B5%81%E7%A8%8B"><span class="nav-number">4.2.1.</span> <span class="nav-text">奖励获取流程</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%A5%96%E5%8A%B1%E5%BD%92%E4%B8%80%E5%8C%96"><span class="nav-number">4.2.2.</span> <span class="nav-text">奖励归一化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-Token-%E4%BC%98%E5%8A%BF%E8%AE%A1%E7%AE%97"><span class="nav-number">4.3.</span> <span class="nav-text">3. Token 优势计算</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E6%AD%A5%E9%AA%A4"><span class="nav-number">4.3.1.</span> <span class="nav-text">算法步骤</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Python-%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="nav-number">4.3.2.</span> <span class="nav-text">Python 伪代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E6%8D%9F%E5%A4%B1%E8%AE%A1%E7%AE%97%E4%B8%8E%E5%8F%8D%E5%90%91%E4%BC%A0%E6%92%AD"><span class="nav-number">4.4.</span> <span class="nav-text">4. 损失计算与反向传播</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Token-%E7%BA%A7%E5%88%AB%E7%9A%84%E6%8D%9F%E5%A4%B1%E8%AE%A1%E7%AE%97"><span class="nav-number">4.4.1.</span> <span class="nav-text">Token 级别的损失计算</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#KL-%E7%BA%A6%E6%9D%9F"><span class="nav-number">4.4.2.</span> <span class="nav-text">KL 约束</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%80%BB%E4%BD%93%E6%8D%9F%E5%A4%B1"><span class="nav-number">4.4.3.</span> <span class="nav-text">总体损失</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Python-%E4%BC%AA%E4%BB%A3%E7%A0%81-1"><span class="nav-number">4.4.4.</span> <span class="nav-text">Python 伪代码</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E8%B6%85%E5%8F%82%E6%95%B0%E8%AE%BE%E7%BD%AE"><span class="nav-number">4.5.</span> <span class="nav-text">5. 超参数设置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B3%E9%94%AE%E8%B6%85%E5%8F%82%E6%95%B0"><span class="nav-number">4.5.1.</span> <span class="nav-text">关键超参数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%B0%83%E4%BC%98%E5%BB%BA%E8%AE%AE"><span class="nav-number">4.5.2.</span> <span class="nav-text">调优建议</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRPO-%E7%9A%84%E5%AE%8C%E6%95%B4%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B"><span class="nav-number">5.</span> <span class="nav-text">GRPO 的完整训练流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E4%BC%AA%E4%BB%A3%E7%A0%81"><span class="nav-number">5.1.</span> <span class="nav-text">算法伪代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="nav-number">5.2.</span> <span class="nav-text">训练流程图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRPO-%E5%AE%8C%E6%95%B4%E6%95%B0%E5%80%BC%E7%A4%BA%E4%BE%8B"><span class="nav-number">6.</span> <span class="nav-text">GRPO 完整数值示例</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%81%87%E8%AE%BE%E6%9D%A1%E4%BB%B6"><span class="nav-number">6.1.</span> <span class="nav-text">假设条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AE%A1%E7%AE%97%E8%BF%87%E7%A8%8B"><span class="nav-number">6.2.</span> <span class="nav-text">计算过程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-1-%E8%AE%A1%E7%AE%97%E5%BA%8F%E5%88%97%E4%BC%98%E5%8A%BF"><span class="nav-number">6.2.1.</span> <span class="nav-text">步骤 1: 计算序列优势</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-2-%E5%88%86%E9%85%8D%E5%88%B0-Token-%E7%BA%A7%EF%BC%88%E4%BD%BF%E7%94%A8%E6%8A%98%E6%89%A3%E5%88%86%E9%85%8D%EF%BC%89"><span class="nav-number">6.2.2.</span> <span class="nav-text">步骤 2: 分配到 Token 级（使用折扣分配）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-3-%E5%85%A8%E5%B1%80%E5%BD%92%E4%B8%80%E5%8C%96"><span class="nav-number">6.2.3.</span> <span class="nav-text">步骤 3: 全局归一化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-4-%E8%AE%A1%E7%AE%97-PPO-%E6%8D%9F%E5%A4%B1"><span class="nav-number">6.2.4.</span> <span class="nav-text">步骤 4: 计算 PPO 损失</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-5-KL-%E6%95%A3%E5%BA%A6"><span class="nav-number">6.2.5.</span> <span class="nav-text">步骤 5: KL 散度</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%9C%80%E7%BB%88%E6%8D%9F%E5%A4%B1"><span class="nav-number">6.2.6.</span> <span class="nav-text">最终损失</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRPO-%E7%9A%84%E6%94%B6%E6%95%9B%E6%80%A7%E4%B8%8E%E7%A8%B3%E5%AE%9A%E6%80%A7"><span class="nav-number">7.</span> <span class="nav-text">GRPO 的收敛性与稳定性</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E5%B7%AE%E5%88%86%E6%9E%90"><span class="nav-number">7.1.</span> <span class="nav-text">方差分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%94%B6%E6%95%9B%E6%80%A7%E8%AF%81%E6%98%8E"><span class="nav-number">7.2.</span> <span class="nav-text">收敛性证明</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GRPO-%E5%9C%A8%E5%AE%9E%E8%B7%B5%E4%B8%AD%E7%9A%84%E8%A1%A8%E7%8E%B0"><span class="nav-number">8.</span> <span class="nav-text">GRPO 在实践中的表现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#DeepSeek-%E7%9A%84%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">8.1.</span> <span class="nav-text">DeepSeek 的实验结果</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%95%B0%E5%AD%A6%E6%8E%A8%E7%90%86%E4%BB%BB%E5%8A%A1%EF%BC%88GSM8K-MATH%EF%BC%89"><span class="nav-number">8.1.1.</span> <span class="nav-text">数学推理任务（GSM8K&#x2F;MATH）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%80%9A%E7%94%A8%E8%83%BD%E5%8A%9B%EF%BC%88%E5%9F%BA%E5%87%86%E6%B5%8B%E8%AF%95%EF%BC%89"><span class="nav-number">8.1.2.</span> <span class="nav-text">通用能力（基准测试）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%BB%80%E4%B9%88%E6%83%85%E5%86%B5%E4%B8%8B-GRPO-%E6%9B%B4%E5%A5%BD"><span class="nav-number">8.2.</span> <span class="nav-text">什么情况下 GRPO 更好</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#GRPO-%E5%8F%AF%E8%83%BD%E4%B8%8D%E5%A6%82-PPO-%E7%9A%84%E6%83%85%E5%86%B5"><span class="nav-number">8.3.</span> <span class="nav-text">GRPO 可能不如 PPO 的情况</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E4%B8%8E%E8%A7%A3%E7%AD%94"><span class="nav-number">9.</span> <span class="nav-text">常见问题与解答</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Q1-GRPO-%E6%98%AF%E5%90%A6%E9%9C%80%E8%A6%81%E5%8F%82%E8%80%83%E6%A8%A1%E5%9E%8B%EF%BC%9F"><span class="nav-number">9.1.</span> <span class="nav-text">Q1: GRPO 是否需要参考模型？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Q2-GRPO-%E7%9A%84%E7%BB%84%E5%A4%A7%E5%B0%8F-G-%E5%BA%94%E8%AF%A5%E6%80%8E%E4%B9%88%E9%80%89%EF%BC%9F"><span class="nav-number">9.2.</span> <span class="nav-text">Q2: GRPO 的组大小 G 应该怎么选？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Q3-GRPO-%E4%BC%9A%E8%BF%87%E5%BA%A6%E6%8B%9F%E5%90%88%E7%BB%84%E5%86%85%E5%BA%8F%E5%88%97%E5%90%97%EF%BC%9F"><span class="nav-number">9.3.</span> <span class="nav-text">Q3: GRPO 会过度拟合组内序列吗？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Q4-GRPO-%E7%9A%84-KL-%E6%95%A3%E5%BA%A6%E7%BA%A6%E6%9D%9F%E6%80%8E%E4%B9%88%E8%B0%83%EF%BC%9F"><span class="nav-number">9.4.</span> <span class="nav-text">Q4: GRPO 的 KL 散度约束怎么调？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Q5-GRPO-vs-PPO%EF%BC%8C%E6%88%91%E5%BA%94%E8%AF%A5%E9%80%89%E5%93%AA%E4%B8%AA%EF%BC%9F"><span class="nav-number">9.5.</span> <span class="nav-text">Q5: GRPO vs PPO，我应该选哪个？</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">10.</span> <span class="nav-text">总结</span></a></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/%20%7C%7C%20archive">
+        
+          <span class="site-state-item-count">188</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/%20%7C%7C%20th">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/%20%7C%7C%20tags">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">494</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &amp;rarr; https:&#x2F;&#x2F;github.com&#x2F;murphypei" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-github&quot;&gt;&lt;&#x2F;i&gt;GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &amp;rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-envelope&quot;&gt;&lt;&#x2F;i&gt;E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;guo-jia-66-80&#x2F;activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2026</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">697k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">19:22</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js?v=7.3.0.js"></script>
+
+<script src="/js/motion.js?v=7.3.0.js"></script>
+
+
+<script src="/js/schemes/muse.js?v=7.3.0.js"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '76c7890bf2157dd9218898ee0854634e',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

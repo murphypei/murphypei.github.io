@@ -1,0 +1,2092 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="LLM 的幻觉和重复问题是 LLM 应用中的核心挑战，也是面试中经常被问到的问题。本文将从底层机理出发，深入分析这两个问题的成因，并探讨有效的解决方案。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LLM 幻觉与重复问题">
+<meta property="og:url" content="https://murphypei.github.io/blog/2025/06/llm-hallucination-repetition.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="LLM 的幻觉和重复问题是 LLM 应用中的核心挑战，也是面试中经常被问到的问题。本文将从底层机理出发，深入分析这两个问题的成因，并探讨有效的解决方案。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-06-27T00:31:30.000Z">
+<meta property="article:modified_time" content="2026-01-07T08:41:01.086Z">
+<meta property="article:author" content="AngryBirds">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="幻觉">
+<meta property="article:tag" content="重复">
+<meta property="article:tag" content="Attention机制">
+<meta property="article:tag" content="模型训练">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2025/06/llm-hallucination-repetition">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>LLM 幻觉与重复问题 | 拾荒志</title>
+  <meta name="generator" content="Hexo 5.4.2">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于
+    </a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2025/06/llm-hallucination-repetition.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">LLM 幻觉与重复问题
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2025-06-27 08:31:30" itemprop="dateCreated datePublished" datetime="2025-06-27T08:31:30+08:00">2025-06-27</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2026-01-07 16:41:01" itemprop="dateModified" datetime="2026-01-07T16:41:01+08:00">2026-01-07</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/LLM/" itemprop="url" rel="index"><span itemprop="name">LLM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>3.4k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>6 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>LLM 的幻觉和重复问题是 LLM 应用中的核心挑战，也是面试中经常被问到的问题。本文将从底层机理出发，深入分析这两个问题的成因，并探讨有效的解决方案。</p>
+<span id="more"></span>
+<h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>大语言模型（LLM）在近年来取得了巨大的成功，但同时也面临着两个关键问题：<strong>幻觉（Hallucination）</strong>和<strong>重复（Repetition）</strong>。这些问题不仅影响了模型的实用性，也阻碍了其在关键领域的应用。本文将从底层机理出发，深入分析这两个问题的成因，并探讨有效的解决方案。</p>
+<h2 id="幻觉问题（Hallucination）"><a href="#幻觉问题（Hallucination）" class="headerlink" title="幻觉问题（Hallucination）"></a>幻觉问题（Hallucination）</h2><h3 id="幻觉的基本概念"><a href="#幻觉的基本概念" class="headerlink" title="幻觉的基本概念"></a>幻觉的基本概念</h3><p>幻觉是指LLM生成的内容与事实不符，包括：</p>
+<ul>
+<li><strong>事实性幻觉</strong>：生成错误的事实信息。</li>
+<li><strong>逻辑性幻觉</strong>：推理过程存在逻辑错误，前后矛盾不一致。</li>
+<li><strong>指令性幻觉</strong>：指令遵循不一致，比如要求用英语回答，用中文回答。</li>
+</ul>
+<h3 id="幻觉产生的底层机理"><a href="#幻觉产生的底层机理" class="headerlink" title="幻觉产生的底层机理"></a>幻觉产生的底层机理</h3><h4 id="1-训练数据质量问题"><a href="#1-训练数据质量问题" class="headerlink" title="1. 训练数据质量问题"></a>1. 训练数据质量问题</h4><p><strong>数据噪声与错误</strong></p>
+<ul>
+<li>训练数据中本身就包含错误信息</li>
+<li>网络爬取的数据质量参差不齐</li>
+<li>标注错误导致模型学习到错误的知识</li>
+</ul>
+<p><strong>数据分布偏差</strong></p>
+<ul>
+<li>某些领域的数据过于稀少</li>
+<li>时间性信息过时（如2023年之前的数据）</li>
+<li>地域性偏见导致知识覆盖不均</li>
+</ul>
+<h4 id="2-Attention机制的局限性"><a href="#2-Attention机制的局限性" class="headerlink" title="2. Attention机制的局限性"></a>2. Attention机制的局限性</h4><p>根据<a target="_blank" rel="noopener" href="https://arxiv.org/html/2504.04600v1">Attention理论</a>，Attention机制本质上是一个2体相互作用系统：</p>
+<script type="math/tex; mode=display">
+\mathcal{P}(\mathbf{x}) = \mathbf{N}^{(0)}\mathsf{W}_V\mathbf{x}^{\mathrm{T}}</script><p>其中：</p>
+<ul>
+<li>$\mathbf{N}^{(0)}$ 是上下文向量</li>
+<li>$\mathsf{W}_V$ 是Value投影矩阵</li>
+<li>$\mathbf{x}$ 是词汇表中的token</li>
+</ul>
+<p><strong>Attention机制的固有问题</strong>：</p>
+<ol>
+<li><strong>局部性限制</strong>：Attention主要关注局部相关性，难以捕捉全局一致性</li>
+<li><strong>缺乏事实验证</strong>：模型无法验证生成内容的真实性</li>
+<li><strong>过度依赖训练数据</strong>：当遇到训练数据中未覆盖的情况时，容易产生幻觉</li>
+</ol>
+<h4 id="3-训练目标与事实性不匹配"><a href="#3-训练目标与事实性不匹配" class="headerlink" title="3. 训练目标与事实性不匹配"></a>3. 训练目标与事实性不匹配</h4><p><strong>最大似然估计的局限性</strong></p>
+<ul>
+<li>训练目标是最小化预测下一个token的损失</li>
+<li>这个目标并不直接优化事实准确性</li>
+<li>模型可能为了流畅性而牺牲准确性</li>
+</ul>
+<p><strong>缺乏事实性监督</strong></p>
+<ul>
+<li>训练过程中没有明确的事实性约束</li>
+<li>模型无法区分事实性内容和创造性内容</li>
+</ul>
+<h3 id="缓解和消除幻觉的方法"><a href="#缓解和消除幻觉的方法" class="headerlink" title="缓解和消除幻觉的方法"></a>缓解和消除幻觉的方法</h3><h4 id="1-训练数据层面改进"><a href="#1-训练数据层面改进" class="headerlink" title="1. 训练数据层面改进"></a>1. 训练数据层面改进</h4><p><strong>高质量数据收集</strong></p>
+<ul>
+<li>结合多个高质量数据源</li>
+<li>使用事实性强的数据（如维基百科、学术论文）</li>
+<li>建立数据质量评估体系</li>
+</ul>
+<p><strong>数据清洗与验证</strong></p>
+<ul>
+<li>自动检测和移除错误数据</li>
+<li>使用外部知识库验证数据准确性</li>
+<li>建立数据版本控制机制</li>
+</ul>
+<p><strong>知识注入技术</strong></p>
+<ul>
+<li>将结构化知识（如知识图谱）注入训练数据</li>
+<li>使用检索增强生成（RAG）技术</li>
+<li>结合外部知识库进行训练</li>
+</ul>
+<h4 id="2-模型推理的改进"><a href="#2-模型推理的改进" class="headerlink" title="2. 模型推理的改进"></a>2. 模型推理的改进</h4><p><strong>改进的Attention机制</strong></p>
+<ul>
+<li>引入多步推理机制</li>
+<li>使用思维链（Chain-of-Thought）提示</li>
+<li>实现推理过程的显式建模</li>
+</ul>
+<p><strong>事实性约束</strong></p>
+<ul>
+<li>在Attention中加入事实性约束</li>
+<li>使用外部知识库指导注意力分配</li>
+<li>实现事实性验证的端到端训练</li>
+</ul>
+<p><strong>检索增强生成（RAG）</strong></p>
+<ul>
+<li>在生成过程中实时检索相关信息</li>
+<li>使用向量数据库存储知识</li>
+<li>实现检索与生成的联合优化</li>
+</ul>
+<h4 id="3-训练策略的改进"><a href="#3-训练策略的改进" class="headerlink" title="3. 训练策略的改进"></a>3. 训练策略的改进</h4><p><strong>事实性监督</strong></p>
+<ul>
+<li>设计专门的事实性损失函数</li>
+<li>使用外部知识库计算事实性得分</li>
+<li>在训练中平衡流畅性和事实性</li>
+</ul>
+<p><strong>对比学习</strong></p>
+<ul>
+<li>使用对比学习区分事实性和非事实性内容</li>
+<li>训练模型识别和避免幻觉</li>
+</ul>
+<p><strong>强化学习优化</strong></p>
+<ul>
+<li>设计基于事实准确性的奖励函数</li>
+<li>使用PPO等算法优化事实性</li>
+<li>实现事实性与流畅性的平衡</li>
+</ul>
+<h4 id="4-推理阶段的改进"><a href="#4-推理阶段的改进" class="headerlink" title="4. 推理阶段的改进"></a>4. 推理阶段的改进</h4><p><strong>后处理验证</strong></p>
+<ul>
+<li>使用外部工具验证生成内容的真实性</li>
+<li>实现自动的事实性评分</li>
+<li>对低置信度的内容进行标记</li>
+</ul>
+<p><strong>多模型验证</strong></p>
+<ul>
+<li>使用多个模型交叉验证</li>
+<li>实现模型集成提高准确性</li>
+</ul>
+<p><strong>不确定性量化</strong></p>
+<ul>
+<li>为生成内容提供置信度分数</li>
+<li>实现不确定性量化</li>
+<li>帮助用户判断内容的可靠性</li>
+</ul>
+<h2 id="重复问题（Repetition）"><a href="#重复问题（Repetition）" class="headerlink" title="重复问题（Repetition）"></a>重复问题（Repetition）</h2><h3 id="重复问题的基本概念"><a href="#重复问题的基本概念" class="headerlink" title="重复问题的基本概念"></a>重复问题的基本概念</h3><p>重复问题表现为：</p>
+<ul>
+<li><strong>词汇重复</strong>：同一个词或短语反复出现</li>
+<li><strong>结构重复</strong>：相似的句子结构重复使用</li>
+<li><strong>内容重复</strong>：相同的信息多次表达</li>
+</ul>
+<h3 id="重复产生的底层机理"><a href="#重复产生的底层机理" class="headerlink" title="重复产生的底层机理"></a>重复产生的底层机理</h3><h4 id="1-训练数据的重复模式"><a href="#1-训练数据的重复模式" class="headerlink" title="1. 训练数据的重复模式"></a>1. 训练数据的重复模式</h4><p><strong>数据中的重复模式</strong></p>
+<ul>
+<li>训练数据中存在大量重复内容</li>
+<li>某些表达方式在数据中频繁出现</li>
+<li>模型学习到了这些重复模式</li>
+</ul>
+<p><strong>注意力机制的偏好</strong></p>
+<ul>
+<li>模型倾向于关注高频出现的模式</li>
+<li>重复内容往往具有较高的注意力权重</li>
+</ul>
+<h4 id="2-生成策略的影响"><a href="#2-生成策略的影响" class="headerlink" title="2. 生成策略的影响"></a>2. 生成策略的影响</h4><p><strong>贪婪解码的局限性</strong></p>
+<ul>
+<li>每次都选择概率最高的token</li>
+<li>容易陷入局部最优，导致重复</li>
+</ul>
+<p><strong>缺乏多样性约束</strong></p>
+<ul>
+<li>没有明确的多样性目标</li>
+<li>模型倾向于选择”安全”的重复模式</li>
+</ul>
+<h4 id="3-上下文窗口的限制"><a href="#3-上下文窗口的限制" class="headerlink" title="3. 上下文窗口的限制"></a>3. 上下文窗口的限制</h4><p><strong>长距离依赖问题</strong></p>
+<ul>
+<li>模型难以记住之前生成的内容</li>
+<li>在生成长文本时容易重复</li>
+</ul>
+<p><strong>注意力衰减</strong></p>
+<ul>
+<li>随着序列长度增加，注意力权重衰减</li>
+<li>导致模型”忘记”之前的内容</li>
+</ul>
+<h3 id="缓解和消除重复的方法"><a href="#缓解和消除重复的方法" class="headerlink" title="缓解和消除重复的方法"></a>缓解和消除重复的方法</h3><h4 id="1-解码策略的改进"><a href="#1-解码策略的改进" class="headerlink" title="1. 解码策略的改进"></a>1. 解码策略的改进</h4><p><strong>多样性解码</strong></p>
+<p><strong>核采样（Nucleus Sampling）</strong></p>
+<ul>
+<li>只从累积概率达到阈值的token中采样</li>
+<li>避免选择过于保守的token</li>
+<li>在保持质量的同时增加多样性</li>
+</ul>
+<p><strong>温度调节</strong></p>
+<ul>
+<li>使用温度参数控制采样的随机性</li>
+<li>在生成过程中动态调整温度</li>
+<li>平衡创造性和一致性</li>
+</ul>
+<p><strong>重复惩罚</strong></p>
+<ul>
+<li>对重复出现的token进行惩罚</li>
+<li>使用n-gram级别的重复检测</li>
+<li>实现自适应的重复惩罚机制</li>
+</ul>
+<p><strong>长度惩罚</strong></p>
+<ul>
+<li>对过长的重复序列进行惩罚</li>
+<li>鼓励模型生成更简洁的内容</li>
+</ul>
+<h4 id="2-模型架构的改进"><a href="#2-模型架构的改进" class="headerlink" title="2. 模型架构的改进"></a>2. 模型架构的改进</h4><p><strong>改进的注意力机制</strong></p>
+<p><strong>相对位置编码</strong></p>
+<ul>
+<li>使用相对位置编码代替绝对位置编码</li>
+<li>更好地处理长序列</li>
+<li>减少位置相关的重复</li>
+</ul>
+<p><strong>稀疏注意力</strong></p>
+<ul>
+<li>使用稀疏注意力减少计算复杂度</li>
+<li>提高长文本的处理能力</li>
+<li>减少注意力衰减问题</li>
+</ul>
+<p><strong>记忆机制</strong></p>
+<ul>
+<li>使用外部记忆存储重要信息</li>
+<li>实现长期依赖的建模</li>
+<li>减少重复生成相同内容</li>
+</ul>
+<p><strong>分层记忆</strong></p>
+<ul>
+<li>实现短期和长期记忆的分离</li>
+<li>使用不同的记忆机制处理不同时间尺度的信息</li>
+</ul>
+<h4 id="3-训练策略的改进-1"><a href="#3-训练策略的改进-1" class="headerlink" title="3. 训练策略的改进"></a>3. 训练策略的改进</h4><p><strong>多样性训练</strong></p>
+<p><strong>多样性损失</strong></p>
+<ul>
+<li>在训练中加入多样性损失</li>
+<li>鼓励模型生成多样化的内容</li>
+<li>平衡一致性和创造性</li>
+</ul>
+<p><strong>对抗训练</strong></p>
+<ul>
+<li>使用对抗训练提高多样性</li>
+<li>训练判别器识别重复内容</li>
+<li>实现生成器和判别器的博弈</li>
+</ul>
+<p><strong>课程学习</strong></p>
+<ul>
+<li>从简单任务开始，逐步增加复杂度</li>
+<li>在训练过程中引入多样性约束</li>
+<li>实现更好的泛化能力</li>
+</ul>
+<h4 id="4-推理阶段的改进-1"><a href="#4-推理阶段的改进-1" class="headerlink" title="4. 推理阶段的改进"></a>4. 推理阶段的改进</h4><p><strong>动态调整</strong></p>
+<p><strong>自适应解码</strong></p>
+<ul>
+<li>根据上下文动态调整解码策略</li>
+<li>实现智能的重复检测和避免</li>
+<li>使用机器学习优化解码参数</li>
+</ul>
+<p><strong>多候选生成</strong></p>
+<ul>
+<li>生成多个候选序列</li>
+<li>使用多样性指标选择最佳序列</li>
+<li>实现更好的内容质量</li>
+</ul>
+<p><strong>后处理优化</strong></p>
+<ul>
+<li>使用规则或机器学习方法检测重复</li>
+<li>自动移除或改写重复内容</li>
+<li>实现智能的内容优化</li>
+</ul>
+<p><strong>风格一致性</strong></p>
+<ul>
+<li>保持生成内容的风格一致性</li>
+<li>避免风格上的重复</li>
+<li>实现更自然的文本生成</li>
+</ul>
+<h2 id="幻觉与重复问题的关系"><a href="#幻觉与重复问题的关系" class="headerlink" title="幻觉与重复问题的关系"></a>幻觉与重复问题的关系</h2><h3 id="共同根源"><a href="#共同根源" class="headerlink" title="共同根源"></a>共同根源</h3><p><strong>训练数据问题</strong></p>
+<ul>
+<li>数据质量差是幻觉和重复的共同原因</li>
+<li>数据分布不均匀导致模型学习到错误的模式</li>
+</ul>
+<p><strong>Attention机制的局限性</strong></p>
+<ul>
+<li>2体相互作用的限制</li>
+<li>难以处理复杂的全局关系</li>
+</ul>
+<p><strong>训练目标的不完善</strong></p>
+<ul>
+<li>缺乏对事实性和多样性的直接优化</li>
+<li>过度依赖局部最优</li>
+</ul>
+<h3 id="相互影响"><a href="#相互影响" class="headerlink" title="相互影响"></a>相互影响</h3><p><strong>幻觉导致重复</strong></p>
+<ul>
+<li>当模型不确定时，倾向于重复”安全”的内容</li>
+<li>幻觉内容可能被模型认为是正确的，从而重复生成</li>
+</ul>
+<p><strong>重复加剧幻觉</strong></p>
+<ul>
+<li>重复生成错误内容会强化幻觉</li>
+<li>缺乏多样性限制了模型的探索能力</li>
+</ul>
+<h3 id="联合解决方案"><a href="#联合解决方案" class="headerlink" title="联合解决方案"></a>联合解决方案</h3><p><strong>统一的数据策略</strong></p>
+<ul>
+<li>同时提高数据的准确性和多样性</li>
+<li>建立综合的数据质量评估体系</li>
+</ul>
+<p><strong>改进的模型架构</strong></p>
+<ul>
+<li>设计同时解决幻觉和重复的架构</li>
+<li>引入全局一致性和多样性约束</li>
+</ul>
+<p><strong>综合的训练目标</strong></p>
+<ul>
+<li>平衡事实性、流畅性和多样性</li>
+<li>使用多目标优化方法</li>
+</ul>
+<h2 id="未来发展方向"><a href="#未来发展方向" class="headerlink" title="未来发展方向"></a>未来发展方向</h2><h3 id="理论突破"><a href="#理论突破" class="headerlink" title="理论突破"></a>理论突破</h3><p><strong>3体Attention机制</strong><br>根据物理学理论，当前的Attention是2体相互作用，未来可能发展出3体Attention机制，能够更好地处理复杂的关系和依赖。</p>
+<p><strong>量子计算的应用</strong><br>量子计算可能为Attention机制提供新的计算范式，实现更高效的注意力计算。</p>
+<h3 id="技术融合"><a href="#技术融合" class="headerlink" title="技术融合"></a>技术融合</h3><p><strong>多模态融合</strong><br>结合视觉、听觉等多种模态信息，提高模型的理解能力和生成质量。</p>
+<p><strong>知识图谱集成</strong><br>深度集成知识图谱，实现更准确的事实性生成。</p>
+<h3 id="评估体系"><a href="#评估体系" class="headerlink" title="评估体系"></a>评估体系</h3><p><strong>标准化评估</strong><br>建立标准化的幻觉和重复评估体系，为模型改进提供客观指标。</p>
+<p><strong>实时监控</strong><br>实现生成过程的实时监控，及时发现和纠正问题。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>LLM的幻觉和重复问题是当前AI发展面临的重要挑战。通过深入理解其底层机理，我们可以从数据、模型架构、训练策略和推理优化等多个层面来缓解这些问题。随着技术的不断进步，我们有理由相信这些问题将得到更好的解决，推动LLM技术向更高水平发展。</p>
+<p><strong>关键要点</strong>：</p>
+<ol>
+<li><strong>幻觉问题</strong>：主要由训练数据质量、Attention机制局限性和训练目标不匹配导致</li>
+<li><strong>重复问题</strong>：主要由训练数据重复模式、生成策略局限性和上下文窗口限制导致</li>
+<li><strong>解决方案</strong>：需要从数据、架构、训练和推理多个层面综合改进</li>
+<li><strong>未来方向</strong>：3体Attention、多模态融合、标准化评估体系</li>
+</ol>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/html/2504.04600v1">Capturing AI’s Attention: Physics of Repetition, Hallucination, Bias and Beyond</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/677935286">大语言模型幻觉问题研究综述</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.secrss.com/articles/73856">LLM幻觉问题的深度分析</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/682647518">大语言模型重复问题解决方案</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1897569693658744522">Attention机制的物理基础</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2025/06/llm-hallucination-repetition.html" title="LLM 幻觉与重复问题">https:&#x2F;&#x2F;murphypei.github.io&#x2F;blog&#x2F;2025&#x2F;06&#x2F;llm-hallucination-repetition.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-creative-commons&quot;&gt;&lt;&#x2F;i&gt;BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/LLM/" rel="tag"># LLM</a>
+            
+              <a href="/tags/%E5%B9%BB%E8%A7%89/" rel="tag"># 幻觉</a>
+            
+              <a href="/tags/%E9%87%8D%E5%A4%8D/" rel="tag"># 重复</a>
+            
+              <a href="/tags/Attention%E6%9C%BA%E5%88%B6/" rel="tag"># Attention机制</a>
+            
+              <a href="/tags/%E6%A8%A1%E5%9E%8B%E8%AE%AD%E7%BB%83/" rel="tag"># 模型训练</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2025/06/llm-dpo.html" rel="next" title="LLM 训练：DPO 深入与实践">
+                  <i class="fa fa-chevron-left"></i> LLM 训练：DPO 深入与实践
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2025/06/text-retriveval.html" rel="prev" title="LLM：RAG 中的文本检索技术">
+                  LLM：RAG 中的文本检索技术 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%BB%E8%A7%89%E9%97%AE%E9%A2%98%EF%BC%88Hallucination%EF%BC%89"><span class="nav-number">2.</span> <span class="nav-text">幻觉问题（Hallucination）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B9%BB%E8%A7%89%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">2.1.</span> <span class="nav-text">幻觉的基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B9%BB%E8%A7%89%E4%BA%A7%E7%94%9F%E7%9A%84%E5%BA%95%E5%B1%82%E6%9C%BA%E7%90%86"><span class="nav-number">2.2.</span> <span class="nav-text">幻觉产生的底层机理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E8%AE%AD%E7%BB%83%E6%95%B0%E6%8D%AE%E8%B4%A8%E9%87%8F%E9%97%AE%E9%A2%98"><span class="nav-number">2.2.1.</span> <span class="nav-text">1. 训练数据质量问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-Attention%E6%9C%BA%E5%88%B6%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="nav-number">2.2.2.</span> <span class="nav-text">2. Attention机制的局限性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E8%AE%AD%E7%BB%83%E7%9B%AE%E6%A0%87%E4%B8%8E%E4%BA%8B%E5%AE%9E%E6%80%A7%E4%B8%8D%E5%8C%B9%E9%85%8D"><span class="nav-number">2.2.3.</span> <span class="nav-text">3. 训练目标与事实性不匹配</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E8%A7%A3%E5%92%8C%E6%B6%88%E9%99%A4%E5%B9%BB%E8%A7%89%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-number">2.3.</span> <span class="nav-text">缓解和消除幻觉的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E8%AE%AD%E7%BB%83%E6%95%B0%E6%8D%AE%E5%B1%82%E9%9D%A2%E6%94%B9%E8%BF%9B"><span class="nav-number">2.3.1.</span> <span class="nav-text">1. 训练数据层面改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E6%A8%A1%E5%9E%8B%E6%8E%A8%E7%90%86%E7%9A%84%E6%94%B9%E8%BF%9B"><span class="nav-number">2.3.2.</span> <span class="nav-text">2. 模型推理的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E8%AE%AD%E7%BB%83%E7%AD%96%E7%95%A5%E7%9A%84%E6%94%B9%E8%BF%9B"><span class="nav-number">2.3.3.</span> <span class="nav-text">3. 训练策略的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-%E6%8E%A8%E7%90%86%E9%98%B6%E6%AE%B5%E7%9A%84%E6%94%B9%E8%BF%9B"><span class="nav-number">2.3.4.</span> <span class="nav-text">4. 推理阶段的改进</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%87%8D%E5%A4%8D%E9%97%AE%E9%A2%98%EF%BC%88Repetition%EF%BC%89"><span class="nav-number">3.</span> <span class="nav-text">重复问题（Repetition）</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E5%A4%8D%E9%97%AE%E9%A2%98%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5"><span class="nav-number">3.1.</span> <span class="nav-text">重复问题的基本概念</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%87%8D%E5%A4%8D%E4%BA%A7%E7%94%9F%E7%9A%84%E5%BA%95%E5%B1%82%E6%9C%BA%E7%90%86"><span class="nav-number">3.2.</span> <span class="nav-text">重复产生的底层机理</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E8%AE%AD%E7%BB%83%E6%95%B0%E6%8D%AE%E7%9A%84%E9%87%8D%E5%A4%8D%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.2.1.</span> <span class="nav-text">1. 训练数据的重复模式</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E7%94%9F%E6%88%90%E7%AD%96%E7%95%A5%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">3.2.2.</span> <span class="nav-text">2. 生成策略的影响</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AA%97%E5%8F%A3%E7%9A%84%E9%99%90%E5%88%B6"><span class="nav-number">3.2.3.</span> <span class="nav-text">3. 上下文窗口的限制</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E8%A7%A3%E5%92%8C%E6%B6%88%E9%99%A4%E9%87%8D%E5%A4%8D%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-number">3.3.</span> <span class="nav-text">缓解和消除重复的方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E8%A7%A3%E7%A0%81%E7%AD%96%E7%95%A5%E7%9A%84%E6%94%B9%E8%BF%9B"><span class="nav-number">3.3.1.</span> <span class="nav-text">1. 解码策略的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84%E7%9A%84%E6%94%B9%E8%BF%9B"><span class="nav-number">3.3.2.</span> <span class="nav-text">2. 模型架构的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E8%AE%AD%E7%BB%83%E7%AD%96%E7%95%A5%E7%9A%84%E6%94%B9%E8%BF%9B-1"><span class="nav-number">3.3.3.</span> <span class="nav-text">3. 训练策略的改进</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-%E6%8E%A8%E7%90%86%E9%98%B6%E6%AE%B5%E7%9A%84%E6%94%B9%E8%BF%9B-1"><span class="nav-number">3.3.4.</span> <span class="nav-text">4. 推理阶段的改进</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B9%BB%E8%A7%89%E4%B8%8E%E9%87%8D%E5%A4%8D%E9%97%AE%E9%A2%98%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">4.</span> <span class="nav-text">幻觉与重复问题的关系</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%85%B1%E5%90%8C%E6%A0%B9%E6%BA%90"><span class="nav-number">4.1.</span> <span class="nav-text">共同根源</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%B8%E4%BA%92%E5%BD%B1%E5%93%8D"><span class="nav-number">4.2.</span> <span class="nav-text">相互影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%81%94%E5%90%88%E8%A7%A3%E5%86%B3%E6%96%B9%E6%A1%88"><span class="nav-number">4.3.</span> <span class="nav-text">联合解决方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AA%E6%9D%A5%E5%8F%91%E5%B1%95%E6%96%B9%E5%90%91"><span class="nav-number">5.</span> <span class="nav-text">未来发展方向</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%90%86%E8%AE%BA%E7%AA%81%E7%A0%B4"><span class="nav-number">5.1.</span> <span class="nav-text">理论突破</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8A%80%E6%9C%AF%E8%9E%8D%E5%90%88"><span class="nav-number">5.2.</span> <span class="nav-text">技术融合</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%AF%84%E4%BC%B0%E4%BD%93%E7%B3%BB"><span class="nav-number">5.3.</span> <span class="nav-text">评估体系</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">6.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">7.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/%20%7C%7C%20archive">
+        
+          <span class="site-state-item-count">188</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/%20%7C%7C%20th">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/%20%7C%7C%20tags">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">494</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &amp;rarr; https:&#x2F;&#x2F;github.com&#x2F;murphypei" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-github&quot;&gt;&lt;&#x2F;i&gt;GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &amp;rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-envelope&quot;&gt;&lt;&#x2F;i&gt;E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;guo-jia-66-80&#x2F;activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2026</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">697k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">19:22</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js?v=7.3.0.js"></script>
+
+<script src="/js/motion.js?v=7.3.0.js"></script>
+
+
+<script src="/js/schemes/muse.js?v=7.3.0.js"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: 'fcbd48960cabfdb4a2d82a383fe0adb4',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>

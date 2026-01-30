@@ -1,0 +1,1803 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="当我们需要开发一门语言时候，不可避免要对词法和语法进行解析。而在工作中，有时候也需要对一些约定的表达式进行分析和求解，这其实和语言中的解释器、编译器的词法语法解析功能很类似。本文根据实习小项目的经历，对利用Antlr进行语法表示式的解析过程做一个简要介绍。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Antlr实现自定义表达式解析简介">
+<meta property="og:url" content="https://murphypei.github.io/blog/2017/08/java-antlr.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="当我们需要开发一门语言时候，不可避免要对词法和语法进行解析。而在工作中，有时候也需要对一些约定的表达式进行分析和求解，这其实和语言中的解释器、编译器的词法语法解析功能很类似。本文根据实习小项目的经历，对利用Antlr进行语法表示式的解析过程做一个简要介绍。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/java/idea-antlr-plugin.png">
+<meta property="og:image" content="https://murphypei.github.io/images/posts/java/antlr-generator-file.png">
+<meta property="article:published_time" content="2017-08-08T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-01-07T08:41:01.065Z">
+<meta property="article:author" content="AngryBirds">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="antlr">
+<meta property="article:tag" content="Antlr V4">
+<meta property="article:tag" content="DSL">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://murphypei.github.io/images/posts/java/idea-antlr-plugin.png">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2017/08/java-antlr">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>Antlr实现自定义表达式解析简介 | 拾荒志</title>
+  <meta name="generator" content="Hexo 5.4.2">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于
+    </a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2017/08/java-antlr.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">Antlr实现自定义表达式解析简介
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2017-08-09 00:00:00" itemprop="dateCreated datePublished" datetime="2017-08-09T00:00:00+08:00">2017-08-09</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2026-01-07 16:41:01" itemprop="dateModified" datetime="2026-01-07T16:41:01+08:00">2026-01-07</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>5.3k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>9 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>当我们需要开发一门语言时候，不可避免要对词法和语法进行解析。而在工作中，有时候也需要对一些约定的表达式进行分析和求解，这其实和语言中的解释器、编译器的词法语法解析功能很类似。本文根据实习小项目的经历，对利用Antlr进行语法表示式的解析过程做一个简要介绍。</p>
+<span id="more"></span>
+<p>对于一种语言或者说表达式的处理，一般处理工作都分为前端和后端两个部分：</p>
+<ul>
+<li>前端进行词法分析、语法分析、语义分析、中间代码生成等若干步骤</li>
+<li>后端进行代码优化、表达式求解等处理</li>
+</ul>
+<p>而借用Antlr这个工具，我们可以很方便的实现语法和词法解析，也就是前端工作。</p>
+<h2 id="1-Antlr-简介"><a href="#1-Antlr-简介" class="headerlink" title="1. Antlr 简介"></a>1. Antlr 简介</h2><p>Antlr 是一种语言识别工具，和 Lex 以及 YACC 等工具类似，通过上下文无关的文法来对表达式的词法和语法进行描述，而且能够自动生成词法分析器 (Lexer)、语法分析器 (Parser) 和树分析器 (Tree Parser)。</p>
+<blockquote>
+<p>Antlr 致力于解决编译前端的所有工作。使用 Anltr 的语法可以定义目标语言的词法记号和语法规则，Antlr 自动生成目标语言的词法分析器和语法分析器；此外，如果在语法规则中指定抽象语法树的规则，在生成语法分析器的同时，Antlr 还能够生成抽象语法树；最终使用树分析器遍历抽象语法树，完成语义分析和中间代码生成。整个工作在 Anltr 强大的支持下，将变得非常轻松和愉快。</p>
+</blockquote>
+<p>对于词法和语法的定义，Antlr使用正则表达式完成匹配工作，编辑工作很轻松。</p>
+<p><strong>配置Antlr</strong></p>
+<p>对于Antlr开发java项目，可以使用 Eclipse 和 Intellij 插件，插件具有语法高亮和 Antlr 规则测试等很便捷的功能。Antlr 本身是使用 Java 开发的，在使用 Antlr 之前必须先安装 JRE(Java Runtime Environment )。这里附 Intellij 的 Antlr 插件地址：</p>
+<p><a target="_blank" rel="noopener" href="https://plugins.jetbrains.com/plugin/7358-antlr-v4-grammar-plugin">ANTLR v4 grammar plugin</a></p>
+<p>对于实际导入 Antlr 的库，可以<strong>在maven中直接配置依赖</strong>，不再详述。</p>
+<h2 id="2-Antlr-使用"><a href="#2-Antlr-使用" class="headerlink" title="2. Antlr 使用"></a>2. Antlr 使用</h2><p>创建一个 Antlr 文件，最新的 Antlr V4 版本，使用 g4 作为后缀名，例如：Eval.g4。</p>
+<p>文件开头定义文法的名字：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">grammar Eval;</span><br></pre></td></tr></table></figure>
+<p>需要注意的是，<strong>文法名字必须和文件名相同</strong>。（这一点和java倒是有点像…）</p>
+<p>在 Antlr 文件中，词法规则和语法规则由下向上书写，构成一个抽象的语法树，而在每一个语法规则中，算法的优先级也遵循嵌套定义的规则，优先级由下至上递增。</p>
+<p>每个规则的定义有自己的定义符号，定义符号和规则语法用 <code>:</code> 隔开，以 <code>;</code> 结尾，并通过 <code>|</code> 等实现多项匹配。语法和词法定义的区别通过定义符号的大小写来区别。规定：</p>
+<ul>
+<li>语法规则定义符号的第一个字母小写（实际整个符号通常都是小写）</li>
+<li>词法规则定义符号的第一个字母大写（实际整个符号通常都是大写）</li>
+</ul>
+<p>还可以自定义对于空格符以及换行等相应的处理办法。Antlr 支持多种目标语言，可以把生成的分析器生成为 Java，C#，C，Python，JavaScript 等多种语言，默认目标语言为 Java，通过  <code>options &#123;language=?;&#125;</code>  来改变目标语言。而对于词法和语法的定义，一般都会有一些黄金定律之类的，可以根据实际项目需求来编写。这里给出一个较为详细的中文版Antlr文法规则，可供参考。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/greycode/technical-articles/issues/1">ANTLR 4 使用手册</a></p>
+<p>下面是一个简单的算术表达式的定义举例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">grammar Eval;</span><br><span class="line"></span><br><span class="line">options &#123;</span><br><span class="line">    language = Java;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">stat</span><br><span class="line"> : program</span><br><span class="line"> ;</span><br><span class="line"></span><br><span class="line">program</span><br><span class="line"> : expr | NEWLINE</span><br><span class="line"> ;</span><br><span class="line"></span><br><span class="line">expr</span><br><span class="line"> : atom</span><br><span class="line"> | expr op=(&#x27;*&#x27; | &#x27;/&#x27; | &#x27;%&#x27;) expr           </span><br><span class="line"> | expr op=(&#x27;+&#x27; | &#x27;-&#x27;) expr                 </span><br><span class="line"> ;</span><br><span class="line"></span><br><span class="line">atom</span><br><span class="line"> : NUMBER                                                              </span><br><span class="line"> | IDENT                                                  </span><br><span class="line"> ;</span><br><span class="line"></span><br><span class="line">NUMBER</span><br><span class="line"> : DIGIT + (&#x27;.&#x27; DIGIT*)?</span><br><span class="line"> | &#x27;.&#x27; DIGIT+</span><br><span class="line"> ;</span><br><span class="line"></span><br><span class="line">IDENT</span><br><span class="line"> : (DIGIT | &#x27;_&#x27; | LETTER) +</span><br><span class="line"> ;</span><br><span class="line"></span><br><span class="line">NEWLINE</span><br><span class="line"> : &#x27;\r&#x27;?&#x27;\n&#x27;</span><br><span class="line"> ;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">fragment</span><br><span class="line">DIGIT</span><br><span class="line"> : [0-9]</span><br><span class="line"> ;</span><br><span class="line"></span><br><span class="line">fragment</span><br><span class="line">LETTER</span><br><span class="line"> : [A-Za-z]</span><br><span class="line"> ;</span><br><span class="line"></span><br><span class="line">SPACES</span><br><span class="line"> :(&#x27; &#x27;|&#x27;/t&#x27;|&#x27;/n&#x27;|&#x27;/r&#x27;)+ -&gt; skip             // 跳过的空白符</span><br><span class="line"> ;</span><br></pre></td></tr></table></figure>
+<p>（fragment 是词法定义的特殊格式，表示是词法构成的一部分，非完整的词法规则）</p>
+<p>编辑完 Antlr 文件后，我们在安装有 Antlr plugin 的 Intellij 上，可以通过右键语法规则对语法规则进行测试，并可以在配置生成中间代码的包名、路径等选项后，直接生成中间代码。</p>
+<p><img src="/images/posts/java/idea-antlr-plugin.png" alt="Intellij Antlr plugin"></p>
+<p>对于生成的中间代码，一般都会得到6个文件：</p>
+<p><img src="/images/posts/java/antlr-generator-file.png" alt="Antlr generate files"></p>
+<ul>
+<li>Eval.tokens和EvalLexver.tokens 为文法中用到的各种符号做了数字化编号</li>
+<li>EvalLexer.java 是词法分析器</li>
+<li>EvalParser.java 是语法分析器</li>
+<li>EvalVisitor 和 EvalBaseVisitor 分别是语法解析树的vistor的接口和类，用于遍历整个语法树。一般情况下，我们通过继承 EvalBaseVisitor 来实现自己对于语法树遍历的处理。</li>
+</ul>
+<p>至此，Antlr部分就全部完成，接下来就是编写自己的 Visitor。</p>
+<h2 id="3-后端处理"><a href="#3-后端处理" class="headerlink" title="3. 后端处理"></a>3. 后端处理</h2><p>当编写自己的 Visitor 时，需要有一个较好的思路去设计对于解析语法树流程中的处理策略。EvalBaseVisitor 类中自动生成了遍历每一个语法规则的函数，因为我自身对 java 了解甚少，在参考了前辈的设计基础上，设计了相对简单的策略：</p>
+<ul>
+<li>对于每一种类型的表达式，设计一个相应的类来表示，这些类共同实现一个表达式接口。</li>
+<li>在接口中，定义了表达式必要的求解方法，也就是如何计算表达式的值，每种表达式应该有自己的求解方法。</li>
+<li><strong>遍历每一个语法规则时，根据语法，构造对应的表达式的对象</strong>（本质上可以用工厂模式来实现）</li>
+</ul>
+<p>下面是一个对于二元运算规则处理的简单示例：</p>
+<ul>
+<li>表达式接口：</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">IExpr</span> &#123;</span><br><span class="line"></span><br><span class="line">    Object <span class="title function_">eval</span><span class="params">(Map&lt;String, Object&gt; varMap)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>二元计算表达式</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">BinaryExpr</span> <span class="keyword">implements</span> <span class="title class_">IExpr</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">Logger</span> <span class="variable">logger</span> <span class="operator">=</span> LogManager.getLogger(BinaryExpr.class.getName());</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> IExpr lhs;</span><br><span class="line">    <span class="keyword">private</span> IExpr rhs;</span><br><span class="line">    <span class="keyword">private</span> String op;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">BinaryExpr</span><span class="params">(IExpr e)</span> &#123;</span><br><span class="line">	</span><br><span class="line">        expr = e;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">toString</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> expr.toString();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">eval</span><span class="params">(Map&lt;String, Object&gt; varMap)</span> &#123;</span><br><span class="line">        <span class="type">Object</span> <span class="variable">lhsObj</span> <span class="operator">=</span> lhs.eval(varMap);</span><br><span class="line">        <span class="type">double</span> <span class="variable">lhsVal</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (lhs == <span class="literal">null</span>) &#123;</span><br><span class="line">            logger.info(<span class="string">&quot;BinaryExpr lhs eval fail&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            logger.debug(<span class="string">&quot;lhsObj-type: &quot;</span> + lhsObj.getClass().getSimpleName());</span><br><span class="line">            lhsVal = Conv.object2double(lhsObj);</span><br><span class="line">            logger.debug(<span class="string">&quot;rhsObj-value: &quot;</span> + lhsVal);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">Object</span> <span class="variable">rhsObj</span> <span class="operator">=</span> rhs.eval(varMap);</span><br><span class="line">        <span class="type">double</span> <span class="variable">rhsVal</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">if</span> (rhsObj == <span class="literal">null</span>) &#123;</span><br><span class="line">            logger.info(<span class="string">&quot;BinaryExpr rhs eval fail&quot;</span>);</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            logger.debug(<span class="string">&quot;rhsObj-type: &quot;</span> + lhsObj.getClass().getSimpleName());</span><br><span class="line">            rhsVal = Conv.object2double(rhsObj);</span><br><span class="line">            logger.debug(<span class="string">&quot;rhsObj-value: &quot;</span> + rhsVal);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">double</span> <span class="variable">res</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">switch</span> (op) &#123;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;+&quot;</span>:</span><br><span class="line">                res = rhsVal + lhsVal;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;-&quot;</span>:</span><br><span class="line">                res = lhsVal - rhsVal;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;*&quot;</span>:</span><br><span class="line">                res = lhsVal * rhsVal;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;/&quot;</span>:</span><br><span class="line">                res = lhsVal / rhsVal;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">case</span> <span class="string">&quot;%&quot;</span>:</span><br><span class="line">                res = lhsVal % rhsVal;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            <span class="keyword">default</span>:</span><br><span class="line">                logger.error(<span class="string">&quot;BinaryExpr op is not support&quot;</span>);</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> res;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>Vistor中的遍历处理</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> IExpr <span class="title function_">visitExpr</span><span class="params">(EvalParser.BinaryExprContext ctx)</span> &#123;</span><br><span class="line">    logger.debug(<span class="string">&quot;visitBinaryExpr&quot;</span>);</span><br><span class="line">    <span class="type">IExpr</span> <span class="variable">lhs</span> <span class="operator">=</span> visit(ctx.expr(<span class="number">0</span>));</span><br><span class="line">    <span class="type">IExpr</span> <span class="variable">rhs</span> <span class="operator">=</span> visit(ctx.expr(<span class="number">1</span>));</span><br><span class="line">    <span class="type">String</span> <span class="variable">op</span> <span class="operator">=</span> ctx.op.getText();</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">BinaryExpr</span>(lhs, rhs, op);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当定义完这些后端处理的方法之后，我们可以调用用Antlr库中的词法分析和语法分析类对输入的表达式进行解析得到表达式的语法树，然后遍历语法树，并对表达式对象进行递归求解，从而获得表达式的解。调用代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">run</span><span class="params">(String expr, Map&lt;String, Object&gt; varMap)</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// build a ANTLR CharStream for input expression string</span></span><br><span class="line">    <span class="type">CharStream</span> <span class="variable">in</span> <span class="operator">=</span> CharStreams.fromString(expr);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// build a lexer using inputstream</span></span><br><span class="line">    <span class="type">EvalLexer</span> <span class="variable">lexer</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">EvalLexer</span>(in);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// common tokens</span></span><br><span class="line">    <span class="type">CommonTokenStream</span> <span class="variable">tokens</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">CommonTokenStream</span>(lexer);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// build syntax parser using tokens</span></span><br><span class="line">    <span class="type">EvalParser</span> <span class="variable">parser</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">EvalParser</span>(tokens);</span><br><span class="line">    <span class="type">EvalVisitor</span> <span class="variable">visitor</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">EvalVisitor</span>();</span><br><span class="line">    <span class="type">ParseTree</span> <span class="variable">tree</span> <span class="operator">=</span> parser.stat();</span><br><span class="line"></span><br><span class="line">    <span class="comment">// eval expression result</span></span><br><span class="line">    <span class="keyword">return</span> visitor.visit(tree).eval(varMap);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>于是就得到了整个表达式的结果。对于复杂的表达式，我们从 Antlr 文法定义中就可以看出，本质上是简单表达式不断构建而成，在 Visitor 中，我们可以通过递归的方式进行语法树遍历，而我们只要处理基本表达式就行了。</p>
+<h2 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h2><p>本文简要介绍了java中解析表达式的工具Antlr使用。利用Antlr可以很方便的进行词法和语法解析，配合后端处理，完成对于自定义表达式的求解规则定义。</p>
+<p>本文的例子相对简单，主要目的在于介绍基本用法，整个解析流程以及后端的处理策略。实际项目中，表达式不可能这么简单，特别是涉及到函数的调用方面，不仅需要利用反射进行<strong>函数的注册</strong>，还需要进行严格的<strong>参数类型匹配和转换</strong>。而对于一些长时操作求解的赋值表达，可能还会涉及<strong>延时计算</strong>等手段来提升效率等等，而且很对处理策略需要在实际项目中填坑才能体会到，所以就不展开赘述了。</p>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2017/08/java-antlr.html" title="Antlr实现自定义表达式解析简介">https:&#x2F;&#x2F;murphypei.github.io&#x2F;blog&#x2F;2017&#x2F;08&#x2F;java-antlr.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-creative-commons&quot;&gt;&lt;&#x2F;i&gt;BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/java/" rel="tag"># java</a>
+            
+              <a href="/tags/antlr/" rel="tag"># antlr</a>
+            
+              <a href="/tags/Antlr-V4/" rel="tag"># Antlr V4</a>
+            
+              <a href="/tags/DSL/" rel="tag"># DSL</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2017/07/quick-primers.html" rel="next" title="快速求素数序列方法">
+                  <i class="fa fa-chevron-left"></i> 快速求素数序列方法
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/blog/2017/08/tcp-ack-send-recv.html" rel="prev" title="TCP发送、接收和确认机制">
+                  TCP发送、接收和确认机制 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Antlr-%E7%AE%80%E4%BB%8B"><span class="nav-number">1.</span> <span class="nav-text">1. Antlr 简介</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Antlr-%E4%BD%BF%E7%94%A8"><span class="nav-number">2.</span> <span class="nav-text">2. Antlr 使用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%90%8E%E7%AB%AF%E5%A4%84%E7%90%86"><span class="nav-number">3.</span> <span class="nav-text">3. 后端处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number">4.</span> <span class="nav-text">后记</span></a></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/%20%7C%7C%20archive">
+        
+          <span class="site-state-item-count">188</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/%20%7C%7C%20th">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/%20%7C%7C%20tags">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">494</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &amp;rarr; https:&#x2F;&#x2F;github.com&#x2F;murphypei" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-github&quot;&gt;&lt;&#x2F;i&gt;GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &amp;rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-envelope&quot;&gt;&lt;&#x2F;i&gt;E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;guo-jia-66-80&#x2F;activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2026</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">697k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">19:22</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js?v=7.3.0.js"></script>
+
+<script src="/js/motion.js?v=7.3.0.js"></script>
+
+
+<script src="/js/schemes/muse.js?v=7.3.0.js"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: '673ed52d8b03e02a7c5ea4a470e466aa',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>
