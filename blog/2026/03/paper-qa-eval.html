@@ -1,0 +1,2037 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/angry_bird_32.ico?v=7.3.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/angry_bird_16.ico?v=7.3.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.3.0" color="#222">
+  <meta name="google-site-verification" content="3dBwV8OlVnNtYzxCLCFp2w8WMpuSecV7vBmA_zrf9j4">
+  <meta name="baidu-site-verification" content="eoUZD1BDx6">
+
+<link rel="stylesheet" href="/css/main.css?v=7.3.0">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.css">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '7.3.0',
+    exturl: false,
+    sidebar: {"position":"right","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":"default"},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: true,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="FQ-Eval 这是一篇关于对话中的 Follow ups questions 的论文。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《FQ-Eval Building Evaluation Dataset for User-centered Follow-up Question Generation》">
+<meta property="og:url" content="https://murphypei.github.io/blog/2026/03/paper-qa-eval.html">
+<meta property="og:site_name" content="拾荒志">
+<meta property="og:description" content="FQ-Eval 这是一篇关于对话中的 Follow ups questions 的论文。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-03-04T08:20:00.000Z">
+<meta property="article:modified_time" content="2026-03-04T06:11:49.807Z">
+<meta property="article:author" content="AngryBirds">
+<meta property="article:tag" content="论文">
+<meta property="article:tag" content="FQ-Eval">
+<meta property="article:tag" content="Evaluation">
+<meta property="article:tag" content="Dataset">
+<meta property="article:tag" content="Follow-up">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="拾荒志" type="application/atom+xml">
+  <link rel="canonical" href="https://murphypei.github.io/blog/2026/03/paper-qa-eval">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>《FQ-Eval Building Evaluation Dataset for User-centered Follow-up Question Generation》 | 拾荒志</title>
+  <meta name="generator" content="Hexo 5.4.2">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">拾荒志</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+        <h1 class="site-subtitle" itemprop="description">虚怀若谷，大智若愚</h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档
+    </a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-about">
+      
+    
+
+    <a href="/about/" rel="section"><i class="menu-item-icon fa fa-fw fa-user"></i> <br>关于
+    </a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://murphypei.github.io/blog/2026/03/paper-qa-eval.html">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="AngryBirds">
+      <meta itemprop="description" content="虚怀若谷，大智若愚">
+      <meta itemprop="image" content="/images/angry_bird_128.ico">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="拾荒志">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">《FQ-Eval Building Evaluation Dataset for User-centered Follow-up Question Generation》
+
+          
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2026-03-04 16:20:00 / 修改时间：14:11:49" itemprop="dateCreated datePublished" datetime="2026-03-04T16:20:00+08:00">2026-03-04</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" itemprop="url" rel="index"><span itemprop="name">论文阅读</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            <span class="post-meta-item" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="busuanzi-value" id="busuanzi_value_page_pv"></span>
+            </span>
+          
+          <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-file-word-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">本文字数：</span>
+              
+              <span>5k</span>
+            </span>
+          
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-clock-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              
+              <span>8 分钟</span>
+            </span>
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>FQ-Eval 这是一篇关于对话中的 Follow ups questions 的论文。</p>
+<span id="more"></span>
+<h2 id="一、论文基本信息"><a href="#一、论文基本信息" class="headerlink" title="一、论文基本信息"></a>一、论文基本信息</h2><h2 id="报告基本信息"><a href="#报告基本信息" class="headerlink" title="报告基本信息"></a>报告基本信息</h2><p><strong>论文标题</strong></p>
+<p>FQ-Eval: Building Evaluation Dataset for User-centered Follow-up Question Generation</p>
+<p><strong>发表会议</strong></p>
+<p>2025 Conference on Empirical Methods in Natural Language Processing (EMNLP 2025) Industry Track</p>
+<p><strong>论文地址</strong></p>
+<p><a target="_blank" rel="noopener" href="https://aclanthology.org/2025.emnlp-industry.188.pdf">https://aclanthology.org/2025.emnlp-industry.188.pdf</a></p>
+<p><strong>开源地址</strong></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/LGAI-Research/FQ-Eval">https://github.com/LGAI-Research/FQ-Eval</a></p>
+<h2 id="二、研究背景与问题提出"><a href="#二、研究背景与问题提出" class="headerlink" title="二、研究背景与问题提出"></a>二、研究背景与问题提出</h2><h3 id="2-1-研究背景"><a href="#2-1-研究背景" class="headerlink" title="2.1 研究背景"></a>2.1 研究背景</h3><p>随着 ChatGPT、Copilot、Perplexity 等对话式 LLM 服务的规模化落地，<strong>后续问题生成（Follow-up Question Generation）</strong> 已成为提升用户体验的核心功能：</p>
+<ol>
+<li>大量用户难以清晰、完整地向 LLM 表达自身潜在意图与对话目标，模糊查询易导致对话偏离用户初衷，显著降低使用满意度；</li>
+<li>高质量的后续问题可降低用户持续交互的门槛，引导用户深化对话、达成核心目标，直接影响商用 LLM 产品的用户留存与活跃度。</li>
+</ol>
+<h3 id="2-2-现有研究的核心缺陷"><a href="#2-2-现有研究的核心缺陷" class="headerlink" title="2.2 现有研究的核心缺陷"></a>2.2 现有研究的核心缺陷</h3><p>现有后续问题生成相关研究存在三大关键短板，无法适配真实商用 LLM 场景的需求：</p>
+<ol>
+<li><strong>评估维度严重片面</strong>：绝大多数研究仅聚焦于「信息检索能力」「主题相关性」两个维度，完全忽视了后续问题对用户内在需求的满足、对用户对话目标的支撑，生成的问题与用户真实预期严重脱节；</li>
+<li><strong>缺乏标准化评估框架</strong>：领域内尚无统一、可复现的用户中心式评估方法，不同研究的评估指标、数据集差异极大，无法横向对比模型性能；</li>
+<li><strong>数据集与真实场景脱节</strong>：现有主流数据集（如 FQ-Bank、FollowupQG）多基于合成文本、社交平台非正式对话构建，无法反映商用 LLM 服务中用户的真实使用场景与交互模式。</li>
+</ol>
+<h3 id="2-3-核心研究问题"><a href="#2-3-核心研究问题" class="headerlink" title="2.3 核心研究问题"></a>2.3 核心研究问题</h3><p>如何构建一套<strong>贴合真实商用 LLM 使用场景、以用户为中心</strong>的后续问题生成评估体系，包括标准化的评估准则、高质量的评估数据集，以及可复现的评估方法，全面衡量后续问题对用户的真实价值。</p>
+<h2 id="三、核心研究内容：任务定义与评估准则"><a href="#三、核心研究内容：任务定义与评估准则" class="headerlink" title="三、核心研究内容：任务定义与评估准则"></a>三、核心研究内容：任务定义与评估准则</h2><h3 id="3-1-任务形式化定义"><a href="#3-1-任务形式化定义" class="headerlink" title="3.1 任务形式化定义"></a>3.1 任务形式化定义</h3><p>论文首次正式定义了商用 LLM 场景下的后续问题生成任务与评估任务，明确了任务边界：</p>
+<ol>
+<li><strong>生成任务</strong>：给定单轮用户问题 $q \in Q$ 与对应 LLM 回答  $a \in A$ ，通过生成函数 $F$ 输出有价值的后续问题 $f$，即：$f=F(q,a), F:Q \times A \to F$</li>
+<li><strong>评估任务</strong>：分为两种可互补的范式</li>
+</ol>
+<ul>
+<li>相对评估（n-way 选择）：给定 QA 对、评估准则与多个候选后续问题，评估函数 $E$ 选出最符合准则的最优问题；</li>
+<li>绝对评估（分数制）：给定 QA 对、评估准则与单个候选后续问题，评估函数 $E$ 输出 1-5 分的质量评分，分数越高代表与准则的对齐度越好。</li>
+</ul>
+<h3 id="3-2-五大用户对齐评估准则（核心创新）"><a href="#3-2-五大用户对齐评估准则（核心创新）" class="headerlink" title="3.2 五大用户对齐评估准则（核心创新）"></a>3.2 五大用户对齐评估准则（核心创新）</h3><p>论文通过<strong>三阶段用户研究</strong>（半结构化访谈→焦点小组讨论→亲和图分析），招募 9 名有丰富 LLM 使用经验、覆盖教育 / 设计 / 编程 / 产品等多元背景的参与者，最终提炼出 5 个完全贴合用户真实预期的评估准则，彻底突破了现有研究仅关注相关性的局限。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>准则编号</th>
+<th>准则名称</th>
+<th>核心定义</th>
+<th>关键评估维度</th>
+<th>论文示例（恐龙睡前故事场景）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C1</td>
+<td>探索范围（Exploratory Scope）</td>
+<td>评估后续问题能否拓宽、深化用户与 LLM 的对话，引导用户发现被忽略的视角与子话题</td>
+<td>多视角探究、相关概念引入、深度细分挖掘、话题范围精细化</td>
+<td>How can I make the bedtime story more interactive so my child can participate as we read?</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>语境相关性（Contextual Relevance）</td>
+<td>评估后续问题能否与前文对话、用户原始意图保持一致，避免话题偏离</td>
+<td>话题连续性、用户意图对齐、核心焦点保持、上下文承接</td>
+<td>How can I use ideas from the story, like counting stars or listening to crickets, to help my child fall asleep?</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>创意跳跃（Creative Leap）</td>
+<td>评估后续问题能否突破常规框架，激发用户的原创思考、意外洞见与想象力探索</td>
+<td>新颖视角、跨领域关联、想象力引导、交互趣味性提升</td>
+<td>Can you tell a bedtime story where a dinosaur and a dragon become best friends and share an adventure?</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>LLM 赋能（LLM Enablement）</td>
+<td>评估后续问题能否引导用户充分利用 LLM 的多元能力，掌握更高效的交互方法</td>
+<td>LLM 功能展示、具体使用场景示例、提示词优化引导、高阶用法挖掘</td>
+<td>How can I adapt AI-generated stories to be appropriate for both younger and slightly older kids?</td>
+</tr>
+<tr>
+<td>C5</td>
+<td>引导入门（Guided Onboarding）</td>
+<td>评估后续问题能否帮助用户快速开启新主题、陌生领域的探索，降低入门门槛</td>
+<td>核心概念高亮、入门关键词推荐、探索路径指引、基础背景补充</td>
+<td>What are some age-appropriate adventure themes for bedtime stories for 5-year-olds?</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="四、FQ-Eval-数据集构建"><a href="#四、FQ-Eval-数据集构建" class="headerlink" title="四、FQ-Eval 数据集构建"></a>四、FQ-Eval 数据集构建</h2><p>论文构建的 FQ-Eval 是领域内首个基于真实生成式 AI 使用场景、以用户为中心的后续问题生成评估数据集，构建流程全程遵循「真实场景锚定 - 人工精制校准 - 多轮质量管控」原则，确保数据集的可靠性与代表性。</p>
+<h3 id="4-1-数据集整体规模"><a href="#4-1-数据集整体规模" class="headerlink" title="4.1 数据集整体规模"></a>4.1 数据集整体规模</h3><ul>
+<li>核心单元：200 个单轮 QA 对，覆盖 6 大真实生成式 AI 使用类别；</li>
+<li>标注内容：1000 个人工精制的后续问题，每个 QA 对对应 5 个问题，分别与 5 大评估准则一一对应；</li>
+<li>对话类型：单轮对话式 QA，适配商用 LLM 的主流交互场景。</li>
+</ul>
+<h3 id="4-2-分阶段构建流程"><a href="#4-2-分阶段构建流程" class="headerlink" title="4.2 分阶段构建流程"></a>4.2 分阶段构建流程</h3><h4 id="阶段-1：种子-QA-对生成（真实场景锚定）"><a href="#阶段-1：种子-QA-对生成（真实场景锚定）" class="headerlink" title="阶段 1：种子 QA 对生成（真实场景锚定）"></a>阶段 1：种子 QA 对生成（真实场景锚定）</h4><ol>
+<li><strong>场景来源</strong>：基于哈佛商业评论（HBR）2025 年发布的《生成式 AI 真实使用报告》，覆盖 100 个真实用户生成式 AI 使用场景，分为内容创作、创意娱乐、学习教育、个人 / 职业支持、研究分析、技术支持 6 大类别；</li>
+<li><strong>候选生成</strong>：为每个场景设计简单、复杂 2 个难度等级，通过 GPT-4.1 为每个难度生成 5 个候选用户问题，总计 1000 个候选种子问题；</li>
+<li><strong>人工筛选修订</strong>：3 名训练有素的标注员独立评估，从每个难度的 5 个候选中选出 1 个最贴合真实用户语言习惯、场景对齐度最高的问题，最终形成 200 个高质量种子问题；</li>
+<li><strong>回答生成与质检</strong>：通过 GPT-4.1 为每个种子问题生成对应回答，标注员审核回答的上下文连贯性与完整性，形成最终的 200 个 QA 对。</li>
+</ol>
+<h4 id="阶段-2：后续问题筛选与精制（准则对齐）"><a href="#阶段-2：后续问题筛选与精制（准则对齐）" class="headerlink" title="阶段 2：后续问题筛选与精制（准则对齐）"></a>阶段 2：后续问题筛选与精制（准则对齐）</h4><ol>
+<li><strong>候选生成</strong>：针对每个 QA 对 + 每个评估准则，通过 GPT-4.1 生成 8 个严格贴合准则定义的候选后续问题，每个 QA 对总计生成 40 个候选；</li>
+<li><strong>人工筛选与修订</strong>：7 名专业标注员（6 名英语母语者 + 1 名双语专家）独立完成两项工作：<ul>
+<li>筛选：从每个准则的 8 个候选中，选出最能体现该准则核心特征的 1 个问题；</li>
+<li>修订：优化选中问题的准则对齐度、上下文连贯性与语言质量，保留核心语义不变；</li>
+</ul>
+</li>
+<li><strong>质量管控</strong>：通过 GPT-4.1 对所有最终问题进行自动打分，得分低于 2 分的问题触发人工复检与重标注，确保所有问题与准则的高度对齐。</li>
+</ol>
+<h3 id="4-3-与现有主流数据集的对比"><a href="#4-3-与现有主流数据集的对比" class="headerlink" title="4.3 与现有主流数据集的对比"></a>4.3 与现有主流数据集的对比</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>核心属性</th>
+<th>FQ-Bank</th>
+<th>FollowupQG</th>
+<th>FQ-Eval（本文）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>对话类型</td>
+<td>多轮</td>
+<td>单轮</td>
+<td>单轮</td>
+</tr>
+<tr>
+<td>QA 对数量</td>
+<td>2132</td>
+<td>501</td>
+<td>200</td>
+</tr>
+<tr>
+<td>后续问题数量</td>
+<td>2132</td>
+<td>501</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>领域</td>
+<td>基于篇章的 QA</td>
+<td>社交 QA</td>
+<td>对话式 QA</td>
+</tr>
+<tr>
+<td>数据来源</td>
+<td>OrQuAC 合成语料</td>
+<td>Reddit 社交平台</td>
+<td>HBR 真实生成式 AI 使用场景</td>
+</tr>
+<tr>
+<td>核心特征</td>
+<td>合成 / 人工设计</td>
+<td>非正式口语化</td>
+<td>真实场景、用户中心、准则对齐</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="五、实验设计与核心结果"><a href="#五、实验设计与核心结果" class="headerlink" title="五、实验设计与核心结果"></a>五、实验设计与核心结果</h2><p>论文通过多组互补实验，全面验证了 FQ-Eval 数据集的有效性、评估框架的可靠性，同时揭示了当前主流 LLM 在后续问题生成上的核心短板。</p>
+<h3 id="5-1-实验基础设置"><a href="#5-1-实验基础设置" class="headerlink" title="5.1 实验基础设置"></a>5.1 实验基础设置</h3><ol>
+<li><strong>评估范式</strong>：采用「n-way 选择任务 + 分数制评估任务」双范式，确保评估结果的全面性；</li>
+<li><strong>评估器设置</strong>：<ul>
+<li>主力评估器：GPT-4.1（temperature=0.0，贪心解码，确保结果可复现）；</li>
+<li>金标准验证：独立人类标注员盲测，与数据集构建阶段的标注员完全隔离，避免偏见；</li>
+<li>鲁棒性验证：额外采用 Claude Opus 4、Mistral Large、Gemini 2.5 Flash 作为备选评估器；</li>
+</ul>
+</li>
+<li><strong>对比模型</strong>：覆盖 OpenAI、Anthropic、Mistral、Google 四大厂商的 12 款主流 LLM，包含旗舰大模型与中小尺寸模型；</li>
+<li><strong>工业场景验证</strong>：对商用产品 Perplexity 的后续问题生成能力进行实测评估。</li>
+</ol>
+<h3 id="5-2-核心实验结果"><a href="#5-2-核心实验结果" class="headerlink" title="5.2 核心实验结果"></a>5.2 核心实验结果</h3><h4 id="实验-1：5-way-选择任务（核心验证实验）"><a href="#实验-1：5-way-选择任务（核心验证实验）" class="headerlink" title="实验 1：5-way 选择任务（核心验证实验）"></a>实验 1：5-way 选择任务（核心验证实验）</h4><p><strong>实验设置</strong>：对每个 QA 对 + 每个准则，构建 5 候选池（1 个 FQ-Eval 基准问题 + 4 款旗舰 LLM 生成的问题），评估者在盲测环境下选出最符合准则的问题，统计各候选的选择率。</p>
+<p><strong>核心结果</strong>：</p>
+<ol>
+<li>FQ-Eval 在 5 个准则上的平均选择率显著高于所有主流 LLM，在<strong>创意跳跃</strong>维度，LLM-judge 选择率 99.5%、人类选择率 92%，几乎碾压所有对比模型；</li>
+<li>在<strong>引导入门、LLM 赋能、探索范围</strong>三个维度，FQ-Eval 的 LLM-judge 选择率均超过 79%，大幅领先对比模型；</li>
+<li>仅在<strong>语境相关性</strong>维度，Claude Opus 4 等旗舰模型展现出竞争力（人类选择率 28.5%，略高于 FQ-Eval 的 24%），验证了现有 LLM 仅在相关性维度有成熟能力，与论文的核心假设一致。</li>
+</ol>
+<h4 id="实验-2：2-way-两两对比任务（全模型覆盖）"><a href="#实验-2：2-way-两两对比任务（全模型覆盖）" class="headerlink" title="实验 2：2-way 两两对比任务（全模型覆盖）"></a>实验 2：2-way 两两对比任务（全模型覆盖）</h4><p><strong>实验设置</strong>：对每个 QA 对 + 每个准则，构建 2 候选池（1 个 FQ-Eval 基准问题 + 1 款待评估 LLM 生成的问题），评估者二选一，统计 FQ-Eval 的胜率。</p>
+<p><strong>核心结果</strong>：</p>
+<ol>
+<li>FQ-Eval 在 12 款 LLM 的全量对比中，<strong>平均胜率达 86.4%</strong>，在所有准则上均占据绝对优势；</li>
+<li>在<strong>创意跳跃</strong>维度，FQ-Eval 对所有模型的胜率均超过 99%，证明当前主流 LLM 完全无法生成符合用户预期的高创意性后续问题；</li>
+<li>同厂商内的中小尺寸模型，在部分准则上的表现优于旗舰大模型，核心原因是中小模型的输出更简洁，更适配简单场景的用户需求；</li>
+<li>随着用户问题复杂度提升，FQ-Eval 的胜率略有下降，说明旗舰大模型在高复杂度场景下能更好地发挥能力。</li>
+</ol>
+<h4 id="实验-3：分数制绝对评估任务"><a href="#实验-3：分数制绝对评估任务" class="headerlink" title="实验 3：分数制绝对评估任务"></a>实验 3：分数制绝对评估任务</h4><p><strong>实验设置</strong>：对每个候选后续问题，基于 5 大准则进行 1-5 分的独立绝对评分，分数越高代表质量越好。</p>
+<p><strong>核心结果（平均分）</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>C1 探索范围</th>
+<th>C2 语境相关性</th>
+<th>C3 创意跳跃</th>
+<th>C4 LLM 赋能</th>
+<th>C5 引导入门</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FQ-Eval</td>
+<td>4.04</td>
+<td>4.96</td>
+<td>4.35</td>
+<td>4.21</td>
+<td>4.24</td>
+</tr>
+<tr>
+<td>GPT-4.1</td>
+<td>3.23</td>
+<td>4.88</td>
+<td>1.97</td>
+<td>3.28</td>
+<td>3.13</td>
+</tr>
+<tr>
+<td>Claude Opus 4</td>
+<td>3.53</td>
+<td>4.97</td>
+<td>2.00</td>
+<td>3.40</td>
+<td>3.26</td>
+</tr>
+<tr>
+<td>Mistral Large</td>
+<td>3.45</td>
+<td>4.75</td>
+<td>2.01</td>
+<td>3.05</td>
+<td>3.16</td>
+</tr>
+<tr>
+<td>Gemini 2.5 Flash</td>
+<td>3.18</td>
+<td>4.86</td>
+<td>1.92</td>
+<td>3.13</td>
+<td>3.08</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>关键结论：</p>
+<ul>
+<li>FQ-Eval 在所有 5 个准则上的平均分均高于主流旗舰 LLM，总分领先幅度显著；</li>
+<li>语境相关性维度，FQ-Eval 与 Claude Opus 4 几乎持平，再次验证现有模型在该维度的成熟度；</li>
+<li>创意跳跃维度，FQ-Eval 平均分是对比模型的 2 倍以上，差距极为显著。</li>
+</ul>
+<h4 id="实验-4：真实商用服务评估"><a href="#实验-4：真实商用服务评估" class="headerlink" title="实验 4：真实商用服务评估"></a>实验 4：真实商用服务评估</h4><p><strong>核心发现</strong>：Perplexity 的后续问题仅在信息检索相关的探索范围、语境相关性维度表现尚可，但在<strong>LLM 赋能、引导入门、创意跳跃</strong>三个维度表现极差，与 FQ-Eval 的基准水平差距显著。证明 FQ-Eval 可直接用于商用产品的能力诊断，帮助开发者定位优化方向，平衡产品的质量、成本与延迟。</p>
+<h3 id="5-3-鲁棒性验证"><a href="#5-3-鲁棒性验证" class="headerlink" title="5.3 鲁棒性验证"></a>5.3 鲁棒性验证</h3><ol>
+<li><strong>LLM-judge 一致性</strong>：4 款不同厂商的 LLM 作为评估器时，两两之间的皮尔逊相关系数均 &gt; 0.8（p&lt;0.001），整体评分相邻一致性（分差≤1 分）达 97.2%，证明评估结果稳定可靠，无系统性偏差；</li>
+<li><strong>人类与 LLM-judge 对齐性</strong>：人类标注结果与 GPT-4.1 的评估结果高度一致，无显著差异，证明 LLM-judge 的自动化评估完全贴合人类真实偏好；</li>
+<li><strong>循环性偏见规避</strong>：针对 “GPT-4.1 同时参与数据集构建与评估” 的潜在偏见，论文通过人工修订消除模型风格偏差、人类评估对齐、多模型交叉验证三种方式，证明结果无循环性偏见。</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+        
+      
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>AngryBirds</li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://murphypei.github.io/blog/2026/03/paper-qa-eval.html" title="《FQ-Eval Building Evaluation Dataset for User-centered Follow-up Question Generation》">https:&#x2F;&#x2F;murphypei.github.io&#x2F;blog&#x2F;2026&#x2F;03&#x2F;paper-qa-eval.html</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-creative-commons&quot;&gt;&lt;&#x2F;i&gt;BY-NC-SA</a> 许可协议。转载请注明出处！</li>
+</ul>
+</div>
+
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/%E8%AE%BA%E6%96%87/" rel="tag"># 论文</a>
+            
+              <a href="/tags/FQ-Eval/" rel="tag"># FQ-Eval</a>
+            
+              <a href="/tags/Evaluation/" rel="tag"># Evaluation</a>
+            
+              <a href="/tags/Dataset/" rel="tag"># Dataset</a>
+            
+              <a href="/tags/Follow-up/" rel="tag"># Follow-up</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/blog/2025/12/llm-dapo.html" rel="next" title="大模型训练方法：DAPO">
+                  <i class="fa fa-chevron-left"></i> 大模型训练方法：DAPO
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+    
+    <div class="comments" id="gitalk-container"></div>
+  
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E3%80%81%E8%AE%BA%E6%96%87%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF"><span class="nav-number">1.</span> <span class="nav-text">一、论文基本信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%A5%E5%91%8A%E5%9F%BA%E6%9C%AC%E4%BF%A1%E6%81%AF"><span class="nav-number">2.</span> <span class="nav-text">报告基本信息</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E7%A0%94%E7%A9%B6%E8%83%8C%E6%99%AF%E4%B8%8E%E9%97%AE%E9%A2%98%E6%8F%90%E5%87%BA"><span class="nav-number">3.</span> <span class="nav-text">二、研究背景与问题提出</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E7%A0%94%E7%A9%B6%E8%83%8C%E6%99%AF"><span class="nav-number">3.1.</span> <span class="nav-text">2.1 研究背景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E7%8E%B0%E6%9C%89%E7%A0%94%E7%A9%B6%E7%9A%84%E6%A0%B8%E5%BF%83%E7%BC%BA%E9%99%B7"><span class="nav-number">3.2.</span> <span class="nav-text">2.2 现有研究的核心缺陷</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E6%A0%B8%E5%BF%83%E7%A0%94%E7%A9%B6%E9%97%AE%E9%A2%98"><span class="nav-number">3.3.</span> <span class="nav-text">2.3 核心研究问题</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E6%A0%B8%E5%BF%83%E7%A0%94%E7%A9%B6%E5%86%85%E5%AE%B9%EF%BC%9A%E4%BB%BB%E5%8A%A1%E5%AE%9A%E4%B9%89%E4%B8%8E%E8%AF%84%E4%BC%B0%E5%87%86%E5%88%99"><span class="nav-number">4.</span> <span class="nav-text">三、核心研究内容：任务定义与评估准则</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E4%BB%BB%E5%8A%A1%E5%BD%A2%E5%BC%8F%E5%8C%96%E5%AE%9A%E4%B9%89"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 任务形式化定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E4%BA%94%E5%A4%A7%E7%94%A8%E6%88%B7%E5%AF%B9%E9%BD%90%E8%AF%84%E4%BC%B0%E5%87%86%E5%88%99%EF%BC%88%E6%A0%B8%E5%BF%83%E5%88%9B%E6%96%B0%EF%BC%89"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 五大用户对齐评估准则（核心创新）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%9B%E3%80%81FQ-Eval-%E6%95%B0%E6%8D%AE%E9%9B%86%E6%9E%84%E5%BB%BA"><span class="nav-number">5.</span> <span class="nav-text">四、FQ-Eval 数据集构建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E6%95%B0%E6%8D%AE%E9%9B%86%E6%95%B4%E4%BD%93%E8%A7%84%E6%A8%A1"><span class="nav-number">5.1.</span> <span class="nav-text">4.1 数据集整体规模</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E5%88%86%E9%98%B6%E6%AE%B5%E6%9E%84%E5%BB%BA%E6%B5%81%E7%A8%8B"><span class="nav-number">5.2.</span> <span class="nav-text">4.2 分阶段构建流程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%98%B6%E6%AE%B5-1%EF%BC%9A%E7%A7%8D%E5%AD%90-QA-%E5%AF%B9%E7%94%9F%E6%88%90%EF%BC%88%E7%9C%9F%E5%AE%9E%E5%9C%BA%E6%99%AF%E9%94%9A%E5%AE%9A%EF%BC%89"><span class="nav-number">5.2.1.</span> <span class="nav-text">阶段 1：种子 QA 对生成（真实场景锚定）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%98%B6%E6%AE%B5-2%EF%BC%9A%E5%90%8E%E7%BB%AD%E9%97%AE%E9%A2%98%E7%AD%9B%E9%80%89%E4%B8%8E%E7%B2%BE%E5%88%B6%EF%BC%88%E5%87%86%E5%88%99%E5%AF%B9%E9%BD%90%EF%BC%89"><span class="nav-number">5.2.2.</span> <span class="nav-text">阶段 2：后续问题筛选与精制（准则对齐）</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-%E4%B8%8E%E7%8E%B0%E6%9C%89%E4%B8%BB%E6%B5%81%E6%95%B0%E6%8D%AE%E9%9B%86%E7%9A%84%E5%AF%B9%E6%AF%94"><span class="nav-number">5.3.</span> <span class="nav-text">4.3 与现有主流数据集的对比</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%94%E3%80%81%E5%AE%9E%E9%AA%8C%E8%AE%BE%E8%AE%A1%E4%B8%8E%E6%A0%B8%E5%BF%83%E7%BB%93%E6%9E%9C"><span class="nav-number">6.</span> <span class="nav-text">五、实验设计与核心结果</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%AE%9E%E9%AA%8C%E5%9F%BA%E7%A1%80%E8%AE%BE%E7%BD%AE"><span class="nav-number">6.1.</span> <span class="nav-text">5.1 实验基础设置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E6%A0%B8%E5%BF%83%E5%AE%9E%E9%AA%8C%E7%BB%93%E6%9E%9C"><span class="nav-number">6.2.</span> <span class="nav-text">5.2 核心实验结果</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C-1%EF%BC%9A5-way-%E9%80%89%E6%8B%A9%E4%BB%BB%E5%8A%A1%EF%BC%88%E6%A0%B8%E5%BF%83%E9%AA%8C%E8%AF%81%E5%AE%9E%E9%AA%8C%EF%BC%89"><span class="nav-number">6.2.1.</span> <span class="nav-text">实验 1：5-way 选择任务（核心验证实验）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C-2%EF%BC%9A2-way-%E4%B8%A4%E4%B8%A4%E5%AF%B9%E6%AF%94%E4%BB%BB%E5%8A%A1%EF%BC%88%E5%85%A8%E6%A8%A1%E5%9E%8B%E8%A6%86%E7%9B%96%EF%BC%89"><span class="nav-number">6.2.2.</span> <span class="nav-text">实验 2：2-way 两两对比任务（全模型覆盖）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C-3%EF%BC%9A%E5%88%86%E6%95%B0%E5%88%B6%E7%BB%9D%E5%AF%B9%E8%AF%84%E4%BC%B0%E4%BB%BB%E5%8A%A1"><span class="nav-number">6.2.3.</span> <span class="nav-text">实验 3：分数制绝对评估任务</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%AE%9E%E9%AA%8C-4%EF%BC%9A%E7%9C%9F%E5%AE%9E%E5%95%86%E7%94%A8%E6%9C%8D%E5%8A%A1%E8%AF%84%E4%BC%B0"><span class="nav-number">6.2.4.</span> <span class="nav-text">实验 4：真实商用服务评估</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-3-%E9%B2%81%E6%A3%92%E6%80%A7%E9%AA%8C%E8%AF%81"><span class="nav-number">6.3.</span> <span class="nav-text">5.3 鲁棒性验证</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image"
+      src="/images/angry_bird_128.ico"
+      alt="AngryBirds">
+  <p class="site-author-name" itemprop="name">AngryBirds</p>
+  <div class="site-description" itemprop="description">虚怀若谷，大智若愚</div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/%20%7C%7C%20archive">
+        
+          <span class="site-state-item-count">189</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/%20%7C%7C%20th">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">23</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/%20%7C%7C%20tags">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">499</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+  <div class="feed-link motion-element">
+    <a href="/atom.xml" rel="alternate">
+      <i class="fa fa-rss"></i>RSS
+    </a>
+  </div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="https://github.com/murphypei" title="GitHub &amp;rarr; https:&#x2F;&#x2F;github.com&#x2F;murphypei" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-github&quot;&gt;&lt;&#x2F;i&gt;GitHub</a>
+      </span>
+    
+      <span class="links-of-author-item">
+      
+      
+        
+      
+      
+        
+      
+        <a href="mailto:murphypei47@gmail.com" title="E-Mail &amp;rarr; mailto:murphypei47@gmail.com" rel="noopener" target="_blank">&lt;i class&#x3D;&quot;fa fa-fw fa-envelope&quot;&gt;&lt;&#x2F;i&gt;E-Mail</a>
+      </span>
+    
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title">
+      <i class="fa fa-fw fa-link"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://www.zhihu.com/people/guo-jia-66-80/activities" title="https:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;guo-jia-66-80&#x2F;activities" rel="noopener" target="_blank">知乎</a>
+        </li>
+      
+    </ul>
+  </div>
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2026</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">AngryBirds</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-area-chart"></i>
+    </span>
+    <span title="站点总字数">702k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+    <span title="站点阅读时长">19:30</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-user"></i>
+    </span>
+    <span class="site-uv" title="总访客量">
+      <span class="busuanzi-value" id="busuanzi_value_site_uv"></span>
+    </span>
+  
+    <span class="post-meta-divider">|</span>
+  
+    <span class="post-meta-item-icon">
+      <i class="fa fa-eye"></i>
+    </span>
+    <span class="site-pv" title="总访问量">
+      <span class="busuanzi-value" id="busuanzi_value_site_pv"></span>
+    </span>
+  
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  <script src="//cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+  <script src="//cdn.jsdelivr.net/gh/fancyapps/fancybox@3/dist/jquery.fancybox.min.js"></script>
+
+<script src="/js/utils.js?v=7.3.0.js"></script>
+
+<script src="/js/motion.js?v=7.3.0.js"></script>
+
+
+<script src="/js/schemes/muse.js?v=7.3.0.js"></script>
+
+
+
+<script src="/js/next-boot.js?v=7.3.0.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var bp = document.createElement('script');
+      var curProtocol = window.location.protocol.split(':')[0];
+      bp.src = (curProtocol === 'https') ? 'https://zz.bdstatic.com/linksubmit/push.js' : 'http://push.zhanzhang.baidu.com/push.js';
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(bp, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+    
+      
+<script type="text/x-mathjax-config">
+
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ['\\(', '\\)'] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      equationNumbers: {
+        autoNumber: 'AMS'
+      }
+    }
+  });
+
+  MathJax.Hub.Register.StartupHook('TeX Jax Ready', function() {
+    MathJax.InputJax.TeX.prefilterHooks.Add(function(data) {
+      if (data.display) {
+        var next = data.script.nextSibling;
+        while (next && next.nodeName.toLowerCase() === '#text') {
+          next = next.nextSibling;
+        }
+        if (next && next.nodeName.toLowerCase() === 'br') {
+          next.parentNode.removeChild(next);
+        }
+      }
+    });
+  });
+
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for (i = 0; i < all.length; i += 1) {
+      element = document.getElementById(all[i].inputID + '-Frame').parentNode;
+      if (element.nodeName.toLowerCase() == 'li') {
+        element = element.parentNode;
+      }
+      element.classList.add('has-jax');
+    }
+  });
+</script>
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_HTMLorMML', () => {
+    MathJax.Hub.Typeset();
+  }, window.MathJax);
+</script>
+
+    
+  
+
+  
+
+  
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.css">
+
+<script>
+  NexT.utils.getScript('//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js', () => {
+    var gitalk = new Gitalk({
+      clientID: 'e14928c5d4e586a1be33',
+      clientSecret: 'b58488475e69824177de7fa4e52325a0de1dbdb7',
+      repo: 'murphypei.github.io',
+      owner: 'murphypei',
+      admin: ['murphypei'],
+      id: 'e1ba1afddcbea0da66eb67ecfc5a2b26',
+        language: 'zh-CN',
+      
+      distractionFreeMode: 'true'
+    });
+    gitalk.render('gitalk-container');
+  }, window.Gitalk);
+</script>
+
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"log":false,"model":{"jsonPath":"/live2dw/assets/haru01.model.json"},"display":{"position":"left","width":250,"height":400},"mobile":{"show":false}});</script><!-- hexo-inject:begin --><!-- hexo-inject:end --></body>
+</html>
